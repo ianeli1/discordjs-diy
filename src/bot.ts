@@ -44,8 +44,16 @@ export class Bot extends BotBase {
     else this.defaultAction = { ...action, trigger: "default" };
   }
 
-  registerAction(trigger: string, action: Omit<Action, "trigger">) {
-    this.messageActions[trigger] = { ...action, trigger };
+  registerAction(
+    trigger: string,
+    action: Omit<Action, "trigger"> | NonNullable<Action["response"]>
+  ) {
+    if (typeof action === "function" || typeof action === "string")
+      this.messageActions[trigger] = {
+        trigger: "default",
+        response: action,
+      };
+    else this.messageActions[trigger] = { ...action, trigger: "default" };
     report(`Created a new action, trigger: ${trigger}`);
     return trigger;
   }

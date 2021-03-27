@@ -12,7 +12,5 @@ All you need to get started is install it using `npm install discord.js-diy` and
 import { Bot } from "discord.js-diy"
 
 const bot = new Bot("<your Discord API token>", {prefix: "!"})
-bot.registerAction("ping", {
-    response: "pong"
-})
+bot.registerAction("ping", "pong") //!ping => pong
 ```
