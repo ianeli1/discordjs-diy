@@ -6,7 +6,7 @@ Easy to use, do-it-yourself Discord.js mini-framework
 
 Simple Discord bots without much complex logic
 
-All you need to get started is install it using `npm install discord.js-diy` and import it into your project.
+All you need to get started is install it using `npm install discordjs-diy` and import it into your project.
 
 ```ts
 import { Bot } from "discordjs-diy";
