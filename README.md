@@ -8,9 +8,9 @@ Simple Discord bots without much complex logic
 
 All you need to get started is install it using `npm install discord.js-diy` and import it into your project.
 
-```
-import { Bot } from "discord.js-diy"
+```ts
+import { Bot } from "discordjs-diy";
 
-const bot = new Bot("<your Discord API token>", {prefix: "!"})
-bot.registerAction("ping", "pong") //!ping => pong
+const bot = new Bot("<your Discord API token>", { prefix: "!" });
+bot.registerAction("ping", "pong"); //!ping => pong
 ```
