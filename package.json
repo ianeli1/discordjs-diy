@@ -1,7 +1,7 @@
 {
   "name": "discordjs-diy",
   "version": "1.0.3",
-  "main": "index.js",
+  "main": "./dist/index.js",
   "license": "MIT",
   "devDependencies": {
     "@types/node": "^14.14.37",
