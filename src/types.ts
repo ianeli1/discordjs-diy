@@ -6,8 +6,19 @@ export interface Action {
     | ((
         msg: Message,
         args: string
-      ) => string | MessageEmbed | (string | MessageEmbed)[])
+      ) =>
+        | string
+        | MessageEmbed
+        | (string | MessageEmbed)[]
+        | Promise<string>
+        | Promise<MessageEmbed>
+        | Promise<(string | MessageEmbed)[]>)
     | string;
 
-  reaction?: ((msg: Message, args: string) => EmojiResolvable) | string;
+  reaction?:
+    | ((
+        msg: Message,
+        args: string
+      ) => EmojiResolvable | Promise<EmojiResolvable>)
+    | string;
 }

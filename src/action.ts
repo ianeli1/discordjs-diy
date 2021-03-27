@@ -19,12 +19,12 @@ export async function executeAction(
     let emoji: EmojiResolvable | undefined;
     if (typeof reaction === "string") emoji = handleEmoji(client, reaction);
     else if (typeof reaction === "function")
-      emoji = handleEmoji(client, reaction(msg, args));
+      emoji = handleEmoji(client, await reaction(msg, args));
     emoji && (await msg.react(emoji));
 
     let reply: string | MessageEmbed | (string | MessageEmbed)[] | undefined;
     if (typeof response === "string") reply = response;
-    else if (typeof response === "function") reply = response(msg, args);
+    else if (typeof response === "function") reply = await response(msg, args);
     reply && (await msg.channel.send(reply));
   } catch (e) {
     console.trace(

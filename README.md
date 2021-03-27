@@ -38,6 +38,14 @@ bot.registerAction("reactAndReply", {
 }); //*reactAndReply => The bot can also react to messages and reply!
 ```
 
+```ts
+import { Bot } from "discordjs-diy";
+const bot = new Bot("<your Discord API token>", { prefix: "*", ignoreCaps });
+bot.registerAction("await", {
+  response: async (msg) => await waitForResponse(msg.author),
+}); //*AWAIT => bot can ignore caps and use async/await!
+```
+
 ### Updating Discord presence
 
 The bot can also easily update presence information

@@ -7,6 +7,7 @@ import { pick, report } from "./utility";
 interface BotOptions {
   prefix?: string;
   suffix?: string;
+  ignoreCaps?: boolean;
 }
 
 interface MessageActions {
@@ -19,10 +20,12 @@ export class Bot extends BotBase {
   private presenceInterval: NodeJS.Timeout;
   readonly prefix: string | undefined;
   readonly suffix: string | undefined;
+  private ignoreCaps: boolean | undefined;
   constructor(token: string, options: BotOptions) {
     super(token);
     this.prefix = options.prefix;
     this.suffix = options.suffix;
+    this.ignoreCaps = options.ignoreCaps;
     if (!this.suffix && !this.prefix)
       throw new Error(
         "You need to provide at least one of the following: prefix or suffix"
@@ -51,10 +54,10 @@ export class Bot extends BotBase {
   ) {
     if (typeof action === "function" || typeof action === "string")
       this.messageActions[trigger] = {
-        trigger: "default",
+        trigger,
         response: action,
       };
-    else this.messageActions[trigger] = { ...action, trigger: "default" };
+    else this.messageActions[trigger] = { ...action, trigger };
     report(`Created a new action, trigger: ${trigger}`);
     return trigger;
   }
@@ -81,7 +84,9 @@ export class Bot extends BotBase {
       .slice((this.suffix && -1 * this.suffix.length) || 0)
       .trim(); //remove suffix and prefix
 
-    const trigger = content.split(" ")[0]; //get first word
+    let trigger = content.split(" ")[0]; //get first word
+
+    if (this.ignoreCaps) trigger = trigger.toLocaleLowerCase();
 
     const args = content.slice(trigger.length).trim();
 
