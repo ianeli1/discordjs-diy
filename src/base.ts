@@ -8,6 +8,7 @@ export class BotBase {
   readonly client: Client;
 
   constructor(token: string) {
+    if (!token) throw new Error("No token was provided");
     this.token = token;
     this.client = new Client();
     this.client.login(this.token);

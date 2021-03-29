@@ -53,28 +53,39 @@ export class Bot extends BotBase {
     action: Omit<Action, "trigger"> | NonNullable<Action["response"]>
   ) {
     if (typeof action === "function" || typeof action === "string")
-      this.messageActions[trigger] = {
+      this.messageActions[
+        this.ignoreCaps ? trigger.toLocaleLowerCase() : trigger
+      ] = {
         trigger,
         response: action,
       };
-    else this.messageActions[trigger] = { ...action, trigger };
+    else
+      this.messageActions[
+        this.ignoreCaps ? trigger.toLocaleLowerCase() : trigger
+      ] = { ...action, trigger };
     report(`Created a new action, trigger: ${trigger}`);
     return trigger;
   }
 
   removeAction(trigger: string) {
-    delete this.messageActions[trigger];
+    delete this.messageActions[
+      this.ignoreCaps ? trigger.toLocaleLowerCase() : trigger
+    ];
     report(`Removed an action, trigger: ${trigger}`);
   }
 
   private async messageHandler(msg: Message) {
     const { content: rawContent } = msg;
     //only react to messages with prefix or suffix
+    console.log(
+      `msgPfx: ${msg.content.slice(0, this.prefix!.length)}, botPfx: ${
+        this.prefix
+      }`
+    );
     if (
-      (!this.prefix ||
-        rawContent.slice(0, this.prefix.length) !== this.prefix) &&
-      (!this.suffix ||
-        rawContent.slice(-1 * this.suffix.length) !== this.suffix)
+      (this.prefix &&
+        rawContent.slice(0, this.prefix.length) !== this.prefix) ||
+      (this.suffix && rawContent.slice(-1 * this.suffix.length) !== this.suffix)
     ) {
       return;
     }
@@ -86,7 +97,7 @@ export class Bot extends BotBase {
 
     let trigger = content.split(" ")[0]; //get first word
 
-    if (this.ignoreCaps) trigger = trigger.toLocaleLowerCase();
+    if (this.ignoreCaps) trigger = trigger.toLowerCase();
 
     const args = content.slice(trigger.length).trim();
 
