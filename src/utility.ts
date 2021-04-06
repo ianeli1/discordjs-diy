@@ -1,7 +1,7 @@
 import { Client, EmojiResolvable } from "discord.js";
 
 export function report(...stuff: string[]) {
-  console.log("[discord.js-diy] => ", ...stuff);
+  console.log("[discord.js-diy] =>", ...stuff);
 }
 
 export function handleEmoji(

@@ -12,24 +12,38 @@ export async function executeAction(
   report(
     `Command triggered, user: ${
       msg.author.tag
-    }, trigger: ${trigger}, args: ${args}, hasResponse: ${!!response}, hasReaction: ${!!reaction}`
+    }, trigger: ${trigger}, content: ${
+      msg.content
+    }, args: ${args}, hasResponse: ${!!response}, hasReaction: ${!!reaction}`
   );
 
-  try {
-    let emoji: EmojiResolvable | undefined;
-    if (typeof reaction === "string") emoji = handleEmoji(client, reaction);
-    else if (typeof reaction === "function")
-      emoji = handleEmoji(client, await reaction(msg, args));
-    emoji && (await msg.react(emoji));
+  if (response) {
+    try {
+      let reply: string | MessageEmbed | (string | MessageEmbed)[] | undefined;
+      if (typeof response === "string") reply = response;
+      else if (typeof response === "function")
+        reply = await response(msg, args);
+      reply && (await msg.channel.send(reply));
+    } catch (e) {
+      console.trace(
+        `An unhandled error ocurred while triggering an action response, trigger: ${trigger}\n`,
+        e
+      );
+    }
+  }
 
-    let reply: string | MessageEmbed | (string | MessageEmbed)[] | undefined;
-    if (typeof response === "string") reply = response;
-    else if (typeof response === "function") reply = await response(msg, args);
-    reply && (await msg.channel.send(reply));
-  } catch (e) {
-    console.trace(
-      `An unhandled error ocurred while triggering an action, trigger: ${trigger}\n`,
-      e
-    );
+  if (reaction) {
+    try {
+      let emoji: EmojiResolvable | undefined;
+      if (typeof reaction === "string") emoji = handleEmoji(client, reaction);
+      else if (typeof reaction === "function")
+        emoji = handleEmoji(client, await reaction(msg, args));
+      emoji && (await msg.react(emoji));
+    } catch (e) {
+      console.trace(
+        `An unhandled error ocurred while triggering an action reaction, trigger: ${trigger}\n`,
+        e
+      );
+    }
   }
 }
