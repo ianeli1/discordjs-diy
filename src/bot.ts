@@ -15,8 +15,8 @@ interface MessageActions {
 }
 
 export class Bot extends BotBase {
-  private messageActions: MessageActions = {};
-  private defaultAction: Action;
+  messageActions: MessageActions = {};
+  defaultAction: Action;
   private presenceInterval: NodeJS.Timeout;
   readonly prefix: string | undefined;
   readonly suffix: string | undefined;
@@ -68,20 +68,20 @@ export class Bot extends BotBase {
   }
 
   removeAction(trigger: string) {
+    if (!(trigger in this.messageActions)) {
+      return null;
+    }
     delete this.messageActions[
       this.ignoreCaps ? trigger.toLocaleLowerCase() : trigger
     ];
     report(`Removed an action, trigger: ${trigger}`);
+    return trigger;
   }
 
   private async messageHandler(msg: Message) {
     const { content: rawContent } = msg;
     //only react to messages with prefix or suffix
-    console.log(
-      `msgPfx: ${msg.content.slice(0, this.prefix!.length)}, botPfx: ${
-        this.prefix
-      }`
-    );
+    if (!this.prefix && !this.suffix) throw new Error("NO PREFIX OR SUFFIX");
     if (
       (this.prefix &&
         rawContent.slice(0, this.prefix.length) !== this.prefix) ||
@@ -118,8 +118,12 @@ export class Bot extends BotBase {
           "User missing from client object, bot was unable to update presence."
         );
     }
+
+    if (activities.length === 0)
+      throw new Error("Presence list can't be empty");
+
     this.client.clearInterval(this.presenceInterval);
-    if (activities.length) {
+    if (activities[0] instanceof Array) {
       this.presenceInterval = this.client.setInterval(() => {
         setActivity.bind(this, pick(activities))();
       }, interval);
