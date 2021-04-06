@@ -57,3 +57,27 @@ test("if action fails, to contain it", () => {
   ).not.toThrowError();
   expect(console.trace).toHaveBeenCalled();
 });
+
+describe("reaction handling", () => {
+  test("reaction function", () => {
+    const fakeAction: Action = {
+      trigger: "FakeAction",
+      reaction: jest.fn().mockReturnValue("🤓"),
+    };
+
+    executeAction(fakeClient, fakeMessage, "args", fakeAction);
+    expect(fakeAction.reaction).toHaveBeenCalledWith(fakeMessage, "args");
+  });
+
+  test("on error", () => {
+    console.trace = jest.fn();
+    const fakeAction: Action = {
+      trigger: "FakeAction",
+      reaction: jest.fn().mockImplementation(() => {
+        throw Error("fake error");
+      }),
+    };
+    executeAction(fakeClient, fakeMessage, "args", fakeAction);
+    expect(console.trace).toHaveBeenCalled();
+  });
+});
