@@ -35,6 +35,10 @@ export class Embed {
    */
   refTransform: NonNullable<EmbedSettings["refTransform"]>;
   author: EmbedSettings["author"];
+  images: {
+    [name: string]: string;
+  };
+
   constructor(options: EmbedSettings) {
     this.color = options.color ?? "#222222";
     this.descTransform = options.descTransform ?? ((x: string) => x);
@@ -66,11 +70,13 @@ export class Embed {
     }
 
     if (options.image) {
-      embed = embed.setImage(options.image);
+      embed = embed.setImage(this.images[options.image] ?? options.image);
     }
 
     if (options.sideImage) {
-      embed = embed.setThumbnail(options.sideImage);
+      embed = embed.setThumbnail(
+        this.images[options.sideImage] ?? options.image
+      );
     }
 
     if (this.author) {
@@ -87,5 +93,10 @@ export class Embed {
     if (options.title) {
       embed = embed.setTitle(options.title);
     }
+  }
+
+  registerImage(name: string, url: string) {
+    this.images[name] = url;
+    return name;
   }
 }

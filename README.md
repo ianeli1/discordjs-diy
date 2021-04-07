@@ -76,3 +76,65 @@ You can always access the normal client object from Discord.JS
 const bot = new Bot("<you know the deal>", { prefix: "!" });
 bot.client.on("<some action>", () => "<do something>");
 ```
+
+### Using embeds
+
+Discordjs-diy tries to make using embeds a little easier. You first need to create an `Embed` object
+
+```ts
+import { Embed } from "discordjs-diy";
+
+const embed = new Embed({
+  //you can customize the Embed here, all parameters are optional
+  color: "#0000FF", //blue
+});
+```
+
+To use your embeds in your bot you can use the `embed.create` method
+
+```ts
+const bot = new Bot("<token>", { prefix: "!" });
+const embed = new Embed({});
+bot.registerAction("test", (_, args) => embed.create({ desc: args }));
+//!test hello => embed containing hello as a description
+```
+
+Bots will usually use a collection of images to represent emotions, you can use them easily with the `embed.registerImage` method
+
+```ts
+const bot = new Bot("<token>", { prefix: "!" });
+const embed = new Embed({});
+embed.registerImage("happy", "<url to image>");
+bot.registerAction("test", (_, args) =>
+  embed.create({ desc: args, sideImage: "happy" })
+);
+//!test hello => embed containing hello as a description and the image "test"
+```
+
+In case your bot requires it, you can set a custom format for the embed description and the footer
+
+```ts
+const bot = new Bot("<token>", { prefix: "!" });
+const embed = new Embed({
+  descTransform: (desc: string) => `${desc}, hello!`, //hello => hello, hello!
+
+  refTransform: (user: User) => [
+    `User: ${user.username}`,
+    user.avatarURL() ?? undefined,
+  ],
+});
+bot.registerAction("test", (msg, args) =>
+  embed.create({ desc: args, reference: msg.author })
+);
+//!test hello => embed containing "hello, hello!" as a description and the footer containing "User: <name>"
+```
+
+Also your embeds can contain the avatar and name of the bot
+
+```ts
+const bot = new Bot("<token>", { prefix: "!" });
+const embed = new Embed({
+  author: bot.user,
+});
+bot.registerAction("test", (_, args) => embed.create({ desc: args }));
+```
