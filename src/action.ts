@@ -8,11 +8,9 @@ export async function executeAction(
   args: string,
   action: Action
 ) {
-  const { reaction, response, trigger } = action;
+  const { reaction, response } = action;
   report(
-    `Command triggered, user: ${
-      msg.author.tag
-    }, trigger: ${trigger}, content: ${
+    `Command triggered, user: ${msg.author.tag}, content: ${
       msg.content
     }, args: ${args}, hasResponse: ${!!response}, hasReaction: ${!!reaction}`
   );
@@ -26,7 +24,7 @@ export async function executeAction(
       reply && (await msg.channel.send(reply));
     } catch (e) {
       console.trace(
-        `An unhandled error ocurred while triggering an action response, trigger: ${trigger}\n`,
+        `An unhandled error ocurred while triggering an action response, trigger: ${msg.content}\n`,
         e
       );
     }
@@ -41,7 +39,7 @@ export async function executeAction(
       emoji && (await msg.react(emoji));
     } catch (e) {
       console.trace(
-        `An unhandled error ocurred while triggering an action reaction, trigger: ${trigger}\n`,
+        `An unhandled error ocurred while triggering an action reaction, trigger: ${msg.content}\n`,
         e
       );
     }
