@@ -21,3 +21,8 @@ export interface Action {
       ) => EmojiResolvable | Promise<EmojiResolvable>)
     | string;
 }
+
+export interface MessageError {
+  type: "reaction" | "response";
+  error: any;
+}

@@ -1,5 +1,5 @@
 import { Client, Message, EmojiResolvable, MessageEmbed } from "discord.js";
-import { Action } from "./types";
+import { Action, MessageError } from "./types";
 import { handleEmoji, report } from "./utility";
 
 export async function executeAction(
@@ -9,6 +9,7 @@ export async function executeAction(
   action: Action
 ) {
   const { reaction, response } = action;
+  let error: MessageError | undefined = undefined;
   report(
     `Command triggered, user: ${msg.author.tag}, content: ${
       msg.content
@@ -27,6 +28,10 @@ export async function executeAction(
         `An unhandled error ocurred while triggering an action response, trigger: ${msg.content}\n`,
         e
       );
+      error = {
+        type: "response",
+        error: e,
+      };
     }
   }
 
@@ -42,6 +47,14 @@ export async function executeAction(
         `An unhandled error ocurred while triggering an action reaction, trigger: ${msg.content}\n`,
         e
       );
+      error = {
+        type: "reaction",
+        error: e,
+      };
     }
+  }
+
+  if (error) {
+    throw error;
   }
 }

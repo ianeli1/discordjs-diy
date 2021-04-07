@@ -16,6 +16,7 @@ interface EmbedOptions {
       }[];
   image?: string;
   sideImage?: string;
+  localImage?: string;
   reference?: User;
 }
 
@@ -93,6 +94,13 @@ export class Embed {
     if (options.title) {
       embed = embed.setTitle(options.title);
     }
+
+    if (options.localImage) {
+      embed = embed
+        .attachFiles([options.localImage])
+        .setImage(`attachment://${options.localImage}`);
+    }
+    return embed;
   }
 
   registerImage(name: string, url: string) {

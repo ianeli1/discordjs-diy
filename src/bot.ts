@@ -1,7 +1,7 @@
 import { ActivityType, Message } from "discord.js";
 import { executeAction } from "./action";
 import { BotBase } from "./base";
-import { Action } from "./types";
+import { Action, MessageError } from "./types";
 import { pick, report } from "./utility";
 
 interface BotOptions {
@@ -21,6 +21,7 @@ export class Bot extends BotBase {
     action: Action;
   }[] = [];
   defaultAction: Action;
+  errorAction: Action;
   private presenceInterval: NodeJS.Timeout;
   readonly prefix: string | undefined;
   readonly suffix: string | undefined;
@@ -49,6 +50,10 @@ export class Bot extends BotBase {
   }
   setDefaultAction(action: Parameters<Bot["padAction"]>[0]) {
     this.defaultAction = this.padAction(action);
+  }
+
+  setErrorAction(action: Parameters<Bot["padAction"]>[0]) {
+    this.errorAction = this.padAction(action);
   }
 
   registerAction(
@@ -123,13 +128,32 @@ export class Bot extends BotBase {
 
     const args = content.slice(trigger.length).trim();
 
-    let action: Action | undefined;
-    if (trigger in this.messageActions) {
-      await executeAction(this.client, msg, args, this.messageActions[trigger]);
-    } else if ((action = this.findRegex(trigger))) {
-      await executeAction(this.client, msg, args, action);
-    } else {
-      await executeAction(this.client, msg, args, this.defaultAction);
+    try {
+      let action: Action | undefined;
+      if (trigger in this.messageActions) {
+        await executeAction(
+          this.client,
+          msg,
+          args,
+          this.messageActions[trigger]
+        );
+      } else if ((action = this.findRegex(trigger))) {
+        await executeAction(this.client, msg, args, action);
+      } else {
+        await executeAction(this.client, msg, args, this.defaultAction);
+      }
+    } catch (e) {
+      if (e.type && e.error) {
+        const { error } = e as MessageError;
+        if (this.errorAction) {
+          await executeAction(this.client, msg, error, this.errorAction);
+        }
+      } else {
+        console.trace(
+          "Unknown error ocurred while tring to execute an action",
+          e
+        );
+      }
     }
   }
 
