@@ -1,7 +1,6 @@
 import { EmojiResolvable, Message, MessageEmbed } from "discord.js";
 
 export interface Action {
-  trigger: string;
   response?:
     | ((
         msg: Message,

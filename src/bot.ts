@@ -16,6 +16,10 @@ interface MessageActions {
 
 export class Bot extends BotBase {
   messageActions: MessageActions = {};
+  regexActions: {
+    pattern: RegExp | string[];
+    action: Action;
+  }[] = [];
   defaultAction: Action;
   private presenceInterval: NodeJS.Timeout;
   readonly prefix: string | undefined;
@@ -30,52 +34,70 @@ export class Bot extends BotBase {
       throw new Error(
         "You need to provide at least one of the following: prefix or suffix"
       );
-    this.defaultAction = {
-      trigger: "default",
-    };
+    this.defaultAction = {};
     this.messageHandler = this.messageHandler.bind(this);
     this.client.on("message", this.messageHandler);
   }
-
-  setDefaultAction(
+  private padAction(
     action: Omit<Action, "trigger"> | NonNullable<Action["response"]>
   ) {
     if (typeof action === "function" || typeof action === "string")
-      this.defaultAction = {
-        trigger: "default",
+      return {
         response: action,
       };
-    else this.defaultAction = { ...action, trigger: "default" };
+    else return action;
+  }
+  setDefaultAction(action: Parameters<Bot["padAction"]>[0]) {
+    this.defaultAction = this.padAction(action);
   }
 
   registerAction(
-    trigger: string,
-    action: Omit<Action, "trigger"> | NonNullable<Action["response"]>
+    trigger: string | string[] | RegExp,
+    action: Parameters<Bot["padAction"]>[0]
   ) {
-    if (typeof action === "function" || typeof action === "string")
-      this.messageActions[
-        this.ignoreCaps ? trigger.toLocaleLowerCase() : trigger
-      ] = {
-        trigger,
-        response: action,
-      };
-    else
-      this.messageActions[
-        this.ignoreCaps ? trigger.toLocaleLowerCase() : trigger
-      ] = { ...action, trigger };
+    if (typeof trigger === "string") {
+      this.messageActions[trigger] = this.padAction(action);
+    } else {
+      this.regexActions.push({
+        action: this.padAction(action),
+        pattern: trigger,
+      });
+    }
     report(`Created a new action, trigger: ${trigger}`);
     return trigger;
   }
 
-  removeAction(trigger: string) {
-    if (!(trigger in this.messageActions)) {
-      return null;
+  removeAction(trigger: string | RegExp | string[]) {
+    if (typeof trigger === "string") {
+      if (!(trigger in this.messageActions)) {
+        return null;
+      }
+      delete this.messageActions[
+        this.ignoreCaps ? trigger.toLocaleLowerCase() : trigger
+      ];
+    } else {
+      let key: number;
+      if (
+        (key = this.regexActions.map((x) => x.pattern).indexOf(trigger)) === -1
+      ) {
+        return null;
+      }
+      delete this.regexActions[key];
     }
-    delete this.messageActions[
-      this.ignoreCaps ? trigger.toLocaleLowerCase() : trigger
-    ];
     report(`Removed an action, trigger: ${trigger}`);
     return trigger;
+  }
+
+  private findRegex(trigger: string) {
+    return this.regexActions.find(({ pattern }) => {
+      if (pattern instanceof Array) {
+        return pattern
+          .map((x) => (this.ignoreCaps ? x.toLowerCase() : x))
+          .includes(trigger);
+      }
+
+      return pattern.test(trigger);
+    })?.action;
   }
 
   private async messageHandler(msg: Message) {
@@ -101,10 +123,13 @@ export class Bot extends BotBase {
 
     const args = content.slice(trigger.length).trim();
 
-    if (!(trigger in this.messageActions)) {
-      await executeAction(this.client, msg, args, this.defaultAction);
-    } else {
+    let action: Action | undefined;
+    if (trigger in this.messageActions) {
       await executeAction(this.client, msg, args, this.messageActions[trigger]);
+    } else if ((action = this.findRegex(trigger))) {
+      await executeAction(this.client, msg, args, action);
+    } else {
+      await executeAction(this.client, msg, args, this.defaultAction);
     }
   }
 
