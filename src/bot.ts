@@ -28,8 +28,12 @@ export class Bot extends BotBase {
   private ignoreCaps: boolean | undefined;
   constructor(token: string, options: BotOptions) {
     super(token);
-    this.prefix = options.prefix;
-    this.suffix = options.suffix;
+    this.prefix = options.ignoreCaps
+      ? options.prefix?.toLowerCase()
+      : options.prefix;
+    this.suffix = options.ignoreCaps
+      ? options.suffix?.toLowerCase()
+      : options.suffix;
     this.ignoreCaps = options.ignoreCaps;
     if (!this.suffix && !this.prefix)
       throw new Error(
@@ -109,17 +113,27 @@ export class Bot extends BotBase {
     const { content: rawContent } = msg;
     //only react to messages with prefix or suffix
     if (!this.prefix && !this.suffix) throw new Error("NO PREFIX OR SUFFIX");
-    if (
-      (this.prefix &&
-        rawContent.slice(0, this.prefix.length) !== this.prefix) ||
-      (this.suffix && rawContent.slice(-1 * this.suffix.length) !== this.suffix)
-    ) {
+    if (msg.author === this.client.user) return;
+
+    const hasPrefix =
+      this.prefix !== undefined &&
+      (this.ignoreCaps
+        ? rawContent.slice(0, this.prefix.length).toLowerCase() === this.prefix
+        : rawContent.slice(0, this.prefix.length) === this.prefix);
+    const hasSuffix =
+      this.suffix !== undefined &&
+      (this.ignoreCaps
+        ? rawContent.slice(-1 * this.suffix.length).toLowerCase() ===
+          this.suffix
+        : rawContent.slice(-1 * this.suffix.length) === this.suffix);
+
+    if (!hasPrefix && !hasSuffix) {
       return;
     }
 
     const content = rawContent
-      .slice(this.prefix?.length)
-      .slice((this.suffix && -1 * this.suffix.length) || 0)
+      .slice(hasPrefix ? this.prefix!.length : 0)
+      .slice(0, hasSuffix ? -1 * this.suffix!.length || 0 : undefined)
       .trim(); //remove suffix and prefix
 
     let trigger = content.split(" ")[0]; //get first word

@@ -1,6 +1,6 @@
 {
   "name": "discordjs-diy",
-  "version": "1.0.11",
+  "version": "1.0.12",
   "main": "./dist/index.js",
   "license": "MIT",
   "devDependencies": {
@@ -24,7 +24,7 @@
     "build": "tsc",
     "start": "node ./dist/index.js",
     "watch": "tsc -w",
-    "dev": "nodemon ./dist/index.js",
+    "dev": "nodemon ./dist/test.js",
     "test": "jest"
   }
 }
