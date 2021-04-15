@@ -38,7 +38,7 @@ export class Embed {
   author: EmbedSettings["author"];
   images: {
     [name: string]: string;
-  };
+  } = {};
 
   constructor(options: EmbedSettings) {
     this.color = options.color ?? "#222222";
