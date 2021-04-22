@@ -47,6 +47,7 @@ export class Embed {
       options.refTransform ??
       ((x: User) => [x.username, x.avatarURL() ?? undefined]);
     this.author = options.author;
+    this.create = this.create.bind(this);
   }
 
   create(options: EmbedOptions) {

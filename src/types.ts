@@ -1,25 +1,49 @@
-import { EmojiResolvable, Message, MessageEmbed } from "discord.js";
+import {
+  Channel,
+  EmojiResolvable,
+  Guild,
+  Message,
+  MessageEmbed,
+  User,
+} from "discord.js";
+import { Embed } from ".";
 
-export interface Action {
-  response?:
-    | ((
-        msg: Message,
-        args: string
-      ) =>
-        | string
-        | MessageEmbed
-        | (string | MessageEmbed)[]
-        | Promise<string>
-        | Promise<MessageEmbed>
-        | Promise<(string | MessageEmbed)[]>)
-    | string;
+export interface ActionParameters {
+  createEmbed: Embed["create"];
+  msg: Message;
+  args: string;
+  author: User;
+  channel: Channel;
+  guild?: Guild;
+  expectReply: (
+    msg: SendableMessage,
+    remove?: boolean
+  ) => Promise<Message | undefined>;
+}
 
-  reaction?:
-    | ((
-        msg: Message,
-        args: string
-      ) => EmojiResolvable | Promise<EmojiResolvable>)
-    | string;
+export type SendableMessage =
+  | string
+  | MessageEmbed
+  | (string | MessageEmbed)[]
+  | Promise<MessageEmbed | string>
+  | Promise<(string | MessageEmbed)[]>;
+
+export type SendableEmoji =
+  | EmojiResolvable
+  | Promise<EmojiResolvable | string>
+  | string;
+
+export type ResponseAction =
+  | ((params: ActionParameters) => SendableMessage)
+  | SendableMessage;
+
+export type ReactionAction =
+  | ((params: ActionParameters) => SendableEmoji)
+  | SendableEmoji;
+
+export interface ActionObject {
+  response?: ResponseAction;
+  reaction?: ReactionAction;
 }
 
 export interface MessageError {

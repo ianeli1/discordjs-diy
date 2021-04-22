@@ -1,6 +1,6 @@
 import { Bot } from "../bot";
 import { ActivityType, Client, Message } from "discord.js";
-import { Action } from "../types";
+import { ActionObject } from "../types";
 jest.mock("discord.js");
 jest.unmock("../action");
 
@@ -28,7 +28,7 @@ describe("setDefaultAction method", () => {
   });
 
   test("passing a whole action", () => {
-    const action: Omit<Action, "trigger"> = {
+    const action: Omit<ActionObject, "trigger"> = {
       reaction: jest.fn().mockReturnValue("e"),
       response: jest.fn().mockReturnValue("hello"),
     };
@@ -49,7 +49,7 @@ describe("registerAction method", () => {
   });
 
   test("passing a whole function", () => {
-    const action: Action = {
+    const action: ActionObject = {
       reaction: jest.fn().mockReturnValue("e"),
       response: jest.fn().mockReturnValue("hello"),
     };
@@ -61,7 +61,7 @@ describe("registerAction method", () => {
 
   test("using a regex as a trigger", () => {
     const trigger = /hello/i;
-    const action: Action = {
+    const action: ActionObject = {
       response: "hello",
     };
     expect(() => bot.registerAction(trigger, action)).not.toThrowError();

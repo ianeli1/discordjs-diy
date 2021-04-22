@@ -1,14 +1,14 @@
-import { Client, Message, EmojiResolvable, MessageEmbed } from "discord.js";
-import { Action, MessageError } from "./types";
+import { Client, EmojiResolvable, MessageEmbed } from "discord.js";
+import { ActionObject, ActionParameters, MessageError } from "./types";
 import { handleEmoji, report } from "./utility";
 
 export async function executeAction(
   client: Client,
-  msg: Message,
-  args: string,
-  action: Action
+  params: ActionParameters,
+  action: ActionObject
 ) {
   const { reaction, response } = action;
+  const { msg, args } = params;
   let error: MessageError | undefined = undefined;
   report(
     `Command triggered, user: ${msg.author.tag}, content: ${
@@ -20,8 +20,7 @@ export async function executeAction(
     try {
       let reply: string | MessageEmbed | (string | MessageEmbed)[] | undefined;
       if (typeof response === "string") reply = response;
-      else if (typeof response === "function")
-        reply = await response(msg, args);
+      else if (typeof response === "function") reply = await response(params);
       reply && (await msg.channel.send(reply));
     } catch (e) {
       console.trace(
@@ -40,7 +39,7 @@ export async function executeAction(
       let emoji: EmojiResolvable | undefined;
       if (typeof reaction === "string") emoji = handleEmoji(client, reaction);
       else if (typeof reaction === "function")
-        emoji = handleEmoji(client, await reaction(msg, args));
+        emoji = handleEmoji(client, await reaction(params));
       emoji && (await msg.react(emoji));
     } catch (e) {
       console.trace(

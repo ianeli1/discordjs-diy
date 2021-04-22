@@ -1,31 +1,41 @@
 import { ActivityType, Message } from "discord.js";
 import { executeAction } from "./action";
 import { BotBase } from "./base";
-import { Action, MessageError } from "./types";
+import { Embed } from "./embed";
+import {
+  ActionObject,
+  ActionParameters,
+  MessageError,
+  ResponseAction,
+} from "./types";
 import { pick, report } from "./utility";
 
 interface BotOptions {
   prefix?: string;
   suffix?: string;
   ignoreCaps?: boolean;
+  embed?: Embed;
 }
 
 interface MessageActions {
-  [trigger: string]: Action;
+  [trigger: string]: ActionObject;
 }
 
+export type BotAction = ActionObject | ResponseAction;
+
 export class Bot extends BotBase {
-  messageActions: MessageActions = {};
-  regexActions: {
+  readonly messageActions: MessageActions = {};
+  readonly regexActions: {
     pattern: RegExp | string[];
-    action: Action;
+    action: ActionObject;
   }[] = [];
-  defaultAction: Action;
-  errorAction: Action;
+  defaultAction: ActionObject;
+  errorAction: ActionObject;
+  readonly embed: Embed;
   private presenceInterval: NodeJS.Timeout;
   readonly prefix: string | undefined;
   readonly suffix: string | undefined;
-  private ignoreCaps: boolean | undefined;
+  readonly ignoreCaps: boolean;
   constructor(token: string, options: BotOptions) {
     super(token);
     this.prefix = options.ignoreCaps
@@ -34,7 +44,9 @@ export class Bot extends BotBase {
     this.suffix = options.ignoreCaps
       ? options.suffix?.toLowerCase()
       : options.suffix;
-    this.ignoreCaps = options.ignoreCaps;
+    this.embed = options.embed ?? new Embed({});
+
+    this.ignoreCaps = options.ignoreCaps ?? false;
     if (!this.suffix && !this.prefix)
       throw new Error(
         "You need to provide at least one of the following: prefix or suffix"
@@ -43,27 +55,26 @@ export class Bot extends BotBase {
     this.messageHandler = this.messageHandler.bind(this);
     this.client.on("message", this.messageHandler);
   }
-  private padAction(
-    action: Omit<Action, "trigger"> | NonNullable<Action["response"]>
-  ) {
-    if (typeof action === "function" || typeof action === "string")
+  private padAction(action: BotAction): ActionObject {
+    if (
+      typeof action === "object" &&
+      ("response" in action || "reaction" in action)
+    ) {
+      return action;
+    } else
       return {
-        response: action,
+        response: action as ResponseAction,
       };
-    else return action;
   }
-  setDefaultAction(action: Parameters<Bot["padAction"]>[0]) {
+  setDefaultAction(action: BotAction) {
     this.defaultAction = this.padAction(action);
   }
 
-  setErrorAction(action: Parameters<Bot["padAction"]>[0]) {
+  setErrorAction(action: BotAction) {
     this.errorAction = this.padAction(action);
   }
 
-  registerAction(
-    trigger: string | string[] | RegExp,
-    action: Parameters<Bot["padAction"]>[0]
-  ) {
+  registerAction(trigger: string | string[] | RegExp, action: BotAction) {
     if (typeof trigger === "string") {
       this.messageActions[trigger] = this.padAction(action);
     } else {
@@ -109,6 +120,44 @@ export class Bot extends BotBase {
     })?.action;
   }
 
+  createParams(msg: Message, args: string): ActionParameters {
+    const expectReply: ActionParameters["expectReply"] = async (
+      response,
+      remove
+    ) => {
+      try {
+        const reply = await msg.channel.send(await response);
+        return (
+          await msg.channel
+            .awaitMessages((message) => message.author.id === msg.author.id, {
+              max: 1,
+              time: 15000,
+              errors: ["time"],
+            })
+            .finally(() => {
+              remove && reply.delete();
+            })
+        ).first();
+      } catch (e) {
+        report(
+          `An error ocurred while expecting a reply from ${msg.author.tag}`,
+          e
+        );
+        return undefined;
+      }
+    };
+
+    return {
+      createEmbed: this.embed.create,
+      msg,
+      args,
+      author: msg.author,
+      channel: msg.channel,
+      guild: msg.guild ?? undefined,
+      expectReply,
+    };
+  }
+
   private async messageHandler(msg: Message) {
     const { content: rawContent } = msg;
     //only react to messages with prefix or suffix
@@ -142,25 +191,26 @@ export class Bot extends BotBase {
 
     const args = content.slice(trigger.length).trim();
 
+    const params = this.createParams(msg, args);
+
     try {
-      let action: Action | undefined;
+      let action: ActionObject | undefined;
       if (trigger in this.messageActions) {
-        await executeAction(
-          this.client,
-          msg,
-          args,
-          this.messageActions[trigger]
-        );
+        await executeAction(this.client, params, this.messageActions[trigger]);
       } else if ((action = this.findRegex(trigger))) {
-        await executeAction(this.client, msg, args, action);
+        await executeAction(this.client, params, action);
       } else {
-        await executeAction(this.client, msg, args, this.defaultAction);
+        await executeAction(this.client, params, this.defaultAction);
       }
     } catch (e) {
       if (e.type && e.error) {
         const { error } = e as MessageError;
         if (this.errorAction) {
-          await executeAction(this.client, msg, error, this.errorAction);
+          await executeAction(
+            this.client,
+            { ...params, args: error },
+            this.errorAction
+          );
         }
       } else {
         console.trace(

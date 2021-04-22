@@ -1,3 +1,3 @@
-export { Bot } from "./bot";
+export { Bot, BotAction as Action } from "./bot";
 export { Embed } from "./embed";
-export type { Action } from "./types";
+export type { ActionObject } from "./types";

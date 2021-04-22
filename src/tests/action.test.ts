@@ -1,5 +1,5 @@
 import { Client, Message } from "discord.js";
-import { Action } from "../types";
+import { ActionObject, ActionParameters } from "../types";
 import { handleEmoji, report } from "../utility";
 jest.mock("discord.js");
 jest.mock("../utility", () => ({
@@ -15,7 +15,7 @@ Client.prototype.emojis = {
 };
 
 const fakeClient = new Client();
-const fakeAction: Action = {
+const fakeAction: ActionObject = {
   response: "test",
   reaction: "🤓",
 };
@@ -28,7 +28,12 @@ const fakeMessage = ({
     send: jest.fn(),
   },
 } as unknown) as Message;
-executeAction(fakeClient, fakeMessage, "args", fakeAction);
+
+executeAction(
+  fakeClient,
+  { msg: fakeMessage, args: "args" } as ActionParameters,
+  fakeAction
+);
 
 test("reports that an action has been executed and specifies the trigger", () => {
   expect(report).toHaveBeenCalled();
@@ -50,29 +55,45 @@ test("if action fails, to contain it", () => {
     throw new Error("idk");
   });
   expect(
-    () => void executeAction(fakeClient, fakeMessage, "args", fakeAction)
+    () =>
+      void executeAction(
+        fakeClient,
+        { msg: fakeMessage, args: "args" } as ActionParameters,
+        fakeAction
+      )
   ).not.toThrowError();
   expect(console.trace).toHaveBeenCalled();
 });
 
 describe("reaction handling", () => {
   test("reaction function", () => {
-    const fakeAction: Action = {
+    const fakeAction: ActionObject = {
       reaction: jest.fn().mockReturnValue("🤓"),
     };
 
-    executeAction(fakeClient, fakeMessage, "args", fakeAction);
-    expect(fakeAction.reaction).toHaveBeenCalledWith(fakeMessage, "args");
+    executeAction(
+      fakeClient,
+      { msg: fakeMessage, args: "args" } as ActionParameters,
+      fakeAction
+    );
+    expect(fakeAction.reaction).toHaveBeenCalledWith({
+      msg: fakeMessage,
+      args: "args",
+    } as ActionParameters);
   });
 
   test("on error", () => {
     console.trace = jest.fn();
-    const fakeAction: Action = {
+    const fakeAction: ActionObject = {
       reaction: jest.fn().mockImplementation(() => {
         throw Error("fake error");
       }),
     };
-    executeAction(fakeClient, fakeMessage, "args", fakeAction);
+    executeAction(
+      fakeClient,
+      { msg: fakeMessage, args: "args" } as ActionParameters,
+      fakeAction
+    );
     expect(console.trace).toHaveBeenCalled();
   });
 });
