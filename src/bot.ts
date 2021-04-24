@@ -18,16 +18,42 @@ interface BotOptions {
   embed?: Embed;
 }
 
+/**
+ * The action your bot will be executing on every trigger
+ * It can be:
+ *  - A function
+ *  - A function that returns a Promise
+ *  - A function that returns an embed
+ *  - A promise
+ *  - A string
+ *  - Standard Discordjs Message object
+ *  - An embed
+ *
+ * Note that it can be undefined or a function that returns undefined, but this will simply be ignored
+ */
 export type BotAction = ActionObject | ResponseAction;
 
+/**
+ * The Bot object, pass in a Discord API token and set the options according to your needs.
+ * Note that you're required to set either a prefix and/or a suffix
+ */
 export class Bot extends BotBase {
-  handler: CommandsHandler;
-  errorAction: ActionObject;
+  private handler: CommandsHandler;
+  private errorAction: ActionObject;
+
+  /**The embed object used for creating embeds in your actions */
   readonly embed: Embed;
   private presenceInterval: NodeJS.Timeout;
+
+  /**The prefix used by your bot */
   readonly prefix: string | undefined;
+
+  /**The suffix used by your bot */
   readonly suffix: string | undefined;
+
+  /**The bot will automatically ignore caps on the trigger keyword if enabled */
   readonly ignoreCaps: boolean;
+
   constructor(token: string, options: BotOptions) {
     super(token);
     this.prefix = options.ignoreCaps
