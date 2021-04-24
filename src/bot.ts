@@ -98,6 +98,7 @@ export class Bot extends BotBase {
       response,
       remove
     ) => {
+      if (!response) return;
       try {
         const reply = await msg.channel.send(await response);
         return (
@@ -116,13 +117,15 @@ export class Bot extends BotBase {
           `An error ocurred while expecting a reply from ${msg.author.tag}`,
           e
         );
-        return undefined;
+        return;
       }
     };
 
     const dm: ActionParameters["dm"] = async (message) => {
       const channel = await msg.author.createDM();
-      await channel.send(await message);
+      return message !== undefined
+        ? await channel.send(await message)
+        : message;
     };
 
     return {

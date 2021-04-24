@@ -23,7 +23,7 @@ export interface ActionParameters {
     remove?: boolean
   ) => Promise<Message | undefined>;
   createEmbed: Embed["create"];
-  dm: (msg: SendableMessage) => Promise<void>;
+  dm: (msg: SendableMessage) => Promise<Message | undefined>;
 }
 
 export type SendableMessage =
@@ -31,12 +31,14 @@ export type SendableMessage =
   | MessageEmbed
   | (string | MessageEmbed)[]
   | Promise<MessageEmbed | string>
-  | Promise<(string | MessageEmbed)[]>;
+  | Promise<(string | MessageEmbed)[]>
+  | undefined;
 
 export type SendableEmoji =
   | EmojiResolvable
   | Promise<EmojiResolvable | string>
-  | string;
+  | string
+  | undefined;
 
 export type ResponseAction =
   | ((params: ActionParameters) => SendableMessage)
