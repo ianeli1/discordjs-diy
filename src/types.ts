@@ -11,6 +11,7 @@ import { Embed } from ".";
 export interface ActionParameters {
   args: string;
   trigger: string;
+  error?: any;
 
   msg: Message;
   author: User;
@@ -22,6 +23,7 @@ export interface ActionParameters {
     remove?: boolean
   ) => Promise<Message | undefined>;
   createEmbed: Embed["create"];
+  dm: (msg: SendableMessage) => Promise<void>;
 }
 
 export type SendableMessage =
@@ -47,6 +49,7 @@ export type ReactionAction =
 export interface ActionObject {
   response?: ResponseAction;
   reaction?: ReactionAction;
+  onError?: ActionObject;
 }
 
 export interface MessageError {

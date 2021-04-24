@@ -120,6 +120,11 @@ export class Bot extends BotBase {
       }
     };
 
+    const dm: ActionParameters["dm"] = async (message) => {
+      const channel = await msg.author.createDM();
+      await channel.send(await message);
+    };
+
     return {
       createEmbed: this.embed.create,
       trigger,
@@ -129,6 +134,7 @@ export class Bot extends BotBase {
       channel: msg.channel,
       guild: msg.guild ?? undefined,
       expectReply,
+      dm,
     };
   }
 
@@ -166,12 +172,10 @@ export class Bot extends BotBase {
 
     const params = this.createParams(msg, args, trigger);
 
+    const action = this.handler.findAction(trigger);
+
     try {
-      await executeAction(
-        this.client,
-        params,
-        this.handler.findAction(trigger)
-      );
+      await executeAction(this.client, params, action);
     } catch (e) {
       if (e.type && e.error) {
         const { error } = e as MessageError;
