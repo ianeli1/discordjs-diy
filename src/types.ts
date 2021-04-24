@@ -9,16 +9,19 @@ import {
 import { Embed } from ".";
 
 export interface ActionParameters {
-  createEmbed: Embed["create"];
-  msg: Message;
   args: string;
+  trigger: string;
+
+  msg: Message;
   author: User;
   channel: Channel;
   guild?: Guild;
+
   expectReply: (
     msg: SendableMessage,
     remove?: boolean
   ) => Promise<Message | undefined>;
+  createEmbed: Embed["create"];
 }
 
 export type SendableMessage =
