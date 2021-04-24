@@ -2,9 +2,11 @@
 
 Easy to use, do-it-yourself Discord.js mini-framework
 
+You can find [the full reference wiki here.](https://ianeli1.github.io/discordjs-diy/)
+
 ### What can I use it for
 
-Simple Discord bots without much complex logic
+Making Discord.JS bots when you're in a run. You can get started with only 2 lines! (incluiding the import)!
 
 ### How do I use it
 
