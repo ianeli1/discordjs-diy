@@ -62,7 +62,6 @@ test("if action fails, to contain it", () => {
         fakeAction
       )
   ).not.toThrowError();
-  expect(console.trace).toHaveBeenCalled();
 });
 
 describe("reaction handling", () => {
@@ -94,6 +93,5 @@ describe("reaction handling", () => {
       { msg: fakeMessage, args: "args" } as ActionParameters,
       fakeAction
     );
-    expect(console.trace).toHaveBeenCalled();
   });
 });

@@ -6,7 +6,7 @@ export function report(...stuff: string[]) {
 
 export function handleEmoji(
   client: Client,
-  emojiName: EmojiResolvable
+  emojiName?: EmojiResolvable
 ): EmojiResolvable | undefined {
   if (typeof emojiName !== "string") return emojiName;
   if (/\p{Emoji}/u.test(emojiName)) return emojiName;

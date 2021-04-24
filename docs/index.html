@@ -1,0 +1,264 @@
+<!doctype html>
+<html class="default no-js">
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<title>discordjs-diy</title>
+	<meta name="description" content="Documentation for discordjs-diy">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="assets/css/main.css">
+	<script async src="assets/js/search.js" id="search-script"></script>
+</head>
+<body>
+<header>
+	<div class="tsd-page-toolbar">
+		<div class="container">
+			<div class="table-wrap">
+				<div class="table-cell" id="tsd-search" data-index="assets/js/search.json" data-base=".">
+					<div class="field">
+						<label for="tsd-search-field" class="tsd-widget search no-caption">Search</label>
+						<input id="tsd-search-field" type="text" />
+					</div>
+					<ul class="results">
+						<li class="state loading">Preparing search index...</li>
+						<li class="state failure">The search index is not available</li>
+					</ul>
+					<a href="index.html" class="title">discordjs-diy</a>
+				</div>
+				<div class="table-cell" id="tsd-widgets">
+					<div id="tsd-filter">
+						<a href="#" class="tsd-widget options no-caption" data-toggle="options">Options</a>
+						<div class="tsd-filter-group">
+							<div class="tsd-select" id="tsd-filter-visibility">
+								<span class="tsd-select-label">All</span>
+								<ul class="tsd-select-list">
+									<li data-value="public">Public</li>
+									<li data-value="protected">Public/Protected</li>
+									<li data-value="private" class="selected">All</li>
+								</ul>
+							</div>
+							<input type="checkbox" id="tsd-filter-inherited" checked />
+							<label class="tsd-widget" for="tsd-filter-inherited">Inherited</label>
+							<input type="checkbox" id="tsd-filter-externals" checked />
+							<label class="tsd-widget" for="tsd-filter-externals">Externals</label>
+						</div>
+					</div>
+					<a href="#" class="tsd-widget menu no-caption" data-toggle="menu">Menu</a>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="tsd-page-title">
+		<div class="container">
+			<h1>discordjs-diy</h1>
+		</div>
+	</div>
+</header>
+<div class="container container-main">
+	<div class="row">
+		<div class="col-8 col-content">
+			<div class="tsd-panel tsd-typography">
+				<a href="#discordjs---diy" id="discordjs---diy" style="color: inherit; text-decoration: none;">
+					<h1>Discord.js - DIY</h1>
+				</a>
+				<p>Easy to use, do-it-yourself Discord.js mini-framework</p>
+				<a href="#what-can-i-use-it-for" id="what-can-i-use-it-for" style="color: inherit; text-decoration: none;">
+					<h3>What can I use it for</h3>
+				</a>
+				<p>Simple Discord bots without much complex logic</p>
+				<a href="#how-do-i-use-it" id="how-do-i-use-it" style="color: inherit; text-decoration: none;">
+					<h3>How do I use it</h3>
+				</a>
+				<p>All you need to get started is install it using <code>npm install discordjs-diy</code> and import it into your project.</p>
+				<pre><code class="language-ts"><span style="color: #AF00DB">import</span><span style="color: #000000"> { </span><span style="color: #001080">Bot</span><span style="color: #000000"> } </span><span style="color: #AF00DB">from</span><span style="color: #000000"> </span><span style="color: #A31515">&quot;discordjs-diy&quot;</span><span style="color: #000000">;</span>
+
+<span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1">bot</span><span style="color: #000000"> = </span><span style="color: #0000FF">new</span><span style="color: #000000"> </span><span style="color: #795E26">Bot</span><span style="color: #000000">(</span><span style="color: #A31515">&quot;&lt;your Discord API token&gt;&quot;</span><span style="color: #000000">, { </span><span style="color: #001080">prefix:</span><span style="color: #000000"> </span><span style="color: #A31515">&quot;!&quot;</span><span style="color: #000000"> });</span>
+<span style="color: #001080">bot</span><span style="color: #000000">.</span><span style="color: #795E26">registerAction</span><span style="color: #000000">(</span><span style="color: #A31515">&quot;ping&quot;</span><span style="color: #000000">, </span><span style="color: #A31515">&quot;pong&quot;</span><span style="color: #000000">); </span><span style="color: #008000">//!ping =&gt; pong</span>
+</code></pre>
+				<a href="#what-if-i-want-my-bot-to-do-cool-stuff" id="what-if-i-want-my-bot-to-do-cool-stuff" style="color: inherit; text-decoration: none;">
+					<h3>What if I want my bot to do cool stuff?</h3>
+				</a>
+				<pre><code class="language-ts"><span style="color: #AF00DB">import</span><span style="color: #000000"> { </span><span style="color: #001080">Bot</span><span style="color: #000000"> } </span><span style="color: #AF00DB">from</span><span style="color: #000000"> </span><span style="color: #A31515">&quot;discordjs-diy&quot;</span><span style="color: #000000">;</span>
+<span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1">bot</span><span style="color: #000000"> = </span><span style="color: #0000FF">new</span><span style="color: #000000"> </span><span style="color: #795E26">Bot</span><span style="color: #000000">(</span><span style="color: #A31515">&quot;&lt;your Discord API token&gt;&quot;</span><span style="color: #000000">, { </span><span style="color: #001080">prefix:</span><span style="color: #000000"> </span><span style="color: #A31515">&quot;?&quot;</span><span style="color: #000000"> });</span>
+<span style="color: #001080">bot</span><span style="color: #000000">.</span><span style="color: #795E26">registerAction</span><span style="color: #000000">(</span>
+<span style="color: #000000">  </span><span style="color: #A31515">&quot;rate&quot;</span><span style="color: #000000">,</span>
+<span style="color: #000000">  ({ </span><span style="color: #001080">args</span><span style="color: #000000"> }) </span><span style="color: #0000FF">=&gt;</span>
+<span style="color: #000000">    </span><span style="color: #A31515">`You want me to rate </span><span style="color: #0000FF">${</span><span style="color: #001080">args</span><span style="color: #0000FF">}</span><span style="color: #A31515">? Ok... </span><span style="color: #0000FF">${</span><span style="color: #267F99">Math</span><span style="color: #000000FF">.</span><span style="color: #795E26">floor</span><span style="color: #000000FF">(</span><span style="color: #267F99">Math</span><span style="color: #000000FF">.</span><span style="color: #795E26">random</span><span style="color: #000000FF">() </span><span style="color: #000000">*</span><span style="color: #000000FF"> </span><span style="color: #098658">10</span><span style="color: #000000FF">)</span><span style="color: #0000FF">}</span><span style="color: #A31515">/10`</span>
+<span style="color: #000000">); </span><span style="color: #008000">//?rate something =&gt; The bot replies!</span>
+</code></pre>
+				<pre><code class="language-ts"><span style="color: #AF00DB">import</span><span style="color: #000000"> { </span><span style="color: #001080">Bot</span><span style="color: #000000"> } </span><span style="color: #AF00DB">from</span><span style="color: #000000"> </span><span style="color: #A31515">&quot;discordjs-diy&quot;</span><span style="color: #000000">;</span>
+<span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1">bot</span><span style="color: #000000"> = </span><span style="color: #0000FF">new</span><span style="color: #000000"> </span><span style="color: #795E26">Bot</span><span style="color: #000000">(</span><span style="color: #A31515">&quot;&lt;your Discord API token&gt;&quot;</span><span style="color: #000000">, { </span><span style="color: #001080">prefix:</span><span style="color: #000000"> </span><span style="color: #A31515">&quot;*&quot;</span><span style="color: #000000"> });</span>
+<span style="color: #001080">bot</span><span style="color: #000000">.</span><span style="color: #795E26">registerAction</span><span style="color: #000000">(</span><span style="color: #A31515">&quot;reactAndReply&quot;</span><span style="color: #000000">, {</span>
+<span style="color: #000000">  </span><span style="color: #001080">response:</span><span style="color: #000000"> </span><span style="color: #A31515">&quot;Hello!&quot;</span><span style="color: #000000">,</span>
+<span style="color: #000000">  </span><span style="color: #795E26">reaction</span><span style="color: #001080">:</span><span style="color: #000000"> () </span><span style="color: #0000FF">=&gt;</span><span style="color: #000000"> </span><span style="color: #A31515">&quot;🤓&quot;</span><span style="color: #000000">,</span>
+<span style="color: #000000">}); </span><span style="color: #008000">//*reactAndReply =&gt; The bot can also react to messages and reply!</span>
+</code></pre>
+				<pre><code class="language-ts"><span style="color: #AF00DB">import</span><span style="color: #000000"> { </span><span style="color: #001080">Bot</span><span style="color: #000000"> } </span><span style="color: #AF00DB">from</span><span style="color: #000000"> </span><span style="color: #A31515">&quot;discordjs-diy&quot;</span><span style="color: #000000">;</span>
+<span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1">bot</span><span style="color: #000000"> = </span><span style="color: #0000FF">new</span><span style="color: #000000"> </span><span style="color: #795E26">Bot</span><span style="color: #000000">(</span><span style="color: #A31515">&quot;&lt;your Discord API token&gt;&quot;</span><span style="color: #000000">, { </span><span style="color: #001080">prefix:</span><span style="color: #000000"> </span><span style="color: #A31515">&quot;*&quot;</span><span style="color: #000000">, </span><span style="color: #001080">ignoreCaps</span><span style="color: #000000"> });</span>
+<span style="color: #001080">bot</span><span style="color: #000000">.</span><span style="color: #795E26">registerAction</span><span style="color: #000000">(</span><span style="color: #A31515">&quot;await&quot;</span><span style="color: #000000">, {</span>
+<span style="color: #000000">  </span><span style="color: #795E26">response</span><span style="color: #001080">:</span><span style="color: #000000"> </span><span style="color: #0000FF">async</span><span style="color: #000000"> ({ </span><span style="color: #001080">msg</span><span style="color: #000000"> }) </span><span style="color: #0000FF">=&gt;</span><span style="color: #000000"> </span><span style="color: #AF00DB">await</span><span style="color: #000000"> </span><span style="color: #795E26">waitForResponse</span><span style="color: #000000">(</span><span style="color: #001080">msg</span><span style="color: #000000">.</span><span style="color: #001080">author</span><span style="color: #000000">),</span>
+<span style="color: #000000">}); </span><span style="color: #008000">//*AWAIT =&gt; bot can ignore caps and use async/await!</span>
+</code></pre>
+				<a href="#updating-discord-presence" id="updating-discord-presence" style="color: inherit; text-decoration: none;">
+					<h3>Updating Discord presence</h3>
+				</a>
+				<p>The bot can also easily update presence information</p>
+				<pre><code class="language-ts"><span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1">bot</span><span style="color: #000000"> = </span><span style="color: #0000FF">new</span><span style="color: #000000"> </span><span style="color: #795E26">Bot</span><span style="color: #000000">(</span><span style="color: #A31515">&quot;&lt;you know the deal&gt;&quot;</span><span style="color: #000000">, { </span><span style="color: #001080">prefix:</span><span style="color: #000000"> </span><span style="color: #A31515">&quot;!&quot;</span><span style="color: #000000"> });</span>
+<span style="color: #001080">bot</span><span style="color: #000000">.</span><span style="color: #795E26">setPresence</span><span style="color: #000000">([</span><span style="color: #A31515">&quot;a game&quot;</span><span style="color: #000000">, </span><span style="color: #A31515">&quot;PLAYING&quot;</span><span style="color: #000000">]);</span>
+<span style="color: #008000">//or, in case you want it to change every 10 minutes</span>
+<span style="color: #001080">bot</span><span style="color: #000000">.</span><span style="color: #795E26">setPresence</span><span style="color: #000000">([</span>
+<span style="color: #000000">  [</span><span style="color: #A31515">&quot;a game&quot;</span><span style="color: #000000">, </span><span style="color: #A31515">&quot;PLAYING&quot;</span><span style="color: #000000">],</span>
+<span style="color: #000000">  [</span><span style="color: #A31515">&quot;a movie&quot;</span><span style="color: #000000">, </span><span style="color: #A31515">&quot;WATCHING&quot;</span><span style="color: #000000">],</span>
+<span style="color: #000000">]);</span>
+<span style="color: #008000">//you can also set your own time (in ms)</span>
+<span style="color: #001080">bot</span><span style="color: #000000">.</span><span style="color: #795E26">setPresence</span><span style="color: #000000">(</span>
+<span style="color: #000000">  [</span>
+<span style="color: #000000">    [</span><span style="color: #A31515">&quot;a game&quot;</span><span style="color: #000000">, </span><span style="color: #A31515">&quot;PLAYING&quot;</span><span style="color: #000000">],</span>
+<span style="color: #000000">    [</span><span style="color: #A31515">&quot;a movie&quot;</span><span style="color: #000000">, </span><span style="color: #A31515">&quot;WATCHING&quot;</span><span style="color: #000000">],</span>
+<span style="color: #000000">  ],</span>
+<span style="color: #000000">  </span><span style="color: #098658">5</span><span style="color: #000000"> * </span><span style="color: #098658">60</span><span style="color: #000000"> * </span><span style="color: #098658">1000</span>
+<span style="color: #000000">);</span>
+</code></pre>
+				<a href="#what-if-i-want-to-do-my-own-thing" id="what-if-i-want-to-do-my-own-thing" style="color: inherit; text-decoration: none;">
+					<h3>What if I want to do my own thing</h3>
+				</a>
+				<p>You can always access the normal client object from Discord.JS</p>
+				<pre><code class="language-ts"><span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1">bot</span><span style="color: #000000"> = </span><span style="color: #0000FF">new</span><span style="color: #000000"> </span><span style="color: #795E26">Bot</span><span style="color: #000000">(</span><span style="color: #A31515">&quot;&lt;you know the deal&gt;&quot;</span><span style="color: #000000">, { </span><span style="color: #001080">prefix:</span><span style="color: #000000"> </span><span style="color: #A31515">&quot;!&quot;</span><span style="color: #000000"> });</span>
+<span style="color: #001080">bot</span><span style="color: #000000">.</span><span style="color: #001080">client</span><span style="color: #000000">.</span><span style="color: #795E26">on</span><span style="color: #000000">(</span><span style="color: #A31515">&quot;&lt;some action&gt;&quot;</span><span style="color: #000000">, () </span><span style="color: #0000FF">=&gt;</span><span style="color: #000000"> </span><span style="color: #A31515">&quot;&lt;do something&gt;&quot;</span><span style="color: #000000">);</span>
+</code></pre>
+				<a href="#using-embeds" id="using-embeds" style="color: inherit; text-decoration: none;">
+					<h3>Using embeds</h3>
+				</a>
+				<p>Discordjs-diy tries to make using embeds a little easier. You first need to create an <code>Embed</code> object</p>
+				<pre><code class="language-ts"><span style="color: #AF00DB">import</span><span style="color: #000000"> { </span><span style="color: #001080">Embed</span><span style="color: #000000"> } </span><span style="color: #AF00DB">from</span><span style="color: #000000"> </span><span style="color: #A31515">&quot;discordjs-diy&quot;</span><span style="color: #000000">;</span>
+
+<span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1">embed</span><span style="color: #000000"> = </span><span style="color: #0000FF">new</span><span style="color: #000000"> </span><span style="color: #795E26">Embed</span><span style="color: #000000">({</span>
+<span style="color: #000000">  </span><span style="color: #008000">//you can customize the Embed here, all parameters are optional</span>
+<span style="color: #000000">  </span><span style="color: #001080">color:</span><span style="color: #000000"> </span><span style="color: #A31515">&quot;#0000FF&quot;</span><span style="color: #000000">, </span><span style="color: #008000">//blue</span>
+<span style="color: #000000">});</span>
+</code></pre>
+				<p>To use your embeds in your bot you can pass the object to your bot&#39;s object</p>
+				<pre><code class="language-ts"><span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1">embed</span><span style="color: #000000"> = </span><span style="color: #0000FF">new</span><span style="color: #000000"> </span><span style="color: #795E26">Embed</span><span style="color: #000000">({});</span>
+<span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1">bot</span><span style="color: #000000"> = </span><span style="color: #0000FF">new</span><span style="color: #000000"> </span><span style="color: #795E26">Bot</span><span style="color: #000000">(</span><span style="color: #A31515">&quot;&lt;token&gt;&quot;</span><span style="color: #000000">, { </span><span style="color: #001080">prefix:</span><span style="color: #000000"> </span><span style="color: #A31515">&quot;!&quot;</span><span style="color: #000000">, </span><span style="color: #001080">embed</span><span style="color: #000000"> });</span>
+<span style="color: #001080">bot</span><span style="color: #000000">.</span><span style="color: #795E26">registerAction</span><span style="color: #000000">(</span><span style="color: #A31515">&quot;test&quot;</span><span style="color: #000000">, ({ </span><span style="color: #001080">args</span><span style="color: #000000">, </span><span style="color: #001080">createEmbed</span><span style="color: #000000"> }) </span><span style="color: #0000FF">=&gt;</span>
+<span style="color: #000000">  </span><span style="color: #795E26">createEmbed</span><span style="color: #000000">({ </span><span style="color: #001080">desc:</span><span style="color: #000000"> </span><span style="color: #001080">args</span><span style="color: #000000"> })</span>
+<span style="color: #000000">);</span>
+<span style="color: #008000">//!test hello =&gt; embed containing hello as a description</span>
+</code></pre>
+				<p>Bots will usually use a collection of images to represent emotions, you can use them easily with the <code>embed.registerImage</code> method</p>
+				<pre><code class="language-ts"><span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1">embed</span><span style="color: #000000"> = </span><span style="color: #0000FF">new</span><span style="color: #000000"> </span><span style="color: #795E26">Embed</span><span style="color: #000000">({});</span>
+<span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1">bot</span><span style="color: #000000"> = </span><span style="color: #0000FF">new</span><span style="color: #000000"> </span><span style="color: #795E26">Bot</span><span style="color: #000000">(</span><span style="color: #A31515">&quot;&lt;token&gt;&quot;</span><span style="color: #000000">, { </span><span style="color: #001080">prefix:</span><span style="color: #000000"> </span><span style="color: #A31515">&quot;!&quot;</span><span style="color: #000000">, </span><span style="color: #001080">embed</span><span style="color: #000000"> });</span>
+<span style="color: #001080">embed</span><span style="color: #000000">.</span><span style="color: #795E26">registerImage</span><span style="color: #000000">(</span><span style="color: #A31515">&quot;happy&quot;</span><span style="color: #000000">, </span><span style="color: #A31515">&quot;&lt;url to image&gt;&quot;</span><span style="color: #000000">);</span>
+<span style="color: #001080">bot</span><span style="color: #000000">.</span><span style="color: #795E26">registerAction</span><span style="color: #000000">(</span><span style="color: #A31515">&quot;test&quot;</span><span style="color: #000000">, ({ </span><span style="color: #001080">args</span><span style="color: #000000">, </span><span style="color: #001080">createEmbed</span><span style="color: #000000"> }) </span><span style="color: #0000FF">=&gt;</span>
+<span style="color: #000000">  </span><span style="color: #795E26">createEmbed</span><span style="color: #000000">({ </span><span style="color: #001080">desc:</span><span style="color: #000000"> </span><span style="color: #001080">args</span><span style="color: #000000">, </span><span style="color: #001080">sideImage:</span><span style="color: #000000"> </span><span style="color: #A31515">&quot;happy&quot;</span><span style="color: #000000"> })</span>
+<span style="color: #000000">);</span>
+<span style="color: #008000">//!test hello =&gt; embed containing hello as a description and the image &quot;test&quot;</span>
+</code></pre>
+				<p>In case your bot requires it, you can set a custom format for the embed description and the footer</p>
+				<pre><code class="language-ts"><span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1">embed</span><span style="color: #000000"> = </span><span style="color: #0000FF">new</span><span style="color: #000000"> </span><span style="color: #795E26">Embed</span><span style="color: #000000">({</span>
+<span style="color: #000000">  </span><span style="color: #795E26">descTransform</span><span style="color: #001080">:</span><span style="color: #000000"> (</span><span style="color: #001080">desc</span><span style="color: #000000">: </span><span style="color: #267F99">string</span><span style="color: #000000">) </span><span style="color: #0000FF">=&gt;</span><span style="color: #000000"> </span><span style="color: #A31515">`</span><span style="color: #0000FF">${</span><span style="color: #001080">desc</span><span style="color: #0000FF">}</span><span style="color: #A31515">, hello!`</span><span style="color: #000000">, </span><span style="color: #008000">//hello =&gt; hello, hello!</span>
+<span style="color: #000000">  </span><span style="color: #795E26">refTransform</span><span style="color: #001080">:</span><span style="color: #000000"> (</span><span style="color: #001080">user</span><span style="color: #000000">: </span><span style="color: #267F99">User</span><span style="color: #000000">) </span><span style="color: #0000FF">=&gt;</span><span style="color: #000000"> [</span>
+<span style="color: #000000">    </span><span style="color: #A31515">`User: </span><span style="color: #0000FF">${</span><span style="color: #001080">user</span><span style="color: #000000FF">.</span><span style="color: #001080">username</span><span style="color: #0000FF">}</span><span style="color: #A31515">`</span><span style="color: #000000">,</span>
+<span style="color: #000000">    </span><span style="color: #001080">user</span><span style="color: #000000">.</span><span style="color: #795E26">avatarURL</span><span style="color: #000000">() ?? </span><span style="color: #0000FF">undefined</span><span style="color: #000000">,</span>
+<span style="color: #000000">  ],</span>
+<span style="color: #000000">});</span>
+<span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1">bot</span><span style="color: #000000"> = </span><span style="color: #0000FF">new</span><span style="color: #000000"> </span><span style="color: #795E26">Bot</span><span style="color: #000000">(</span><span style="color: #A31515">&quot;&lt;token&gt;&quot;</span><span style="color: #000000">, { </span><span style="color: #001080">prefix:</span><span style="color: #000000"> </span><span style="color: #A31515">&quot;!&quot;</span><span style="color: #000000">, </span><span style="color: #001080">embed</span><span style="color: #000000"> });</span>
+<span style="color: #001080">bot</span><span style="color: #000000">.</span><span style="color: #795E26">registerAction</span><span style="color: #000000">(</span><span style="color: #A31515">&quot;test&quot;</span><span style="color: #000000">, ({ </span><span style="color: #001080">msg</span><span style="color: #000000">, </span><span style="color: #001080">args</span><span style="color: #000000">, </span><span style="color: #001080">createEmbed</span><span style="color: #000000"> }) </span><span style="color: #0000FF">=&gt;</span>
+<span style="color: #000000">  </span><span style="color: #795E26">createEmbed</span><span style="color: #000000">({ </span><span style="color: #001080">desc:</span><span style="color: #000000"> </span><span style="color: #001080">args</span><span style="color: #000000">, </span><span style="color: #001080">reference:</span><span style="color: #000000"> </span><span style="color: #001080">msg</span><span style="color: #000000">.</span><span style="color: #001080">author</span><span style="color: #000000"> })</span>
+<span style="color: #000000">);</span>
+<span style="color: #008000">//!test hello =&gt; embed containing &quot;hello, hello!&quot; as a description and the footer containing &quot;User: &lt;name&gt;&quot;</span>
+</code></pre>
+				<p>Also your embeds can contain the avatar and name of the bot</p>
+				<pre><code class="language-ts"><span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1">embed</span><span style="color: #000000"> = </span><span style="color: #0000FF">new</span><span style="color: #000000"> </span><span style="color: #795E26">Embed</span><span style="color: #000000">({</span>
+<span style="color: #000000">  </span><span style="color: #001080">author:</span><span style="color: #000000"> </span><span style="color: #001080">bot</span><span style="color: #000000">.</span><span style="color: #001080">user</span><span style="color: #000000">,</span>
+<span style="color: #000000">});</span>
+<span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1">bot</span><span style="color: #000000"> = </span><span style="color: #0000FF">new</span><span style="color: #000000"> </span><span style="color: #795E26">Bot</span><span style="color: #000000">(</span><span style="color: #A31515">&quot;&lt;token&gt;&quot;</span><span style="color: #000000">, { </span><span style="color: #001080">prefix:</span><span style="color: #000000"> </span><span style="color: #A31515">&quot;!&quot;</span><span style="color: #000000">, </span><span style="color: #001080">embed</span><span style="color: #000000"> });</span>
+<span style="color: #001080">bot</span><span style="color: #000000">.</span><span style="color: #795E26">registerAction</span><span style="color: #000000">(</span><span style="color: #A31515">&quot;test&quot;</span><span style="color: #000000">, ({ </span><span style="color: #001080">args</span><span style="color: #000000">, </span><span style="color: #001080">createEmbed</span><span style="color: #000000"> }) </span><span style="color: #0000FF">=&gt;</span>
+<span style="color: #000000">  </span><span style="color: #795E26">createEmbed</span><span style="color: #000000">({ </span><span style="color: #001080">desc:</span><span style="color: #000000"> </span><span style="color: #001080">args</span><span style="color: #000000"> })</span>
+<span style="color: #000000">);</span>
+</code></pre>
+				<a href="#expecting-replies" id="expecting-replies" style="color: inherit; text-decoration: none;">
+					<h3>Expecting replies</h3>
+				</a>
+				<p>You can easily do a 2 part command, expecting a reply from the same user</p>
+				<p>For example, a simple conversation could go like</p>
+				<pre><code class="language-ts"><span style="color: #000000">(</span><span style="color: #001080">user</span><span style="color: #000000">) </span><span style="color: #0000FF">=&gt;</span><span style="color: #000000"> </span><span style="color: #A31515">&quot;!wakeMeUp&quot;</span><span style="color: #000000">;</span>
+<span style="color: #000000">(</span><span style="color: #001080">bot</span><span style="color: #000000">) </span><span style="color: #0000FF">=&gt;</span><span style="color: #000000"> </span><span style="color: #A31515">&quot;When should I wake you up?&quot;</span><span style="color: #000000">;</span>
+<span style="color: #000000">(</span><span style="color: #001080">user</span><span style="color: #000000">) </span><span style="color: #0000FF">=&gt;</span><span style="color: #000000"> </span><span style="color: #A31515">&quot;When September ends&quot;</span><span style="color: #000000">;</span>
+<span style="color: #000000">(</span><span style="color: #001080">bot</span><span style="color: #000000">) </span><span style="color: #0000FF">=&gt;</span><span style="color: #000000"> </span><span style="color: #A31515">&quot;Ok, I&#039;ll wake you up When September ends&quot;</span><span style="color: #000000">;</span>
+</code></pre>
+				<p>This can be easily achieved with the <code>expectReply</code> method the action toolkit provides</p>
+				<pre><code class="language-ts"><span style="color: #001080">bot</span><span style="color: #000000">.</span><span style="color: #795E26">registerAction</span><span style="color: #000000">(</span><span style="color: #A31515">&quot;wakeMeUp&quot;</span><span style="color: #000000">, </span><span style="color: #0000FF">async</span><span style="color: #000000"> ({ </span><span style="color: #001080">expectReply</span><span style="color: #000000"> }) </span><span style="color: #0000FF">=&gt;</span><span style="color: #000000"> {</span>
+<span style="color: #000000">  </span><span style="color: #008000">//built in Promise handling!</span>
+<span style="color: #000000">  </span><span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1">reply</span><span style="color: #000000"> = </span><span style="color: #AF00DB">await</span><span style="color: #000000"> </span><span style="color: #795E26">expectReply</span><span style="color: #000000">(</span><span style="color: #A31515">&quot;When should I wake you up?&quot;</span><span style="color: #000000">, </span><span style="color: #0000FF">true</span><span style="color: #000000">); </span><span style="color: #008000">//You can choose if the bot should delete this message or not by setting the second parameter</span>
+<span style="color: #000000">  </span><span style="color: #AF00DB">return</span><span style="color: #000000"> </span><span style="color: #A31515">`Ok, I&#039;ll wake you up </span><span style="color: #0000FF">${</span><span style="color: #001080">reply</span><span style="color: #000000FF">?.</span><span style="color: #001080">content</span><span style="color: #0000FF">}</span><span style="color: #A31515">`</span><span style="color: #000000">;</span>
+<span style="color: #000000">});</span>
+</code></pre>
+				<p>The <code>expectReply()</code> promise will resolve to <code>undefined</code> if there&#39;s a timeout</p>
+			</div>
+		</div>
+		<div class="col-4 col-menu menu-sticky-wrap menu-highlight">
+			<nav class="tsd-navigation primary">
+				<ul>
+					<li class=" ">
+						<a href="modules.html">Exports</a>
+					</li>
+				</ul>
+			</nav>
+			<nav class="tsd-navigation secondary menu-sticky">
+				<ul class="before-current">
+					<li class=" tsd-kind-class">
+						<a href="classes/bot.html" class="tsd-kind-icon">Bot</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="classes/embed.html" class="tsd-kind-icon">Embed</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/actionobject.html" class="tsd-kind-icon">Action<wbr>Object</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/actionparameters.html" class="tsd-kind-icon">Action<wbr>Parameters</a>
+					</li>
+					<li class=" tsd-kind-type-alias">
+						<a href="modules.html#action" class="tsd-kind-icon">Action</a>
+					</li>
+					<li class=" tsd-kind-type-alias">
+						<a href="modules.html#sendableemoji" class="tsd-kind-icon">Sendable<wbr>Emoji</a>
+					</li>
+					<li class=" tsd-kind-type-alias">
+						<a href="modules.html#sendablemessage" class="tsd-kind-icon">Sendable<wbr>Message</a>
+					</li>
+				</ul>
+			</nav>
+		</div>
+	</div>
+</div>
+<footer class="with-border-bottom">
+	<div class="container">
+		<h2>Legend</h2>
+		<div class="tsd-legend-group">
+			<ul class="tsd-legend">
+				<li class="tsd-kind-constructor tsd-parent-kind-class"><span class="tsd-kind-icon">Constructor</span></li>
+				<li class="tsd-kind-property tsd-parent-kind-class"><span class="tsd-kind-icon">Property</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-class"><span class="tsd-kind-icon">Method</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-property tsd-parent-kind-class tsd-is-private"><span class="tsd-kind-icon">Private property</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-private"><span class="tsd-kind-icon">Private method</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-property tsd-parent-kind-interface"><span class="tsd-kind-icon">Property</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-property tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited property</span></li>
+			</ul>
+		</div>
+	</div>
+</footer>
+<div class="container tsd-generator">
+	<p>Generated using <a href="https://typedoc.org/" target="_blank">TypeDoc</a></p>
+</div>
+<div class="overlay"></div>
+<script src="assets/js/main.js"></script>
+</body>
+</html>

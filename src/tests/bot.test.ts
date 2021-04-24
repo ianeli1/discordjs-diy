@@ -18,26 +18,6 @@ describe("bot constructor", () => {
   });
 });
 
-describe("setDefaultAction method", () => {
-  const bot = new Bot("test", { prefix: "!" });
-
-  test("passing only a function", () => {
-    const response = () => "hello";
-    bot.setDefaultAction(response);
-    expect(bot.defaultAction.response).toBe(response);
-  });
-
-  test("passing a whole action", () => {
-    const action: Omit<ActionObject, "trigger"> = {
-      reaction: jest.fn().mockReturnValue("e"),
-      response: jest.fn().mockReturnValue("hello"),
-    };
-    bot.setDefaultAction(action);
-    expect(bot.defaultAction.response).toBe(action.response);
-    expect(bot.defaultAction.reaction).toBe(action.reaction);
-  });
-});
-
 describe("registerAction method", () => {
   const bot = new Bot("test", { prefix: "!" });
 
@@ -45,7 +25,6 @@ describe("registerAction method", () => {
     const response = () => "hello";
     const triggerName = "test";
     expect(bot.registerAction(triggerName, response)).toBe(triggerName);
-    expect(bot.messageActions[triggerName].response).toBe(response);
   });
 
   test("passing a whole function", () => {
@@ -55,8 +34,6 @@ describe("registerAction method", () => {
     };
     const triggerName = "test";
     expect(bot.registerAction(triggerName, action)).toBe(triggerName);
-    expect(bot.messageActions[triggerName].response).toBe(action.response);
-    expect(bot.messageActions[triggerName].reaction).toBe(action.reaction);
   });
 
   test("using a regex as a trigger", () => {
@@ -65,9 +42,6 @@ describe("registerAction method", () => {
       response: "hello",
     };
     expect(() => bot.registerAction(trigger, action)).not.toThrowError();
-    expect(
-      bot.regexActions.find((x) => x.pattern === trigger && x.action === action)
-    ).not.toBe(-1);
   });
 });
 
@@ -78,26 +52,21 @@ describe("removeAction method", () => {
   bot.registerAction(triggerName, response);
 
   test("check response exists and remove it", () => {
-    expect(bot.messageActions[triggerName].response).toBe(response);
     expect(bot.removeAction(triggerName)).toBe(triggerName);
-    expect(bot.messageActions).not.toHaveProperty(triggerName);
   });
 
-  test("return null if doesn't exist", () => {
-    expect(bot.removeAction("what")).toBe(null);
+  test("return undefined if doesn't exist", () => {
+    expect(bot.removeAction("what1231231")).toBe(undefined);
   });
 
   test("remove regex action", () => {
     const trigger = /test/;
     bot.registerAction(trigger, "test");
     expect(bot.removeAction(trigger)).toBe(trigger);
-    expect(bot.regexActions.filter((x) => x.pattern === trigger).length).toBe(
-      0
-    );
   });
 
   test("don't do anything if doesn't exist, regex", () => {
-    expect(bot.removeAction(/hi/)).toBe(null);
+    expect(bot.removeAction(/hi/)).toBe(undefined);
   });
 });
 

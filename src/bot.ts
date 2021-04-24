@@ -2,6 +2,7 @@ import { ActivityType, Message } from "discord.js";
 import { executeAction } from "./action";
 import { BotBase } from "./base";
 import { Embed } from "./embed";
+import { CommandsHandler } from "./handler";
 import {
   ActionObject,
   ActionParameters,
@@ -17,25 +18,42 @@ interface BotOptions {
   embed?: Embed;
 }
 
-interface MessageActions {
-  [trigger: string]: ActionObject;
-}
-
+/**
+ * The action your bot will be executing on every trigger
+ * It can be:
+ *  - A function
+ *  - A function that returns a Promise
+ *  - A function that returns an embed
+ *  - A promise
+ *  - A string
+ *  - Standard Discordjs Message object
+ *  - An embed
+ *
+ * Note that it can be undefined or a function that returns undefined, but this will simply be ignored
+ */
 export type BotAction = ActionObject | ResponseAction;
 
+/**
+ * The Bot object, pass in a Discord API token and set the options according to your needs.
+ * Note that you're required to set either a prefix and/or a suffix
+ */
 export class Bot extends BotBase {
-  readonly messageActions: MessageActions = {};
-  readonly regexActions: {
-    pattern: RegExp | string[];
-    action: ActionObject;
-  }[] = [];
-  defaultAction: ActionObject;
-  errorAction: ActionObject;
+  private handler: CommandsHandler;
+  private errorAction: ActionObject;
+
+  /**The embed object used for creating embeds in your actions */
   readonly embed: Embed;
   private presenceInterval: NodeJS.Timeout;
+
+  /**The prefix used by your bot */
   readonly prefix: string | undefined;
+
+  /**The suffix used by your bot */
   readonly suffix: string | undefined;
+
+  /**The bot will automatically ignore caps on the trigger keyword if enabled */
   readonly ignoreCaps: boolean;
+
   constructor(token: string, options: BotOptions) {
     super(token);
     this.prefix = options.ignoreCaps
@@ -51,10 +69,18 @@ export class Bot extends BotBase {
       throw new Error(
         "You need to provide at least one of the following: prefix or suffix"
       );
-    this.defaultAction = {};
+    this.handler = new CommandsHandler();
     this.messageHandler = this.messageHandler.bind(this);
     this.client.on("message", this.messageHandler);
   }
+
+  private turnArrayToRegex(trigger: string[]): RegExp {
+    return new RegExp(
+      `(${trigger.join("|")})`,
+      this.ignoreCaps ? "i" : undefined
+    );
+  }
+
   private padAction(action: BotAction): ActionObject {
     if (
       typeof action === "object" &&
@@ -67,7 +93,7 @@ export class Bot extends BotBase {
       };
   }
   setDefaultAction(action: BotAction) {
-    this.defaultAction = this.padAction(action);
+    return this.handler.setDefaultAction(this.padAction(action));
   }
 
   setErrorAction(action: BotAction) {
@@ -75,56 +101,30 @@ export class Bot extends BotBase {
   }
 
   registerAction(trigger: string | string[] | RegExp, action: BotAction) {
-    if (typeof trigger === "string") {
-      this.messageActions[trigger] = this.padAction(action);
-    } else {
-      this.regexActions.push({
-        action: this.padAction(action),
-        pattern: trigger,
-      });
-    }
+    trigger =
+      this.ignoreCaps && typeof trigger === "string"
+        ? trigger.toLowerCase()
+        : trigger;
     report(`Created a new action, trigger: ${trigger}`);
-    return trigger;
+    return this.handler.setAction(
+      trigger instanceof Array ? this.turnArrayToRegex(trigger) : trigger,
+      this.padAction(action)
+    );
   }
 
   removeAction(trigger: string | RegExp | string[]) {
-    if (typeof trigger === "string") {
-      if (!(trigger in this.messageActions)) {
-        return null;
-      }
-      delete this.messageActions[
-        this.ignoreCaps ? trigger.toLocaleLowerCase() : trigger
-      ];
-    } else {
-      let key: number;
-      if (
-        (key = this.regexActions.map((x) => x.pattern).indexOf(trigger)) === -1
-      ) {
-        return null;
-      }
-      delete this.regexActions[key];
-    }
     report(`Removed an action, trigger: ${trigger}`);
-    return trigger;
+    return this.handler.removeAction(
+      trigger instanceof Array ? this.turnArrayToRegex(trigger) : trigger
+    );
   }
 
-  private findRegex(trigger: string) {
-    return this.regexActions.find(({ pattern }) => {
-      if (pattern instanceof Array) {
-        return pattern
-          .map((x) => (this.ignoreCaps ? x.toLowerCase() : x))
-          .includes(trigger);
-      }
-
-      return pattern.test(trigger);
-    })?.action;
-  }
-
-  createParams(msg: Message, args: string): ActionParameters {
+  createParams(msg: Message, args: string, trigger: string): ActionParameters {
     const expectReply: ActionParameters["expectReply"] = async (
       response,
       remove
     ) => {
+      if (!response) return;
       try {
         const reply = await msg.channel.send(await response);
         return (
@@ -143,24 +143,32 @@ export class Bot extends BotBase {
           `An error ocurred while expecting a reply from ${msg.author.tag}`,
           e
         );
-        return undefined;
+        return;
       }
+    };
+
+    const dm: ActionParameters["dm"] = async (message) => {
+      const channel = await msg.author.createDM();
+      return message !== undefined
+        ? await channel.send(await message)
+        : message;
     };
 
     return {
       createEmbed: this.embed.create,
+      trigger,
       msg,
       args,
       author: msg.author,
       channel: msg.channel,
       guild: msg.guild ?? undefined,
       expectReply,
+      dm,
     };
   }
 
   private async messageHandler(msg: Message) {
     const { content: rawContent } = msg;
-    //only react to messages with prefix or suffix
     if (!this.prefix && !this.suffix) throw new Error("NO PREFIX OR SUFFIX");
     if (msg.author === this.client.user) return;
 
@@ -191,17 +199,12 @@ export class Bot extends BotBase {
 
     const args = content.slice(trigger.length).trim();
 
-    const params = this.createParams(msg, args);
+    const params = this.createParams(msg, args, trigger);
+
+    const action = this.handler.findAction(trigger);
 
     try {
-      let action: ActionObject | undefined;
-      if (trigger in this.messageActions) {
-        await executeAction(this.client, params, this.messageActions[trigger]);
-      } else if ((action = this.findRegex(trigger))) {
-        await executeAction(this.client, params, action);
-      } else {
-        await executeAction(this.client, params, this.defaultAction);
-      }
+      await executeAction(this.client, params, action);
     } catch (e) {
       if (e.type && e.error) {
         const { error } = e as MessageError;
@@ -214,7 +217,7 @@ export class Bot extends BotBase {
         }
       } else {
         console.trace(
-          "Unknown error ocurred while tring to execute an action",
+          "[discordjs-diy] => Unknown error ocurred while tring to execute an action",
           e
         );
       }
