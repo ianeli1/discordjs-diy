@@ -7,6 +7,7 @@ jest.mock("../utility", () => ({
   handleEmoji: jest.fn().mockImplementation((_, x: string) => x),
 }));
 import { executeAction } from "../action";
+jest.useFakeTimers();
 //@ts-ignore
 Client.prototype.emojis = {
   cache: {
@@ -19,7 +20,7 @@ const fakeAction: ActionObject = {
   response: "test",
   reaction: "🤓",
 };
-const fakeMessage = ({
+const fakeMessage = {
   author: {
     tag: "cooltag",
   },
@@ -27,13 +28,13 @@ const fakeMessage = ({
   channel: {
     send: jest.fn(),
   },
-} as unknown) as Message;
+} as unknown as Message;
 
 executeAction(
   fakeClient,
   { msg: fakeMessage, args: "args" } as ActionParameters,
   fakeAction
-);
+).catch(console.trace);
 
 test("reports that an action has been executed and specifies the trigger", () => {
   expect(report).toHaveBeenCalled();
@@ -60,7 +61,7 @@ test("if action fails, to contain it", () => {
         fakeClient,
         { msg: fakeMessage, args: "args" } as ActionParameters,
         fakeAction
-      )
+      ).catch(console.trace)
   ).not.toThrowError();
 });
 
@@ -74,7 +75,7 @@ describe("reaction handling", () => {
       fakeClient,
       { msg: fakeMessage, args: "args" } as ActionParameters,
       fakeAction
-    );
+    ).catch(console.trace);
     expect(fakeAction.reaction).toHaveBeenCalledWith({
       msg: fakeMessage,
       args: "args",
@@ -92,6 +93,6 @@ describe("reaction handling", () => {
       fakeClient,
       { msg: fakeMessage, args: "args" } as ActionParameters,
       fakeAction
-    );
+    ).catch(console.trace);
   });
 });
