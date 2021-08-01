@@ -168,3 +168,36 @@ bot.registerAction("wakeMeUp", async ({ expectReply }) => {
 ```
 
 The `expectReply()` promise will resolve to `undefined` if there's a timeout
+
+### Middleware
+
+Discordjs-diy provides support for custom middleware.
+
+```ts
+interface MyCustomMW{
+  myMW: {
+    currentTime: number
+  }
+}
+
+const bot = new Bot("<token>", { prefix: "!", embed });
+function myMiddleware(params: ActionParameters): ActionParameters<MyCustomMW>{
+  return {
+    ...params,
+    middleware: {
+      ...params.middleware,
+      myMW: {
+        currentTime: Date.now()
+      }
+    }
+  }
+}
+bot.useMiddleware<MyCustomMW>(myMiddleware)
+bot.registerAction(({middleware}) => //now you can use middleware.myMW in every action execution)
+```
+
+### Session Middleware
+
+Discordjs-diy provides a solution for sessions.
+
+[Documentation is available here.](Session.md)

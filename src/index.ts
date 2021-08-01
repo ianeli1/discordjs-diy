@@ -7,3 +7,4 @@ export type {
   ActionParameters,
   ParametersMiddleWare,
 } from "./types";
+export { Session, SessionConfig, SessionMW } from "./session";
