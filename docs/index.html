@@ -62,10 +62,11 @@
 					<h1>Discord.js - DIY</h1>
 				</a>
 				<p>Easy to use, do-it-yourself Discord.js mini-framework</p>
+				<p>You can find <a href="https://ianeli1.github.io/discordjs-diy/">the full reference wiki here.</a></p>
 				<a href="#what-can-i-use-it-for" id="what-can-i-use-it-for" style="color: inherit; text-decoration: none;">
 					<h3>What can I use it for</h3>
 				</a>
-				<p>Simple Discord bots without much complex logic</p>
+				<p>Making Discord.JS bots when you&#39;re in a run. You can get started with only 2 lines! (incluiding the import)!</p>
 				<a href="#how-do-i-use-it" id="how-do-i-use-it" style="color: inherit; text-decoration: none;">
 					<h3>How do I use it</h3>
 				</a>
@@ -195,6 +196,36 @@
 <span style="color: #000000">});</span>
 </code></pre>
 				<p>The <code>expectReply()</code> promise will resolve to <code>undefined</code> if there&#39;s a timeout</p>
+				<a href="#middleware" id="middleware" style="color: inherit; text-decoration: none;">
+					<h3>Middleware</h3>
+				</a>
+				<p>Discordjs-diy provides support for custom middleware.</p>
+				<pre><code class="language-ts"><span style="color: #0000FF">interface</span><span style="color: #000000"> </span><span style="color: #267F99">MyCustomMW</span><span style="color: #000000">{</span>
+<span style="color: #000000">  </span><span style="color: #001080">myMW</span><span style="color: #000000">: {</span>
+<span style="color: #000000">    </span><span style="color: #001080">currentTime</span><span style="color: #000000">: </span><span style="color: #267F99">number</span>
+<span style="color: #000000">  }</span>
+<span style="color: #000000">}</span>
+
+<span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1">bot</span><span style="color: #000000"> = </span><span style="color: #0000FF">new</span><span style="color: #000000"> </span><span style="color: #795E26">Bot</span><span style="color: #000000">(</span><span style="color: #A31515">&quot;&lt;token&gt;&quot;</span><span style="color: #000000">, { </span><span style="color: #001080">prefix:</span><span style="color: #000000"> </span><span style="color: #A31515">&quot;!&quot;</span><span style="color: #000000">, </span><span style="color: #001080">embed</span><span style="color: #000000"> });</span>
+<span style="color: #0000FF">function</span><span style="color: #000000"> </span><span style="color: #795E26">myMiddleware</span><span style="color: #000000">(</span><span style="color: #001080">params</span><span style="color: #000000">: </span><span style="color: #267F99">ActionParameters</span><span style="color: #000000">): </span><span style="color: #267F99">ActionParameters</span><span style="color: #000000">&lt;</span><span style="color: #267F99">MyCustomMW</span><span style="color: #000000">&gt;{</span>
+<span style="color: #000000">  </span><span style="color: #AF00DB">return</span><span style="color: #000000"> {</span>
+<span style="color: #000000">    ...</span><span style="color: #001080">params</span><span style="color: #000000">,</span>
+<span style="color: #000000">    </span><span style="color: #001080">middleware:</span><span style="color: #000000"> {</span>
+<span style="color: #000000">      ...</span><span style="color: #001080">params</span><span style="color: #000000">.</span><span style="color: #001080">middleware</span><span style="color: #000000">,</span>
+<span style="color: #000000">      </span><span style="color: #001080">myMW:</span><span style="color: #000000"> {</span>
+<span style="color: #000000">        </span><span style="color: #001080">currentTime:</span><span style="color: #000000"> </span><span style="color: #267F99">Date</span><span style="color: #000000">.</span><span style="color: #795E26">now</span><span style="color: #000000">()</span>
+<span style="color: #000000">      }</span>
+<span style="color: #000000">    }</span>
+<span style="color: #000000">  }</span>
+<span style="color: #000000">}</span>
+<span style="color: #001080">bot</span><span style="color: #000000">.</span><span style="color: #795E26">useMiddleware</span><span style="color: #000000">&lt;</span><span style="color: #267F99">MyCustomMW</span><span style="color: #000000">&gt;(</span><span style="color: #001080">myMiddleware</span><span style="color: #000000">)</span>
+<span style="color: #001080">bot</span><span style="color: #000000">.</span><span style="color: #795E26">registerAction</span><span style="color: #000000">(({</span><span style="color: #001080">middleware</span><span style="color: #000000">}) </span><span style="color: #0000FF">=&gt;</span><span style="color: #000000"> </span><span style="color: #008000">//now you can use middleware.myMW in every action execution)</span>
+</code></pre>
+				<a href="#session-middleware" id="session-middleware" style="color: inherit; text-decoration: none;">
+					<h3>Session Middleware</h3>
+				</a>
+				<p>Discordjs-diy provides a solution for sessions.</p>
+				<p><a href="Session.md">Documentation is available here.</a></p>
 			</div>
 		</div>
 		<div class="col-4 col-menu menu-sticky-wrap menu-highlight">
@@ -216,17 +247,29 @@
 					<li class=" tsd-kind-interface">
 						<a href="interfaces/actionobject.html" class="tsd-kind-icon">Action<wbr>Object</a>
 					</li>
-					<li class=" tsd-kind-interface">
+					<li class=" tsd-kind-interface tsd-has-type-parameter">
 						<a href="interfaces/actionparameters.html" class="tsd-kind-icon">Action<wbr>Parameters</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/sessionconfig.html" class="tsd-kind-icon">Session<wbr>Config</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/sessionmw.html" class="tsd-kind-icon">SessionMW</a>
 					</li>
 					<li class=" tsd-kind-type-alias">
 						<a href="modules.html#action" class="tsd-kind-icon">Action</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-has-type-parameter">
+						<a href="modules.html#parametersmiddleware" class="tsd-kind-icon">Parameters<wbr>Middle<wbr>Ware</a>
 					</li>
 					<li class=" tsd-kind-type-alias">
 						<a href="modules.html#sendableemoji" class="tsd-kind-icon">Sendable<wbr>Emoji</a>
 					</li>
 					<li class=" tsd-kind-type-alias">
 						<a href="modules.html#sendablemessage" class="tsd-kind-icon">Sendable<wbr>Message</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#session" class="tsd-kind-icon">Session</a>
 					</li>
 				</ul>
 			</nav>

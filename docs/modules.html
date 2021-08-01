@@ -72,15 +72,24 @@
 							<h3>Interfaces</h3>
 							<ul class="tsd-index-list">
 								<li class="tsd-kind-interface"><a href="interfaces/actionobject.html" class="tsd-kind-icon">Action<wbr>Object</a></li>
-								<li class="tsd-kind-interface"><a href="interfaces/actionparameters.html" class="tsd-kind-icon">Action<wbr>Parameters</a></li>
+								<li class="tsd-kind-interface tsd-has-type-parameter"><a href="interfaces/actionparameters.html" class="tsd-kind-icon">Action<wbr>Parameters</a></li>
+								<li class="tsd-kind-interface"><a href="interfaces/sessionconfig.html" class="tsd-kind-icon">Session<wbr>Config</a></li>
+								<li class="tsd-kind-interface"><a href="interfaces/sessionmw.html" class="tsd-kind-icon">SessionMW</a></li>
 							</ul>
 						</section>
 						<section class="tsd-index-section ">
 							<h3>Type aliases</h3>
 							<ul class="tsd-index-list">
 								<li class="tsd-kind-type-alias"><a href="modules.html#action" class="tsd-kind-icon">Action</a></li>
+								<li class="tsd-kind-type-alias tsd-has-type-parameter"><a href="modules.html#parametersmiddleware" class="tsd-kind-icon">Parameters<wbr>Middle<wbr>Ware</a></li>
 								<li class="tsd-kind-type-alias"><a href="modules.html#sendableemoji" class="tsd-kind-icon">Sendable<wbr>Emoji</a></li>
 								<li class="tsd-kind-type-alias"><a href="modules.html#sendablemessage" class="tsd-kind-icon">Sendable<wbr>Message</a></li>
+							</ul>
+						</section>
+						<section class="tsd-index-section ">
+							<h3>Functions</h3>
+							<ul class="tsd-index-list">
+								<li class="tsd-kind-function"><a href="modules.html#session" class="tsd-kind-icon">Session</a></li>
 							</ul>
 						</section>
 					</div>
@@ -94,7 +103,7 @@
 					<div class="tsd-signature tsd-kind-icon">Action<span class="tsd-signature-symbol">:</span> <a href="interfaces/actionobject.html" class="tsd-signature-type" data-tsd-kind="Interface">ActionObject</a><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">ResponseAction</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/ianeli1/discordjs-diy/blob/ccc0150/src/bot.ts#L34">bot.ts:34</a></li>
+							<li>Defined in <a href="https://github.com/ianeli1/discordjs-diy/blob/4f7c4ee/src/bot.ts#L35">bot.ts:35</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -114,13 +123,50 @@
 						<p>Note that it can be undefined or a function that returns undefined, but this will simply be ignored</p>
 					</div>
 				</section>
+				<section class="tsd-panel tsd-member tsd-kind-type-alias tsd-has-type-parameter">
+					<a name="parametersmiddleware" class="tsd-anchor"></a>
+					<h3>Parameters<wbr>Middle<wbr>Ware</h3>
+					<div class="tsd-signature tsd-kind-icon">Parameters<wbr>Middle<wbr>Ware&lt;T&gt;<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">(</span>params<span class="tsd-signature-symbol">: </span><a href="interfaces/actionparameters.html" class="tsd-signature-type" data-tsd-kind="Interface">ActionParameters</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="interfaces/actionparameters.html" class="tsd-signature-type" data-tsd-kind="Interface">ActionParameters</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol"> | </span><a href="interfaces/actionparameters.html" class="tsd-signature-type" data-tsd-kind="Interface">ActionParameters</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">&gt;</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/ianeli1/discordjs-diy/blob/4f7c4ee/src/types.ts#L58">types.ts:58</a></li>
+						</ul>
+					</aside>
+					<h4 class="tsd-type-parameters-title">Type parameters</h4>
+					<ul class="tsd-type-parameters">
+						<li>
+							<h4>T<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">GenericObject</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">undefined</span> = <span class="tsd-signature-type">undefined</span></h4>
+						</li>
+					</ul>
+					<div class="tsd-type-declaration">
+						<h4>Type declaration</h4>
+						<ul class="tsd-parameters">
+							<li class="tsd-parameter-signature">
+								<ul class="tsd-signatures tsd-kind-type-literal tsd-parent-kind-type-alias">
+									<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">(</span>params<span class="tsd-signature-symbol">: </span><a href="interfaces/actionparameters.html" class="tsd-signature-type" data-tsd-kind="Interface">ActionParameters</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="interfaces/actionparameters.html" class="tsd-signature-type" data-tsd-kind="Interface">ActionParameters</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol"> | </span><a href="interfaces/actionparameters.html" class="tsd-signature-type" data-tsd-kind="Interface">ActionParameters</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">&gt;</span></li>
+								</ul>
+								<ul class="tsd-descriptions">
+									<li class="tsd-description">
+										<h4 class="tsd-parameters-title">Parameters</h4>
+										<ul class="tsd-parameters">
+											<li>
+												<h5>params: <a href="interfaces/actionparameters.html" class="tsd-signature-type" data-tsd-kind="Interface">ActionParameters</a></h5>
+											</li>
+										</ul>
+										<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="interfaces/actionparameters.html" class="tsd-signature-type" data-tsd-kind="Interface">ActionParameters</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol"> | </span><a href="interfaces/actionparameters.html" class="tsd-signature-type" data-tsd-kind="Interface">ActionParameters</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">&gt;</span></h4>
+									</li>
+								</ul>
+							</li>
+						</ul>
+					</div>
+				</section>
 				<section class="tsd-panel tsd-member tsd-kind-type-alias">
 					<a name="sendableemoji" class="tsd-anchor"></a>
 					<h3>Sendable<wbr>Emoji</h3>
 					<div class="tsd-signature tsd-kind-icon">Sendable<wbr>Emoji<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">EmojiResolvable</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">EmojiResolvable</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">undefined</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/ianeli1/discordjs-diy/blob/ccc0150/src/types.ts#L58">types.ts:58</a></li>
+							<li>Defined in <a href="https://github.com/ianeli1/discordjs-diy/blob/4f7c4ee/src/types.ts#L72">types.ts:72</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -130,9 +176,35 @@
 					<div class="tsd-signature tsd-kind-icon">Sendable<wbr>Message<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">MessageEmbed</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-symbol">(</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">MessageEmbed</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">MessageEmbed</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-symbol">(</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">MessageEmbed</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">undefined</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/ianeli1/discordjs-diy/blob/ccc0150/src/types.ts#L50">types.ts:50</a></li>
+							<li>Defined in <a href="https://github.com/ianeli1/discordjs-diy/blob/4f7c4ee/src/types.ts#L64">types.ts:64</a></li>
 						</ul>
 					</aside>
+				</section>
+			</section>
+			<section class="tsd-panel-group tsd-member-group ">
+				<h2>Functions</h2>
+				<section class="tsd-panel tsd-member tsd-kind-function">
+					<a name="session" class="tsd-anchor"></a>
+					<h3>Session</h3>
+					<ul class="tsd-signatures tsd-kind-function">
+						<li class="tsd-signature tsd-kind-icon">Session<span class="tsd-signature-symbol">(</span>__namedParameters<span class="tsd-signature-symbol">: </span><a href="interfaces/sessionconfig.html" class="tsd-signature-type" data-tsd-kind="Interface">SessionConfig</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="modules.html#parametersmiddleware" class="tsd-signature-type" data-tsd-kind="Type alias">ParametersMiddleWare</a><span class="tsd-signature-symbol">&lt;</span><a href="interfaces/sessionmw.html" class="tsd-signature-type" data-tsd-kind="Interface">SessionMW</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/ianeli1/discordjs-diy/blob/4f7c4ee/src/session/index.ts#L26">session/index.ts:26</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>__namedParameters: <a href="interfaces/sessionconfig.html" class="tsd-signature-type" data-tsd-kind="Interface">SessionConfig</a></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="modules.html#parametersmiddleware" class="tsd-signature-type" data-tsd-kind="Type alias">ParametersMiddleWare</a><span class="tsd-signature-symbol">&lt;</span><a href="interfaces/sessionmw.html" class="tsd-signature-type" data-tsd-kind="Interface">SessionMW</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">&gt;</span></h4>
+						</li>
+					</ul>
 				</section>
 			</section>
 		</div>
@@ -155,17 +227,29 @@
 					<li class=" tsd-kind-interface">
 						<a href="interfaces/actionobject.html" class="tsd-kind-icon">Action<wbr>Object</a>
 					</li>
-					<li class=" tsd-kind-interface">
+					<li class=" tsd-kind-interface tsd-has-type-parameter">
 						<a href="interfaces/actionparameters.html" class="tsd-kind-icon">Action<wbr>Parameters</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/sessionconfig.html" class="tsd-kind-icon">Session<wbr>Config</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/sessionmw.html" class="tsd-kind-icon">SessionMW</a>
 					</li>
 					<li class=" tsd-kind-type-alias">
 						<a href="modules.html#action" class="tsd-kind-icon">Action</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-has-type-parameter">
+						<a href="modules.html#parametersmiddleware" class="tsd-kind-icon">Parameters<wbr>Middle<wbr>Ware</a>
 					</li>
 					<li class=" tsd-kind-type-alias">
 						<a href="modules.html#sendableemoji" class="tsd-kind-icon">Sendable<wbr>Emoji</a>
 					</li>
 					<li class=" tsd-kind-type-alias">
 						<a href="modules.html#sendablemessage" class="tsd-kind-icon">Sendable<wbr>Message</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#session" class="tsd-kind-icon">Session</a>
 					</li>
 				</ul>
 			</nav>

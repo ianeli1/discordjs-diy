@@ -104,6 +104,7 @@
 								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-private"><a href="bot.html#erroraction" class="tsd-kind-icon">error<wbr>Action</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-private"><a href="bot.html#handler" class="tsd-kind-icon">handler</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-class"><a href="bot.html#ignorecaps" class="tsd-kind-icon">ignore<wbr>Caps</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-private"><a href="bot.html#middlewarearray" class="tsd-kind-icon">middleware<wbr>Array</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-class"><a href="bot.html#prefix" class="tsd-kind-icon">prefix</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-private"><a href="bot.html#presenceinterval" class="tsd-kind-icon">presence<wbr>Interval</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-class"><a href="bot.html#suffix" class="tsd-kind-icon">suffix</a></li>
@@ -121,6 +122,7 @@
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="bot.html#seterroraction" class="tsd-kind-icon">set<wbr>Error<wbr>Action</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="bot.html#setpresence" class="tsd-kind-icon">set<wbr>Presence</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-private"><a href="bot.html#turnarraytoregex" class="tsd-kind-icon">turn<wbr>Array<wbr>ToRegex</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter"><a href="bot.html#usemiddleware" class="tsd-kind-icon">use<wbr>Middleware</a></li>
 							</ul>
 						</section>
 					</div>
@@ -139,7 +141,7 @@
 							<aside class="tsd-sources">
 								<p>Overrides BotBase.constructor</p>
 								<ul>
-									<li>Defined in <a href="https://github.com/ianeli1/discordjs-diy/blob/ccc0150/src/bot.ts#L55">bot.ts:55</a></li>
+									<li>Defined in <a href="https://github.com/ianeli1/discordjs-diy/blob/4f7c4ee/src/bot.ts#L58">bot.ts:58</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -165,7 +167,7 @@
 					<aside class="tsd-sources">
 						<p>Inherited from BotBase.client</p>
 						<ul>
-							<li>Defined in <a href="https://github.com/ianeli1/discordjs-diy/blob/ccc0150/src/base.ts#L8">base.ts:8</a></li>
+							<li>Defined in <a href="https://github.com/ianeli1/discordjs-diy/blob/4f7c4ee/src/base.ts#L8">base.ts:8</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -180,7 +182,7 @@
 					<div class="tsd-signature tsd-kind-icon">embed<span class="tsd-signature-symbol">:</span> <a href="embed.html" class="tsd-signature-type" data-tsd-kind="Class">Embed</a></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/ianeli1/discordjs-diy/blob/ccc0150/src/bot.ts#L45">bot.ts:45</a></li>
+							<li>Defined in <a href="https://github.com/ianeli1/discordjs-diy/blob/4f7c4ee/src/bot.ts#L46">bot.ts:46</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -195,7 +197,7 @@
 					<div class="tsd-signature tsd-kind-icon">error<wbr>Action<span class="tsd-signature-symbol">:</span> <a href="../interfaces/actionobject.html" class="tsd-signature-type" data-tsd-kind="Interface">ActionObject</a></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/ianeli1/discordjs-diy/blob/ccc0150/src/bot.ts#L42">bot.ts:42</a></li>
+							<li>Defined in <a href="https://github.com/ianeli1/discordjs-diy/blob/4f7c4ee/src/bot.ts#L43">bot.ts:43</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -205,7 +207,7 @@
 					<div class="tsd-signature tsd-kind-icon">handler<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">CommandsHandler</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/ianeli1/discordjs-diy/blob/ccc0150/src/bot.ts#L41">bot.ts:41</a></li>
+							<li>Defined in <a href="https://github.com/ianeli1/discordjs-diy/blob/4f7c4ee/src/bot.ts#L42">bot.ts:42</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -215,7 +217,7 @@
 					<div class="tsd-signature tsd-kind-icon">ignore<wbr>Caps<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/ianeli1/discordjs-diy/blob/ccc0150/src/bot.ts#L55">bot.ts:55</a></li>
+							<li>Defined in <a href="https://github.com/ianeli1/discordjs-diy/blob/4f7c4ee/src/bot.ts#L56">bot.ts:56</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -224,13 +226,23 @@
 						</div>
 					</div>
 				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-private">
+					<a name="middlewarearray" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagPrivate">Private</span> middleware<wbr>Array</h3>
+					<div class="tsd-signature tsd-kind-icon">middleware<wbr>Array<span class="tsd-signature-symbol">:</span> <a href="../modules.html#parametersmiddleware" class="tsd-signature-type" data-tsd-kind="Type alias">ParametersMiddleWare</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol"> = []</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/ianeli1/discordjs-diy/blob/4f7c4ee/src/bot.ts#L58">bot.ts:58</a></li>
+						</ul>
+					</aside>
+				</section>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
 					<a name="prefix" class="tsd-anchor"></a>
 					<h3><span class="tsd-flag ts-flagReadonly">Readonly</span> prefix</h3>
 					<div class="tsd-signature tsd-kind-icon">prefix<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/ianeli1/discordjs-diy/blob/ccc0150/src/bot.ts#L49">bot.ts:49</a></li>
+							<li>Defined in <a href="https://github.com/ianeli1/discordjs-diy/blob/4f7c4ee/src/bot.ts#L50">bot.ts:50</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -245,7 +257,7 @@
 					<div class="tsd-signature tsd-kind-icon">presence<wbr>Interval<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">Timeout</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/ianeli1/discordjs-diy/blob/ccc0150/src/bot.ts#L46">bot.ts:46</a></li>
+							<li>Defined in <a href="https://github.com/ianeli1/discordjs-diy/blob/4f7c4ee/src/bot.ts#L47">bot.ts:47</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -255,7 +267,7 @@
 					<div class="tsd-signature tsd-kind-icon">suffix<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/ianeli1/discordjs-diy/blob/ccc0150/src/bot.ts#L52">bot.ts:52</a></li>
+							<li>Defined in <a href="https://github.com/ianeli1/discordjs-diy/blob/4f7c4ee/src/bot.ts#L53">bot.ts:53</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -271,13 +283,13 @@
 					<a name="createparams" class="tsd-anchor"></a>
 					<h3>create<wbr>Params</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">create<wbr>Params<span class="tsd-signature-symbol">(</span>msg<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Message</span>, args<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, trigger<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../interfaces/actionparameters.html" class="tsd-signature-type" data-tsd-kind="Interface">ActionParameters</a></li>
+						<li class="tsd-signature tsd-kind-icon">create<wbr>Params<span class="tsd-signature-symbol">(</span>msg<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Message</span>, args<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, trigger<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/actionparameters.html" class="tsd-signature-type" data-tsd-kind="Interface">ActionParameters</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/ianeli1/discordjs-diy/blob/ccc0150/src/bot.ts#L122">bot.ts:122</a></li>
+									<li>Defined in <a href="https://github.com/ianeli1/discordjs-diy/blob/4f7c4ee/src/bot.ts#L129">bot.ts:129</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -292,7 +304,7 @@
 									<h5>trigger: <span class="tsd-signature-type">string</span></h5>
 								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <a href="../interfaces/actionparameters.html" class="tsd-signature-type" data-tsd-kind="Interface">ActionParameters</a></h4>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/actionparameters.html" class="tsd-signature-type" data-tsd-kind="Interface">ActionParameters</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">&gt;</span></h4>
 						</li>
 					</ul>
 				</section>
@@ -306,7 +318,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/ianeli1/discordjs-diy/blob/ccc0150/src/bot.ts#L170">bot.ts:170</a></li>
+									<li>Defined in <a href="https://github.com/ianeli1/discordjs-diy/blob/4f7c4ee/src/bot.ts#L190">bot.ts:190</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -329,7 +341,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/ianeli1/discordjs-diy/blob/ccc0150/src/bot.ts#L84">bot.ts:84</a></li>
+									<li>Defined in <a href="https://github.com/ianeli1/discordjs-diy/blob/4f7c4ee/src/bot.ts#L91">bot.ts:91</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -352,7 +364,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/ianeli1/discordjs-diy/blob/ccc0150/src/bot.ts#L103">bot.ts:103</a></li>
+									<li>Defined in <a href="https://github.com/ianeli1/discordjs-diy/blob/4f7c4ee/src/bot.ts#L110">bot.ts:110</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -378,7 +390,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/ianeli1/discordjs-diy/blob/ccc0150/src/bot.ts#L115">bot.ts:115</a></li>
+									<li>Defined in <a href="https://github.com/ianeli1/discordjs-diy/blob/4f7c4ee/src/bot.ts#L122">bot.ts:122</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -401,7 +413,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/ianeli1/discordjs-diy/blob/ccc0150/src/bot.ts#L95">bot.ts:95</a></li>
+									<li>Defined in <a href="https://github.com/ianeli1/discordjs-diy/blob/4f7c4ee/src/bot.ts#L102">bot.ts:102</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -424,7 +436,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/ianeli1/discordjs-diy/blob/ccc0150/src/bot.ts#L99">bot.ts:99</a></li>
+									<li>Defined in <a href="https://github.com/ianeli1/discordjs-diy/blob/4f7c4ee/src/bot.ts#L106">bot.ts:106</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -447,7 +459,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/ianeli1/discordjs-diy/blob/ccc0150/src/bot.ts#L227">bot.ts:227</a></li>
+									<li>Defined in <a href="https://github.com/ianeli1/discordjs-diy/blob/4f7c4ee/src/bot.ts#L247">bot.ts:247</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -473,7 +485,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/ianeli1/discordjs-diy/blob/ccc0150/src/bot.ts#L77">bot.ts:77</a></li>
+									<li>Defined in <a href="https://github.com/ianeli1/discordjs-diy/blob/4f7c4ee/src/bot.ts#L84">bot.ts:84</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -483,6 +495,35 @@
 								</li>
 							</ul>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">RegExp</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter">
+					<a name="usemiddleware" class="tsd-anchor"></a>
+					<h3>use<wbr>Middleware</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter">
+						<li class="tsd-signature tsd-kind-icon">use<wbr>Middleware&lt;T&gt;<span class="tsd-signature-symbol">(</span>middleware<span class="tsd-signature-symbol">: </span><a href="../modules.html#parametersmiddleware" class="tsd-signature-type" data-tsd-kind="Type alias">ParametersMiddleWare</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">boolean</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/ianeli1/discordjs-diy/blob/4f7c4ee/src/bot.ts#L80">bot.ts:80</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-type-parameters-title">Type parameters</h4>
+							<ul class="tsd-type-parameters">
+								<li>
+									<h4>T</h4>
+								</li>
+							</ul>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>middleware: <a href="../modules.html#parametersmiddleware" class="tsd-signature-type" data-tsd-kind="Type alias">ParametersMiddleWare</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">&gt;</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4>
 						</li>
 					</ul>
 				</section>
@@ -521,6 +562,9 @@
 							<li class=" tsd-kind-property tsd-parent-kind-class">
 								<a href="bot.html#ignorecaps" class="tsd-kind-icon">ignore<wbr>Caps</a>
 							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-private">
+								<a href="bot.html#middlewarearray" class="tsd-kind-icon">middleware<wbr>Array</a>
+							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-class">
 								<a href="bot.html#prefix" class="tsd-kind-icon">prefix</a>
 							</li>
@@ -557,6 +601,9 @@
 							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-private">
 								<a href="bot.html#turnarraytoregex" class="tsd-kind-icon">turn<wbr>Array<wbr>ToRegex</a>
 							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter">
+								<a href="bot.html#usemiddleware" class="tsd-kind-icon">use<wbr>Middleware</a>
+							</li>
 						</ul>
 					</li>
 				</ul>
@@ -567,17 +614,29 @@
 					<li class=" tsd-kind-interface">
 						<a href="../interfaces/actionobject.html" class="tsd-kind-icon">Action<wbr>Object</a>
 					</li>
-					<li class=" tsd-kind-interface">
+					<li class=" tsd-kind-interface tsd-has-type-parameter">
 						<a href="../interfaces/actionparameters.html" class="tsd-kind-icon">Action<wbr>Parameters</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="../interfaces/sessionconfig.html" class="tsd-kind-icon">Session<wbr>Config</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="../interfaces/sessionmw.html" class="tsd-kind-icon">SessionMW</a>
 					</li>
 					<li class=" tsd-kind-type-alias">
 						<a href="../modules.html#action" class="tsd-kind-icon">Action</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-has-type-parameter">
+						<a href="../modules.html#parametersmiddleware" class="tsd-kind-icon">Parameters<wbr>Middle<wbr>Ware</a>
 					</li>
 					<li class=" tsd-kind-type-alias">
 						<a href="../modules.html#sendableemoji" class="tsd-kind-icon">Sendable<wbr>Emoji</a>
 					</li>
 					<li class=" tsd-kind-type-alias">
 						<a href="../modules.html#sendablemessage" class="tsd-kind-icon">Sendable<wbr>Message</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="../modules.html#session" class="tsd-kind-icon">Session</a>
 					</li>
 				</ul>
 			</nav>

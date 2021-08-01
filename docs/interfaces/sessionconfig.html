@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>ActionObject | discordjs-diy</title>
+	<title>SessionConfig | discordjs-diy</title>
 	<meta name="description" content="Documentation for discordjs-diy">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="../assets/css/main.css">
@@ -55,10 +55,10 @@
 					<a href="../modules.html">discordjs-diy</a>
 				</li>
 				<li>
-					<a href="actionobject.html">ActionObject</a>
+					<a href="sessionconfig.html">SessionConfig</a>
 				</li>
 			</ul>
-			<h1>Interface ActionObject</h1>
+			<h1>Interface SessionConfig</h1>
 		</div>
 	</div>
 </header>
@@ -69,7 +69,7 @@
 				<h3>Hierarchy</h3>
 				<ul class="tsd-hierarchy">
 					<li>
-						<span class="target">ActionObject</span>
+						<span class="target">SessionConfig</span>
 					</li>
 				</ul>
 			</section>
@@ -80,9 +80,7 @@
 						<section class="tsd-index-section ">
 							<h3>Properties</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="actionobject.html#onerror" class="tsd-kind-icon">on<wbr>Error</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="actionobject.html#reaction" class="tsd-kind-icon">reaction</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="actionobject.html#response" class="tsd-kind-icon">response</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="sessionconfig.html#uri" class="tsd-kind-icon">uri</a></li>
 							</ul>
 						</section>
 					</div>
@@ -91,34 +89,19 @@
 			<section class="tsd-panel-group tsd-member-group ">
 				<h2>Properties</h2>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="onerror" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagOptional">Optional</span> on<wbr>Error</h3>
-					<div class="tsd-signature tsd-kind-icon">on<wbr>Error<span class="tsd-signature-symbol">:</span> <a href="actionobject.html" class="tsd-signature-type" data-tsd-kind="Interface">ActionObject</a></div>
+					<a name="uri" class="tsd-anchor"></a>
+					<h3>uri</h3>
+					<div class="tsd-signature tsd-kind-icon">uri<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/ianeli1/discordjs-diy/blob/4f7c4ee/src/types.ts#L89">types.ts:89</a></li>
+							<li>Defined in <a href="https://github.com/ianeli1/discordjs-diy/blob/4f7c4ee/src/session/index.ts#L21">session/index.ts:21</a></li>
 						</ul>
 					</aside>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="reaction" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagOptional">Optional</span> reaction</h3>
-					<div class="tsd-signature tsd-kind-icon">reaction<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">ReactionAction</span></div>
-					<aside class="tsd-sources">
-						<ul>
-							<li>Defined in <a href="https://github.com/ianeli1/discordjs-diy/blob/4f7c4ee/src/types.ts#L88">types.ts:88</a></li>
-						</ul>
-					</aside>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="response" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagOptional">Optional</span> response</h3>
-					<div class="tsd-signature tsd-kind-icon">response<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">ResponseAction</span></div>
-					<aside class="tsd-sources">
-						<ul>
-							<li>Defined in <a href="https://github.com/ianeli1/discordjs-diy/blob/4f7c4ee/src/types.ts#L87">types.ts:87</a></li>
-						</ul>
-					</aside>
+					<div class="tsd-comment tsd-typography">
+						<div class="lead">
+							<p>MongoDB connection string</p>
+						</div>
+					</div>
 				</section>
 			</section>
 		</div>
@@ -138,30 +121,24 @@
 					<li class=" tsd-kind-class">
 						<a href="../classes/embed.html" class="tsd-kind-icon">Embed</a>
 					</li>
+					<li class=" tsd-kind-interface">
+						<a href="actionobject.html" class="tsd-kind-icon">Action<wbr>Object</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-has-type-parameter">
+						<a href="actionparameters.html" class="tsd-kind-icon">Action<wbr>Parameters</a>
+					</li>
 				</ul>
 				<ul class="current">
 					<li class="current tsd-kind-interface">
-						<a href="actionobject.html" class="tsd-kind-icon">Action<wbr>Object</a>
+						<a href="sessionconfig.html" class="tsd-kind-icon">Session<wbr>Config</a>
 						<ul>
 							<li class=" tsd-kind-property tsd-parent-kind-interface">
-								<a href="actionobject.html#onerror" class="tsd-kind-icon">on<wbr>Error</a>
-							</li>
-							<li class=" tsd-kind-property tsd-parent-kind-interface">
-								<a href="actionobject.html#reaction" class="tsd-kind-icon">reaction</a>
-							</li>
-							<li class=" tsd-kind-property tsd-parent-kind-interface">
-								<a href="actionobject.html#response" class="tsd-kind-icon">response</a>
+								<a href="sessionconfig.html#uri" class="tsd-kind-icon">uri</a>
 							</li>
 						</ul>
 					</li>
 				</ul>
 				<ul class="after-current">
-					<li class=" tsd-kind-interface tsd-has-type-parameter">
-						<a href="actionparameters.html" class="tsd-kind-icon">Action<wbr>Parameters</a>
-					</li>
-					<li class=" tsd-kind-interface">
-						<a href="sessionconfig.html" class="tsd-kind-icon">Session<wbr>Config</a>
-					</li>
 					<li class=" tsd-kind-interface">
 						<a href="sessionmw.html" class="tsd-kind-icon">SessionMW</a>
 					</li>
