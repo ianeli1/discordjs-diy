@@ -8,8 +8,14 @@ import {
 } from "discord.js";
 import { Embed } from ".";
 
+interface GenericObject {
+  [name: string]: any;
+}
+
 /**Object passed to the action functions on every trigger */
-export interface ActionParameters {
+export interface ActionParameters<
+  MW extends GenericObject | undefined = undefined
+> {
   /**Arguments from the command executed */
   args: string;
   /**Keyword used to trigger the command */
@@ -45,7 +51,15 @@ export interface ActionParameters {
 
   /**Sends a DM to the author of the message, resolves to undefined if an error occurs */
   dm: (msg: SendableMessage) => Promise<Message | undefined>;
+
+  middleware?: MW;
 }
+
+export type ParametersMiddleWare<
+  T extends GenericObject | undefined = undefined
+> = (
+  params: ActionParameters
+) => Promise<ActionParameters<T>> | ActionParameters<T>;
 
 export type SendableMessage =
   | string

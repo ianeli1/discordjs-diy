@@ -8,6 +8,7 @@ import {
   ActionParameters,
   MessageError,
   ResponseAction,
+  ParametersMiddleWare,
 } from "./types";
 import { pick, report } from "./utility";
 
@@ -54,6 +55,8 @@ export class Bot extends BotBase {
   /**The bot will automatically ignore caps on the trigger keyword if enabled */
   readonly ignoreCaps: boolean;
 
+  private middlewareArray: ParametersMiddleWare<any>[] = [];
+
   constructor(token: string, options: BotOptions) {
     super(token);
     this.prefix = options.ignoreCaps
@@ -72,6 +75,10 @@ export class Bot extends BotBase {
     this.handler = new CommandsHandler();
     this.messageHandler = this.messageHandler.bind(this);
     this.client.on("message", this.messageHandler);
+  }
+
+  useMiddleware<T>(middleware: ParametersMiddleWare<T>) {
+    return !!this.middlewareArray.push(middleware);
   }
 
   private turnArrayToRegex(trigger: string[]): RegExp {
@@ -119,7 +126,11 @@ export class Bot extends BotBase {
     );
   }
 
-  createParams(msg: Message, args: string, trigger: string): ActionParameters {
+  async createParams(
+    msg: Message,
+    args: string,
+    trigger: string
+  ): Promise<ActionParameters> {
     const expectReply: ActionParameters["expectReply"] = async (
       response,
       remove
@@ -154,7 +165,7 @@ export class Bot extends BotBase {
         : message;
     };
 
-    return {
+    const vanillaParams: ActionParameters = {
       createEmbed: this.embed.create,
       trigger,
       msg,
@@ -164,7 +175,16 @@ export class Bot extends BotBase {
       guild: msg.guild ?? undefined,
       expectReply,
       dm,
+      middleware: undefined,
     };
+
+    let moddedParams: ActionParameters = vanillaParams;
+
+    for (const middleware of this.middlewareArray) {
+      moddedParams = await middleware(moddedParams);
+    }
+
+    return moddedParams;
   }
 
   private async messageHandler(msg: Message) {
@@ -199,7 +219,7 @@ export class Bot extends BotBase {
 
     const args = content.slice(trigger.length).trim();
 
-    const params = this.createParams(msg, args, trigger);
+    const params = await this.createParams(msg, args, trigger);
 
     const action = this.handler.findAction(trigger);
 

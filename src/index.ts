@@ -5,4 +5,5 @@ export type {
   SendableEmoji,
   SendableMessage,
   ActionParameters,
+  ParametersMiddleWare,
 } from "./types";
