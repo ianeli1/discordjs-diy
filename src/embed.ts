@@ -1,4 +1,10 @@
-import { MessageEmbed, User } from "discord.js";
+import {
+  ColorResolvable,
+  MessageAttachment,
+  MessageEmbed,
+  User,
+} from "discord.js";
+import { SendableMessage } from "src";
 
 interface EmbedOptions {
   title?: string;
@@ -21,14 +27,14 @@ interface EmbedOptions {
 }
 
 interface EmbedSettings {
-  color?: string;
+  color?: ColorResolvable;
   descTransform?: (desc: string) => string;
   refTransform?: (user: User) => [string, string | undefined];
   author?: User;
 }
 
 export class Embed {
-  color: string;
+  color: ColorResolvable;
   descTransform: NonNullable<EmbedSettings["descTransform"]>;
 
   /**
@@ -50,10 +56,12 @@ export class Embed {
     this.create = this.create.bind(this);
   }
 
-  create(options: EmbedOptions) {
+  create(options: EmbedOptions): SendableMessage {
     let embed = new MessageEmbed()
       .setDescription(this.descTransform(options.desc ?? ""))
       .setColor(this.color);
+
+    const attachments = [];
 
     if (options.fields instanceof Array) {
       embed = embed.addFields(
@@ -97,11 +105,13 @@ export class Embed {
     }
 
     if (options.localImage) {
-      embed = embed
-        .attachFiles([options.localImage])
-        .setImage(`attachment://${options.localImage}`);
+      attachments.push(new MessageAttachment(options.localImage));
+      embed = embed.setImage(`attachment://${options.localImage}`);
     }
-    return embed;
+    return {
+      embeds: [embed],
+      files: attachments.length ? attachments : undefined,
+    };
   }
 
   registerImage(name: string, url: string) {

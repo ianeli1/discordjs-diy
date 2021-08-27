@@ -1,4 +1,4 @@
-import { ActivityType, Message } from "discord.js";
+import { ActivityType, ClientOptions, Message } from "discord.js";
 import { executeAction } from "./action";
 import { BotBase } from "./base";
 import { Embed } from "./embed";
@@ -17,6 +17,9 @@ interface BotOptions {
   suffix?: string;
   ignoreCaps?: boolean;
   embed?: Embed;
+
+  /**Custom intents array https://discord.js.org/#/docs/main/stable/class/Intents */
+  intents?: ClientOptions["intents"];
 }
 
 /**
@@ -58,7 +61,7 @@ export class Bot extends BotBase {
   private middlewareArray: ParametersMiddleWare<any>[] = [];
 
   constructor(token: string, options: BotOptions) {
-    super(token);
+    super(token, options.intents);
     this.prefix = options.ignoreCaps
       ? options.prefix?.toLowerCase()
       : options.prefix;
@@ -74,7 +77,7 @@ export class Bot extends BotBase {
       );
     this.handler = new CommandsHandler();
     this.messageHandler = this.messageHandler.bind(this);
-    this.client.on("message", this.messageHandler);
+    this.client.on("messageCreate", this.messageHandler);
   }
 
   useMiddleware<T>(middleware: ParametersMiddleWare<T>) {
@@ -140,7 +143,8 @@ export class Bot extends BotBase {
         const reply = await msg.channel.send(await response);
         return (
           await msg.channel
-            .awaitMessages((message) => message.author.id === msg.author.id, {
+            .awaitMessages({
+              filter: (message) => message.author.id === msg.author.id,
               max: 1,
               time: 15000,
               errors: ["time"],
@@ -258,9 +262,9 @@ export class Bot extends BotBase {
     if (activities.length === 0)
       throw new Error("Presence list can't be empty");
 
-    this.client.clearInterval(this.presenceInterval);
+    clearInterval(this.presenceInterval);
     if (activities[0] instanceof Array) {
-      this.presenceInterval = this.client.setInterval(() => {
+      this.presenceInterval = setInterval(() => {
         setActivity.bind(this, pick(activities))();
       }, interval);
     } else {

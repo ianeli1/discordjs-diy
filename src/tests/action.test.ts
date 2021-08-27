@@ -15,7 +15,7 @@ Client.prototype.emojis = {
   },
 };
 
-const fakeClient = new Client();
+const fakeClient = new Client({ intents: [] });
 const fakeAction: ActionObject = {
   response: "test",
   reaction: "🤓",

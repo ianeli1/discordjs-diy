@@ -1,9 +1,10 @@
 import {
-  Channel,
   EmojiResolvable,
   Guild,
   Message,
-  MessageEmbed,
+  MessageOptions,
+  MessagePayload,
+  TextBasedChannels,
   User,
 } from "discord.js";
 import { Embed } from ".";
@@ -31,7 +32,7 @@ export interface ActionParameters<
   /**The user who triggered the action */
   author: User;
   /**The channel this command will be sent in */
-  channel: Channel;
+  channel: TextBasedChannels;
   /**The server */
   guild?: Guild;
 
@@ -63,11 +64,9 @@ export type ParametersMiddleWare<
 
 export type SendableMessage =
   | string
-  | MessageEmbed
-  | (string | MessageEmbed)[]
-  | Promise<MessageEmbed | string>
-  | Promise<(string | MessageEmbed)[]>
-  | undefined;
+  | MessagePayload
+  | MessageOptions
+  | Promise<string | MessagePayload | MessageOptions>;
 
 export type SendableEmoji =
   | EmojiResolvable
@@ -76,7 +75,7 @@ export type SendableEmoji =
   | undefined;
 
 export type ResponseAction =
-  | ((params: ActionParameters) => SendableMessage)
+  | ((params: ActionParameters) => SendableMessage | undefined)
   | SendableMessage;
 
 export type ReactionAction =

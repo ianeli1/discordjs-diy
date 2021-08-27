@@ -87,7 +87,7 @@ describe("messageHandler method", () => {
     const triggerName = "test";
     const response = jest.fn().mockReturnValue(triggerName);
     bot.registerAction(triggerName, response);
-    const fakeMessage = ({
+    const fakeMessage = {
       content: "wrong",
       author: {
         tag: "cooltag",
@@ -96,7 +96,7 @@ describe("messageHandler method", () => {
       channel: {
         send: jest.fn(),
       },
-    } as unknown) as Message;
+    } as unknown as Message;
     await manTrigger(fakeMessage);
     expect(fakeMessage.channel.send).not.toHaveBeenCalled();
     expect(fakeMessage.react).not.toHaveBeenCalled();
@@ -108,7 +108,7 @@ describe("messageHandler method", () => {
     const triggerName = "test1";
     const response = jest.fn().mockReturnValue(triggerName);
     bot.registerAction(triggerName, response);
-    const fakeMessage = ({
+    const fakeMessage = {
       content: "!wrong",
       author: {
         tag: "cooltag",
@@ -117,7 +117,7 @@ describe("messageHandler method", () => {
       channel: {
         send: jest.fn(),
       },
-    } as unknown) as Message;
+    } as unknown as Message;
     await manTrigger(fakeMessage);
     expect(fakeMessage.channel.send).not.toHaveBeenCalled();
     expect(fakeMessage.react).not.toHaveBeenCalled();
@@ -132,7 +132,7 @@ describe("messageHandler method", () => {
       reaction: jest.fn().mockReturnValue("🤓"),
     };
     bot.registerAction(triggerName, action);
-    const fakeMessage = ({
+    const fakeMessage = {
       content: `!${triggerName}`,
       author: {
         tag: "cooltag",
@@ -141,7 +141,7 @@ describe("messageHandler method", () => {
       channel: {
         send: jest.fn(),
       },
-    } as unknown) as Message;
+    } as unknown as Message;
     await manTrigger(fakeMessage);
     expect(fakeMessage.channel.send).toHaveBeenCalled();
     expect(fakeMessage.react).toHaveBeenCalled();
@@ -157,7 +157,7 @@ describe("messageHandler method", () => {
       reaction: jest.fn().mockReturnValue("🤓"),
     };
     bot.registerAction(/test3/, action);
-    const fakeMessage = ({
+    const fakeMessage = {
       content: `!${triggerName}`,
       author: {
         tag: "cooltag",
@@ -166,7 +166,7 @@ describe("messageHandler method", () => {
       channel: {
         send: jest.fn(),
       },
-    } as unknown) as Message;
+    } as unknown as Message;
     await manTrigger(fakeMessage);
     expect(fakeMessage.channel.send).toHaveBeenCalled();
     expect(fakeMessage.react).toHaveBeenCalled();
@@ -182,7 +182,7 @@ describe("messageHandler method", () => {
     };
     const triggers = ["testtest", "te"];
     bot.registerAction(triggers, action);
-    const fakeMessage = ({
+    const fakeMessage = {
       author: {
         tag: "cooltag",
       },
@@ -190,7 +190,7 @@ describe("messageHandler method", () => {
       channel: {
         send: jest.fn(),
       },
-    } as unknown) as Message;
+    } as unknown as Message;
     await Promise.all(
       triggers.map((x) =>
         manTrigger({ ...fakeMessage, content: `!${x}` } as Message)
@@ -207,11 +207,10 @@ describe("messageHandler method", () => {
 describe("setPresence method", () => {
   beforeAll(() => {
     bot = new Bot("test", { prefix: "!" });
-    bot.client.user = ({
+    bot.client.user = {
       setActivity: jest.fn(),
-    } as unknown) as typeof Client.prototype.user;
-    bot.client.clearInterval = jest.fn();
-    bot.client.setInterval = jest.fn().mockReturnValue({} as NodeJS.Timeout);
+    } as unknown as typeof Client.prototype.user;
+    bot.client.user!.setActivity = jest.fn();
   });
 
   test("setting a single status", () => {
@@ -228,8 +227,7 @@ describe("setPresence method", () => {
       ["2", "PLAYING"],
     ] as [string, ActivityType][];
     bot.setPresence(presences);
-    expect(bot.client.clearInterval).toHaveBeenCalled();
-    expect(bot.client.setInterval).toHaveBeenCalled();
+    expect(bot.client.user?.setActivity).toHaveBeenCalled();
   });
 
   test("throws error if list empty", () => {

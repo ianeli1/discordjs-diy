@@ -1,4 +1,5 @@
-import { Client, EmojiResolvable, MessageEmbed } from "discord.js";
+import { Client, EmojiResolvable } from "discord.js";
+import { SendableMessage } from "src";
 import {
   ActionObject,
   ActionParameters,
@@ -14,10 +15,10 @@ export async function executeAction(
   action: ActionObject
 ) {
   async function execResponse(response: ResponseAction) {
-    let reply: string | MessageEmbed | (string | MessageEmbed)[] | undefined;
+    let reply: SendableMessage | undefined;
     if (typeof response === "string") reply = response;
     else if (typeof response === "function") reply = await response(params);
-    reply && (await msg.channel.send(reply));
+    reply && (await msg.channel.send(await reply));
   }
 
   async function execReaction(reaction: ReactionAction) {
