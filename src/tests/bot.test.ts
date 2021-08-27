@@ -12,7 +12,7 @@ describe("bot constructor", () => {
   test("binds itself to the message event", () => {
     new Bot("idk", { prefix: "!" });
     expect(Client.prototype.on).toHaveBeenCalledWith(
-      "message",
+      "messageCreate",
       expect.any(Function)
     );
   });
