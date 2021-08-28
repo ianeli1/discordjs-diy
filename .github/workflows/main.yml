@@ -31,18 +31,18 @@ jobs:
 
       # Runs a single command using the runners shell
       - name: Using Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v1
+        uses: actions/setup-node@v2
         with:
           node-version: ${{ matrix.node-version }}
           registry-url: "https://registry.npmjs.org"
 
       - name: Installing dependencies
-        run: npm install
+        run: yarn install
 
       #- name: Testing
-      #run: npm run test --if-present
+      #run: yarn test --if-present
 
       - name: Building
-        run: npm run build
+        run: yarn build
       - name: Publish
-        run: NODE_AUTH_TOKEN=${{secrets.NPM_TOKEN}} npm publish
+        run: NODE_AUTH_TOKEN=${{secrets.NPM_TOKEN}} yarn publish
