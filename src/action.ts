@@ -1,4 +1,9 @@
-import { Client, EmojiResolvable } from "discord.js";
+import {
+  Client,
+  CommandInteraction,
+  EmojiResolvable,
+  Interaction,
+} from "discord.js";
 import { SendableMessage } from "src";
 import {
   ActionObject,
@@ -15,13 +20,33 @@ export async function executeAction(
   action: ActionObject
 ) {
   async function execResponse(response: ResponseAction) {
+    if (!msg.channel) {
+      throw new Error(
+        "A channel could not be found for this command execution"
+      );
+    }
+
     let reply: SendableMessage | undefined;
     if (typeof response === "string") reply = response;
     else if (typeof response === "function") reply = await response(params);
+    if (msg instanceof CommandInteraction) {
+      if (msg.replied) {
+        reply && msg.editReply(await reply);
+        return;
+      }
+      reply && msg.reply(await reply);
+      return;
+    }
     reply && (await msg.channel.send(await reply));
   }
 
   async function execReaction(reaction: ReactionAction) {
+    if (msg instanceof Interaction) {
+      report(
+        `[ExecuteAction] => Ignoring react action as reactions are not supported for slash commands`
+      );
+      return;
+    }
     let emoji: EmojiResolvable | undefined;
     if (typeof reaction === "string") emoji = handleEmoji(client, reaction);
     else if (typeof reaction === "function")
@@ -30,11 +55,12 @@ export async function executeAction(
   }
 
   const { reaction, response, onError } = action;
-  const { msg, args, trigger } = params;
+  const { msg, args, trigger, author } = params;
+
   let error: MessageError | undefined = undefined;
   report(
     `Command triggered, user: ${
-      msg.author.tag
+      author.tag
     }, trigger: ${trigger}, args: ${args}, hasResponse: ${!!response}, hasReaction: ${!!reaction}`
   );
 
@@ -47,7 +73,7 @@ export async function executeAction(
         await execResponse(onError.response);
       }
       console.trace(
-        `An unhandled error ocurred while triggering an action response, trigger: ${msg.content}\n`,
+        `An unhandled error ocurred while triggering an action response, trigger: ${trigger}\n`,
         e
       );
       error = {
@@ -66,7 +92,7 @@ export async function executeAction(
         await execReaction(onError.reaction);
       }
       console.trace(
-        `An unhandled error ocurred while triggering an action reaction, trigger: ${msg.content}\n`,
+        `An unhandled error ocurred while triggering an action reaction, trigger: ${trigger}\n`,
         e
       );
       error = {

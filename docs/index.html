@@ -196,6 +196,23 @@
 <span style="color: #000000">});</span>
 </code></pre>
 				<p>The <code>expectReply()</code> promise will resolve to <code>undefined</code> if there&#39;s a timeout</p>
+				<a href="#automatic-slash-command-support" id="automatic-slash-command-support" style="color: inherit; text-decoration: none;">
+					<h3>Automatic Slash Command Support</h3>
+				</a>
+				<p>Discordjs-DIY comes with integrated slash command generation. When you execute the <code>.registerAction</code> method, the library automatically generates a slash command JSON to be sent to the API.</p>
+				<p>The default is a command with no parameters and a description of &quot;A command&quot;</p>
+				<p>To specify parameters manually, add a <code>parameters</code> property or a third parameter to <code>.registerAction</code>.</p>
+				<p>Example parameters array:</p>
+				<pre><code class="language-ts"><span style="color: #000000">[</span>
+<span style="color: #000000">  {</span>
+<span style="color: #000000">    </span><span style="color: #001080">name:</span><span style="color: #000000"> </span><span style="color: #A31515">&quot;key&quot;</span><span style="color: #000000">,</span>
+<span style="color: #000000">    </span><span style="color: #001080">type:</span><span style="color: #000000"> </span><span style="color: #A31515">&quot;STRING&quot;</span><span style="color: #000000"> </span><span style="color: #008000">/*optional, defaults to STRING*/</span><span style="color: #000000">,</span>
+<span style="color: #000000">    </span><span style="color: #001080">description:</span><span style="color: #000000"> </span><span style="color: #A31515">&quot;Hello&quot;</span><span style="color: #000000"> </span><span style="color: #008000">/*optional, defaults to &quot;A command&quot;*/</span><span style="color: #000000">,</span>
+<span style="color: #000000">  },</span>
+<span style="color: #000000">  { </span><span style="color: #001080">name:</span><span style="color: #000000"> </span><span style="color: #A31515">&quot;value&quot;</span><span style="color: #000000"> },</span>
+<span style="color: #000000">];</span>
+</code></pre>
+				<p>The <code>Bot</code> object now provides a <code>.registerSlashCommands</code> method. On its own, it&#39;ll register the commands globally (Read about the implications <a href="https://discordjs.guide/interactions/registering-slash-commands.html#global-commands">here</a>). You can pass an array of strings if you only want to register the commands on certain guilds (for development, etc).</p>
 				<a href="#middleware" id="middleware" style="color: inherit; text-decoration: none;">
 					<h3>Middleware</h3>
 				</a>

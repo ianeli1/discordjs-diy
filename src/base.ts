@@ -2,7 +2,7 @@ import { Client, ClientOptions, Intents } from "discord.js";
 import { report } from "./utility";
 
 export class BotBase {
-  private token: string;
+  protected token: string;
 
   /**Discord.js client object */
   readonly client: Client;

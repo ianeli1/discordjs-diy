@@ -80,7 +80,9 @@
 						<section class="tsd-index-section ">
 							<h3>Properties</h3>
 							<ul class="tsd-index-list">
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="actionobject.html#description" class="tsd-kind-icon">description</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="actionobject.html#onerror" class="tsd-kind-icon">on<wbr>Error</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="actionobject.html#parameters" class="tsd-kind-icon">parameters</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="actionobject.html#reaction" class="tsd-kind-icon">reaction</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="actionobject.html#response" class="tsd-kind-icon">response</a></li>
 							</ul>
@@ -91,14 +93,44 @@
 			<section class="tsd-panel-group tsd-member-group ">
 				<h2>Properties</h2>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
+					<a name="description" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagOptional">Optional</span> description</h3>
+					<div class="tsd-signature tsd-kind-icon">description<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/ianeli1/discordjs-diy/blob/583ad5d/src/types.ts#L101">types.ts:101</a></li>
+						</ul>
+					</aside>
+					<div class="tsd-comment tsd-typography">
+						<div class="lead">
+							<p>Description of the command</p>
+						</div>
+					</div>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
 					<a name="onerror" class="tsd-anchor"></a>
 					<h3><span class="tsd-flag ts-flagOptional">Optional</span> on<wbr>Error</h3>
 					<div class="tsd-signature tsd-kind-icon">on<wbr>Error<span class="tsd-signature-symbol">:</span> <a href="actionobject.html" class="tsd-signature-type" data-tsd-kind="Interface">ActionObject</a></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/ianeli1/discordjs-diy/blob/4f7c4ee/src/types.ts#L89">types.ts:89</a></li>
+							<li>Defined in <a href="https://github.com/ianeli1/discordjs-diy/blob/583ad5d/src/types.ts#L105">types.ts:105</a></li>
 						</ul>
 					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
+					<a name="parameters" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagOptional">Optional</span> parameters</h3>
+					<div class="tsd-signature tsd-kind-icon">parameters<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">{ </span>description<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">; </span>name<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">; </span>type<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">&quot;SUB_COMMAND&quot;</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">&quot;SUB_COMMAND_GROUP&quot;</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">&quot;STRING&quot;</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">&quot;INTEGER&quot;</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">&quot;BOOLEAN&quot;</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">&quot;USER&quot;</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">&quot;CHANNEL&quot;</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">&quot;ROLE&quot;</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">&quot;MENTIONABLE&quot;</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">&quot;NUMBER&quot;</span><span class="tsd-signature-symbol"> }</span><span class="tsd-signature-symbol">[]</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/ianeli1/discordjs-diy/blob/583ad5d/src/types.ts#L108">types.ts:108</a></li>
+						</ul>
+					</aside>
+					<div class="tsd-comment tsd-typography">
+						<div class="lead">
+							<p>The slash command parameters to be generated, defaults to a string parameter called &quot;Arguments&quot;</p>
+						</div>
+					</div>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
 					<a name="reaction" class="tsd-anchor"></a>
@@ -106,7 +138,7 @@
 					<div class="tsd-signature tsd-kind-icon">reaction<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">ReactionAction</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/ianeli1/discordjs-diy/blob/4f7c4ee/src/types.ts#L88">types.ts:88</a></li>
+							<li>Defined in <a href="https://github.com/ianeli1/discordjs-diy/blob/583ad5d/src/types.ts#L104">types.ts:104</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -116,7 +148,7 @@
 					<div class="tsd-signature tsd-kind-icon">response<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">ResponseAction</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/ianeli1/discordjs-diy/blob/4f7c4ee/src/types.ts#L87">types.ts:87</a></li>
+							<li>Defined in <a href="https://github.com/ianeli1/discordjs-diy/blob/583ad5d/src/types.ts#L103">types.ts:103</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -144,7 +176,13 @@
 						<a href="actionobject.html" class="tsd-kind-icon">Action<wbr>Object</a>
 						<ul>
 							<li class=" tsd-kind-property tsd-parent-kind-interface">
+								<a href="actionobject.html#description" class="tsd-kind-icon">description</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-interface">
 								<a href="actionobject.html#onerror" class="tsd-kind-icon">on<wbr>Error</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-interface">
+								<a href="actionobject.html#parameters" class="tsd-kind-icon">parameters</a>
 							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-interface">
 								<a href="actionobject.html#reaction" class="tsd-kind-icon">reaction</a>

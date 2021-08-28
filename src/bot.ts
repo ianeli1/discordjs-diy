@@ -1,4 +1,10 @@
-import { ActivityType, ClientOptions, Message } from "discord.js";
+import {
+  ActivityType,
+  ClientOptions,
+  CommandInteraction,
+  Interaction,
+  Message,
+} from "discord.js";
 import { executeAction } from "./action";
 import { BotBase } from "./base";
 import { Embed } from "./embed";
@@ -11,6 +17,8 @@ import {
   ParametersMiddleWare,
 } from "./types";
 import { pick, report } from "./utility";
+import { REST } from "@discordjs/rest";
+import { Routes } from "discord-api-types/v9";
 
 interface BotOptions {
   prefix?: string;
@@ -33,6 +41,7 @@ interface BotOptions {
  *  - Standard Discordjs Message object
  *  - An embed
  *
+ * Returning undefined for slash commands will result in an error
  * Note that it can be undefined or a function that returns undefined, but this will simply be ignored
  */
 export type BotAction = ActionObject | ResponseAction;
@@ -77,7 +86,51 @@ export class Bot extends BotBase {
       );
     this.handler = new CommandsHandler();
     this.messageHandler = this.messageHandler.bind(this);
+    this.interactionHandler = this.interactionHandler.bind(this);
+    this.actionHandler = this.actionHandler.bind(this);
     this.client.on("messageCreate", this.messageHandler);
+    this.client.on("interactionCreate", this.interactionHandler);
+  }
+
+  async registerSlashCommands(
+    /**Guild IDs to use for slash commands */ guilds?: string[]
+  ) {
+    const rest = new REST({ version: "9" }).setToken(this.token);
+    report(JSON.stringify(this.handler.commands, null, 2));
+
+    try {
+      if (!this.client.application?.id) throw "Aplication ID missing!";
+      if (guilds) {
+        for (const guild of guilds) {
+          await rest.put(
+            //@ts-ignore
+            Routes.applicationGuildCommands(this.client.application.id, guild),
+            {
+              body: this.handler.commands,
+              headers: {
+                "Content-Type": "application/json",
+              },
+            }
+          );
+        }
+      } else {
+        //@ts-ignore
+        await rest.put(Routes.applicationCommands(this.client.application.id), {
+          body: this.handler.commands,
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+      }
+
+      const commands = this.handler.commands.map((x) => x.name);
+
+      report(`[registerSlashCommands] => ${commands} registered`);
+      return commands;
+    } catch (e) {
+      report("[registerSlashCommands] => Encountered an error! >", e);
+    }
+    return false;
   }
 
   useMiddleware<T>(middleware: ParametersMiddleWare<T>) {
@@ -91,15 +144,19 @@ export class Bot extends BotBase {
     );
   }
 
-  private padAction(action: BotAction): ActionObject {
+  private padAction(
+    action: BotAction,
+    parameters?: ActionObject["parameters"]
+  ): ActionObject {
     if (
       typeof action === "object" &&
       ("response" in action || "reaction" in action)
     ) {
-      return action;
+      return parameters ? { ...action, parameters } : action;
     } else
       return {
         response: action as ResponseAction,
+        parameters,
       };
   }
   setDefaultAction(action: BotAction) {
@@ -110,7 +167,18 @@ export class Bot extends BotBase {
     this.errorAction = this.padAction(action);
   }
 
-  registerAction(trigger: string | string[] | RegExp, action: BotAction) {
+  /**
+   *
+   * @param trigger Name of the trigger
+   * @param action Action to perform on this command
+   * @param parameters [Optional] Parameters to be registered for slash command, defaults to [{name: "arguments", type: "STRING"}]
+   * @returns
+   */
+  registerAction(
+    trigger: string | string[] | RegExp,
+    action: BotAction,
+    parameters: ActionObject["parameters"] = []
+  ) {
     trigger =
       this.ignoreCaps && typeof trigger === "string"
         ? trigger.toLowerCase()
@@ -118,7 +186,7 @@ export class Bot extends BotBase {
     report(`Created a new action, trigger: ${trigger}`);
     return this.handler.setAction(
       trigger instanceof Array ? this.turnArrayToRegex(trigger) : trigger,
-      this.padAction(action)
+      this.padAction(action, parameters)
     );
   }
 
@@ -130,32 +198,40 @@ export class Bot extends BotBase {
   }
 
   async createParams(
-    msg: Message,
-    args: string,
+    msg: Message | CommandInteraction,
+    args: string | undefined,
+    parameters: ActionParameters["parameters"],
     trigger: string
   ): Promise<ActionParameters> {
+    const author = "user" in msg ? msg.user : msg.author;
     const expectReply: ActionParameters["expectReply"] = async (
       response,
       remove
     ) => {
       if (!response) return;
+      if (!msg.channel) {
+        report(
+          "[CreateParams] => A channel for this command call could not be located."
+        );
+        return;
+      }
       try {
-        const reply = await msg.channel.send(await response);
+        const reply = await msg.reply(await response);
         return (
           await msg.channel
             .awaitMessages({
-              filter: (message) => message.author.id === msg.author.id,
+              filter: (message) => message.author.id === author.id,
               max: 1,
               time: 15000,
               errors: ["time"],
             })
             .finally(() => {
-              remove && reply.delete();
+              reply && remove && reply.delete();
             })
         ).first();
       } catch (e) {
         report(
-          `An error ocurred while expecting a reply from ${msg.author.tag}`,
+          `An error ocurred while expecting a reply from ${author.tag}`,
           e
         );
         return;
@@ -163,7 +239,7 @@ export class Bot extends BotBase {
     };
 
     const dm: ActionParameters["dm"] = async (message) => {
-      const channel = await msg.author.createDM();
+      const channel = await author.createDM();
       return message !== undefined
         ? await channel.send(await message)
         : message;
@@ -174,8 +250,9 @@ export class Bot extends BotBase {
       trigger,
       msg,
       args,
-      author: msg.author,
-      channel: msg.channel,
+      parameters,
+      author,
+      channel: msg.channel ?? undefined,
       guild: msg.guild ?? undefined,
       expectReply,
       dm,
@@ -189,6 +266,56 @@ export class Bot extends BotBase {
     }
 
     return moddedParams;
+  }
+
+  private async interactionHandler(interaction: Interaction) {
+    if (!interaction.isCommand()) {
+      //todo implement buttons
+      return;
+    }
+
+    const action = this.handler.findAction(interaction.commandName);
+
+    const params: ActionParameters["parameters"] = {};
+
+    try {
+      if (action.parameters) {
+        for (const param of action.parameters) {
+          switch (param.type ?? "STRING") {
+            case "USER":
+              const user = interaction.options.getUser(param.name);
+              user && (params[param.name] = user);
+              break;
+            case "ROLE":
+              const role = interaction.options.getRole(param.name);
+              role && (params[param.name] = role);
+              break;
+            case "MENTIONABLE":
+              const mentionable = interaction.options.getMentionable(
+                param.name
+              );
+              //@ts-ignore todo idk
+              mentionable && (params[param.name] = mentionable);
+              break;
+
+            default:
+              const val = interaction.options.get(param.name)?.value;
+              val && (params[param.name] = val);
+          }
+        }
+      } else {
+        params["arguments"] = interaction.options.getString("arguments", true);
+      }
+
+      const actionParameters = await this.createParams(
+        interaction,
+        params.arguments as string | undefined,
+        params,
+        interaction.commandName
+      );
+
+      return await this.actionHandler(actionParameters, action);
+    } catch (e) {}
   }
 
   private async messageHandler(msg: Message) {
@@ -223,10 +350,19 @@ export class Bot extends BotBase {
 
     const args = content.slice(trigger.length).trim();
 
-    const params = await this.createParams(msg, args, trigger);
+    const params = await this.createParams(
+      msg,
+      args,
+      { arguments: args },
+      trigger
+    );
 
     const action = this.handler.findAction(trigger);
 
+    return await this.actionHandler(params, action);
+  }
+
+  private async actionHandler(params: ActionParameters, action: ActionObject) {
     try {
       await executeAction(this.client, params, action);
     } catch (e) {

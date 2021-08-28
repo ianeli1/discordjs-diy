@@ -1,9 +1,14 @@
+import { APIRole } from "discord-api-types";
 import {
+  ApplicationCommandOptionType,
   EmojiResolvable,
   Guild,
+  GuildMember,
+  Interaction,
   Message,
   MessageOptions,
   MessagePayload,
+  Role,
   TextBasedChannels,
   User,
 } from "discord.js";
@@ -17,8 +22,17 @@ interface GenericObject {
 export interface ActionParameters<
   MW extends GenericObject | undefined = undefined
 > {
-  /**Arguments from the command executed */
-  args: string;
+  /**Arguments from the command executed, undefined for slash commands unless no parameter definition was provided */
+  args?: string;
+
+  /**Parameters from the slash command
+   * Will contain a property "arguments" for legacy commands and slash commands without parameter definition
+   */
+  parameters: Record<
+    string,
+    string | boolean | User | GuildMember | Role | APIRole | number
+  >;
+
   /**Keyword used to trigger the command */
   trigger: string;
   /**
@@ -28,11 +42,11 @@ export interface ActionParameters<
   error?: any;
 
   /**Message that triggered this action */
-  msg: Message;
+  msg: Message | Interaction;
   /**The user who triggered the action */
   author: User;
   /**The channel this command will be sent in */
-  channel: TextBasedChannels;
+  channel?: TextBasedChannels;
   /**The server */
   guild?: Guild;
 
@@ -83,9 +97,22 @@ export type ReactionAction =
   | SendableEmoji;
 
 export interface ActionObject {
+  /**Description of the command */
+  description?: string;
+
   response?: ResponseAction;
   reaction?: ReactionAction;
   onError?: ActionObject;
+
+  /**The slash command parameters to be generated, defaults to a string parameter called "Arguments" */
+  parameters?: {
+    name: string;
+
+    /**The type of this parameter, defaults to STRING */
+    type?: ApplicationCommandOptionType;
+
+    description?: string;
+  }[];
 }
 
 export interface MessageError {

@@ -103,7 +103,7 @@
 					<div class="tsd-signature tsd-kind-icon">Action<span class="tsd-signature-symbol">:</span> <a href="interfaces/actionobject.html" class="tsd-signature-type" data-tsd-kind="Interface">ActionObject</a><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">ResponseAction</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/ianeli1/discordjs-diy/blob/4f7c4ee/src/bot.ts#L35">bot.ts:35</a></li>
+							<li>Defined in <a href="https://github.com/ianeli1/discordjs-diy/blob/583ad5d/src/bot.ts#L47">bot.ts:47</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -120,7 +120,8 @@
 								<li>An embed</li>
 							</ul>
 						</div>
-						<p>Note that it can be undefined or a function that returns undefined, but this will simply be ignored</p>
+						<p>Returning undefined for slash commands will result in an error
+						Note that it can be undefined or a function that returns undefined, but this will simply be ignored</p>
 					</div>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-type-alias tsd-has-type-parameter">
@@ -129,7 +130,7 @@
 					<div class="tsd-signature tsd-kind-icon">Parameters<wbr>Middle<wbr>Ware&lt;T&gt;<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">(</span>params<span class="tsd-signature-symbol">: </span><a href="interfaces/actionparameters.html" class="tsd-signature-type" data-tsd-kind="Interface">ActionParameters</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="interfaces/actionparameters.html" class="tsd-signature-type" data-tsd-kind="Interface">ActionParameters</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol"> | </span><a href="interfaces/actionparameters.html" class="tsd-signature-type" data-tsd-kind="Interface">ActionParameters</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">&gt;</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/ianeli1/discordjs-diy/blob/4f7c4ee/src/types.ts#L58">types.ts:58</a></li>
+							<li>Defined in <a href="https://github.com/ianeli1/discordjs-diy/blob/583ad5d/src/types.ts#L73">types.ts:73</a></li>
 						</ul>
 					</aside>
 					<h4 class="tsd-type-parameters-title">Type parameters</h4>
@@ -166,17 +167,17 @@
 					<div class="tsd-signature tsd-kind-icon">Sendable<wbr>Emoji<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">EmojiResolvable</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">EmojiResolvable</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">undefined</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/ianeli1/discordjs-diy/blob/4f7c4ee/src/types.ts#L72">types.ts:72</a></li>
+							<li>Defined in <a href="https://github.com/ianeli1/discordjs-diy/blob/583ad5d/src/types.ts#L85">types.ts:85</a></li>
 						</ul>
 					</aside>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-type-alias">
 					<a name="sendablemessage" class="tsd-anchor"></a>
 					<h3>Sendable<wbr>Message</h3>
-					<div class="tsd-signature tsd-kind-icon">Sendable<wbr>Message<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">MessageEmbed</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-symbol">(</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">MessageEmbed</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">MessageEmbed</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-symbol">(</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">MessageEmbed</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">undefined</span></div>
+					<div class="tsd-signature tsd-kind-icon">Sendable<wbr>Message<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">MessagePayload</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">MessageOptions</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">MessagePayload</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">MessageOptions</span><span class="tsd-signature-symbol">&gt;</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/ianeli1/discordjs-diy/blob/4f7c4ee/src/types.ts#L64">types.ts:64</a></li>
+							<li>Defined in <a href="https://github.com/ianeli1/discordjs-diy/blob/583ad5d/src/types.ts#L79">types.ts:79</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -193,7 +194,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/ianeli1/discordjs-diy/blob/4f7c4ee/src/session/index.ts#L26">session/index.ts:26</a></li>
+									<li>Defined in <a href="https://github.com/ianeli1/discordjs-diy/blob/583ad5d/src/session/index.ts#L31">session/index.ts:31</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>

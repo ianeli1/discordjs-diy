@@ -169,6 +169,29 @@ bot.registerAction("wakeMeUp", async ({ expectReply }) => {
 
 The `expectReply()` promise will resolve to `undefined` if there's a timeout
 
+### Automatic Slash Command Support
+
+Discordjs-DIY comes with integrated slash command generation. When you execute the `.registerAction` method, the library automatically generates a slash command JSON to be sent to the API.
+
+The default is a command with no parameters and a description of "A command"
+
+To specify parameters manually, add a `parameters` property or a third parameter to `.registerAction`.
+
+Example parameters array:
+
+```ts
+[
+  {
+    name: "key",
+    type: "STRING" /*optional, defaults to STRING*/,
+    description: "Hello" /*optional, defaults to "A command"*/,
+  },
+  { name: "value" },
+];
+```
+
+The `Bot` object now provides a `.registerSlashCommands` method. On its own, it'll register the commands globally (Read about the implications [here](https://discordjs.guide/interactions/registering-slash-commands.html#global-commands)). You can pass an array of strings if you only want to register the commands on certain guilds (for development, etc).
+
 ### Middleware
 
 Discordjs-diy provides support for custom middleware.
