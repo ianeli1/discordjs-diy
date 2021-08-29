@@ -4,7 +4,7 @@ import {
   EmojiResolvable,
   Interaction,
 } from "discord.js";
-import { SendableMessage } from "src";
+import { SendableMessage } from "./types";
 import {
   ActionObject,
   ActionParameters,

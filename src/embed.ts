@@ -4,7 +4,7 @@ import {
   MessageEmbed,
   User,
 } from "discord.js";
-import { SendableMessage } from "src";
+import { SendableMessage } from "./types";
 
 interface EmbedOptions {
   title?: string;

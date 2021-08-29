@@ -12,7 +12,7 @@ import {
   TextBasedChannels,
   User,
 } from "discord.js";
-import { Embed } from ".";
+import { Embed } from "./embed";
 
 interface GenericObject {
   [name: string]: any;
