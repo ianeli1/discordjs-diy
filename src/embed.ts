@@ -85,7 +85,7 @@ export class Embed {
 
     if (options.sideImage) {
       embed = embed.setThumbnail(
-        this.images[options.sideImage] ?? options.image
+        this.images[options.sideImage] ?? options.sideImage
       );
     }
 
