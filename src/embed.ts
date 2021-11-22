@@ -54,9 +54,10 @@ export class Embed {
       ((x: User) => [x.username, x.avatarURL() ?? undefined]);
     this.author = options.author;
     this.create = this.create.bind(this);
+    this.createSingularEmbed = this.createSingularEmbed.bind(this);
   }
 
-  create(options: EmbedOptions): SendableMessage {
+  private createSingularEmbed(options: EmbedOptions): SendableMessage {
     let embed = new MessageEmbed()
       .setDescription(this.descTransform(options.desc ?? ""))
       .setColor(this.color);
@@ -112,6 +113,26 @@ export class Embed {
       embeds: [embed],
       files: attachments.length ? attachments : undefined,
     };
+  }
+
+  create(options: EmbedOptions | EmbedOptions[]): SendableMessage {
+    type ProtoSendableMessage = { embeds: any[]; files: any[] };
+
+    if (options instanceof Array) {
+      const sendables = (
+        options.map((x) =>
+          this.createSingularEmbed(x)
+        ) as ProtoSendableMessage[]
+      ).reduce(
+        (acc, { embeds = [], files = [] }) => ({
+          embeds: [...acc.embeds, ...embeds],
+          files: [...acc.files, ...files],
+        }),
+        { embeds: [], files: [] }
+      );
+      return sendables as SendableMessage;
+    }
+    return this.createSingularEmbed(options);
   }
 
   registerImage(name: string, url: string) {
