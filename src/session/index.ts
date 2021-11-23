@@ -3,29 +3,10 @@ import { report } from "./error";
 import { SessionModel } from "./models";
 import { MongoClient } from "mongodb";
 import { Cache } from "./cache";
+import { ProtoSession, SessionConfig, SessionMW } from "./types";
+import { Guild, User } from "discord.js";
 
-export interface SessionMW {
-  session: {
-    _id: string;
-    tag: string;
-    discordId: string;
-    name: string;
-    data: {
-      [name: string]: string | number;
-    };
-    set(key: string, value: string): Promise<object>;
-  };
-}
-
-export interface SessionConfig {
-  /**MongoDB connection string */
-  uri: string;
-
-  /**Timeout for the internal cache in seconds, setting it to 0 disables the cache */
-  cacheTimeout?: number;
-  cacheLength?: number;
-}
-
+export { SessionMW, SessionConfig };
 //todo cachegoose
 
 export async function Session({
@@ -51,8 +32,70 @@ export async function Session({
   const db = client.db("discordJsSession");
   const sessions = db.collection<SessionModel>("sessions");
 
+  const setForDiscordId = async (
+    user: User | Guild | "global" | undefined,
+    discordId: string,
+    key: string,
+    value: string
+  ) => {
+    const upd = await sessions.findOneAndUpdate({ discordId }, [
+      {
+        $addFields: {
+          data: {
+            [key]: value,
+          },
+        },
+      },
+    ]);
+
+    if (!upd.value) {
+      if (!user) {
+        throw new Error(
+          `An error ocurred for user ${discordId} while setting "${key}" to "${value}"`
+        );
+      }
+
+      const newSession = new SessionModel(user);
+
+      newSession.data[key] = value;
+
+      if ((await sessions.insertOne(newSession)).acknowledged) {
+        return cache.set(discordId, newSession);
+      }
+
+      throw new Error(
+        `An error ocurred for user ${discordId} while setting "${key}" to "${value}"`
+      );
+    }
+    return cache.set(discordId, upd.value) as ProtoSession;
+  };
+
+  const getFromDiscordId = async (
+    user: User | Guild | "global" | undefined,
+    discordId: string,
+    key?: string
+  ) => {
+    let data = cache.get(discordId) ?? (await sessions.findOne({ discordId }));
+    if (!data) {
+      if (!user) {
+        throw new Error(
+          `An error ocurred for user ${discordId} while getting "${key}"`
+        );
+      }
+      const newSession = new SessionModel(user);
+
+      await sessions.insertOne(newSession);
+
+      data = newSession;
+    }
+    if (key !== undefined) {
+      return data.data[key] as string;
+    }
+    return data;
+  };
+
   return async (params) => {
-    const { author, middleware = {} } = params;
+    const { author, middleware = {}, guild } = params;
     const discordId = author.id;
 
     let session =
@@ -69,27 +112,25 @@ export async function Session({
       cache.set(discordId, session);
     }
 
-    const set: SessionMW["session"]["set"] = async (key, value) => {
-      const upd = await sessions.findOneAndUpdate({ discordId }, [
-        {
-          $addFields: {
-            data: {
-              [key]: value,
-            },
-          },
-        },
-      ]);
-
-      return upd.value ? cache.set(key, upd.value) : {};
-    };
-
     return {
       ...params,
       middleware: {
         ...middleware,
         session: {
           ...session,
-          set,
+          set: (key, value) => setForDiscordId(author, discordId, key, value),
+          getFromUser: (discordId, key) =>
+            getFromDiscordId(undefined, discordId, key),
+          setForUser: (discordId, key, value) =>
+            setForDiscordId(undefined, discordId, key, value),
+          setForServer: (key, value) =>
+            guild?.id &&
+            setForDiscordId(guild, `__server${guild.id}`, key, value),
+          getFromServer: (key) =>
+            guild?.id && getFromDiscordId(guild, `__server${guild.id}`, key),
+          setGlobal: (key, value) =>
+            setForDiscordId("global", "__global", key, value),
+          getGlobal: (key) => getFromDiscordId("global", "__global", key),
         },
       },
     } as ActionParameters<SessionMW>;
