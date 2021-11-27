@@ -1,9 +1,9 @@
+import { Guild, User } from "discord.js";
 import { SessionModel } from "./models";
 
 export type ValidDataTypes = SessionModel["data"][""];
 
 export interface ProtoSession {
-  _id: string;
   tag: string;
   discordId: string;
   name: string;
@@ -12,27 +12,34 @@ export interface ProtoSession {
 
 export interface SessionMW {
   session: ProtoSession & {
-    set(key: string, value: string): Promise<ProtoSession>;
+    set(key: string, value: string): Promise<SessionMW["session"]>;
 
     setForUser(
-      discordId: string,
+      user: User,
       key: string,
       value: ValidDataTypes
-    ): Promise<ProtoSession>;
+    ): Promise<SessionMW["session"] | undefined>;
 
-    getFromUser(discordId: string): Promise<ProtoSession>;
-    getFromUser(discordId: string, key: string): Promise<ValidDataTypes>;
+    getFromUser(user: User): Promise<SessionMW["session"]>;
+    getFromUser(user: User, key: string): Promise<ValidDataTypes | undefined>;
 
     setForServer(
+      guild: Guild,
       key: string,
       value: ValidDataTypes
-    ): Promise<ProtoSession | undefined>;
-    getFromServer(key: string): Promise<ValidDataTypes | undefined>;
-    getFromServer(): Promise<ProtoSession | undefined>;
+    ): Promise<SessionMW["session"]>;
+    getFromServer(
+      guild: Guild,
+      key: string
+    ): Promise<ValidDataTypes | undefined>;
+    getFromServer(guild: Guild): Promise<SessionMW["session"] | undefined>;
 
-    setGlobal(key: string, value: ValidDataTypes): Promise<ProtoSession>;
-    getGlobal(key: string): Promise<ValidDataTypes>;
-    getGlobal(): Promise<ProtoSession>;
+    setGlobal(
+      key: string,
+      value: ValidDataTypes
+    ): Promise<SessionMW["session"]>;
+    getGlobal(key: string): Promise<ValidDataTypes | undefined>;
+    getGlobal(): Promise<SessionMW["session"]>;
   };
 }
 
