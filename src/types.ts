@@ -79,7 +79,9 @@ export interface ActionParameters<
   subscribe(
     componentOptions: NonNullable<
       | NonNullableObject<
-          NonNullable<ConstructorParameters<typeof MessageButton>[0]>
+          NonNullable<
+            Omit<ConstructorParameters<typeof MessageButton>[0], "customId">
+          >
         >[]
       | Partial<ConstructorParameters<typeof MessageButton>[0]>
       | Partial<ConstructorParameters<typeof MessageSelectMenu>[0]>
