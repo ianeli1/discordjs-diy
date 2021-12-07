@@ -26,7 +26,7 @@ interface EmbedOptions {
   sideImage?: string;
   localImage?: string;
   reference?: User;
-  components: MessageOptions["components"];
+  components?: MessageOptions["components"];
 }
 
 interface EmbedSettings {
