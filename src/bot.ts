@@ -19,6 +19,7 @@ import {
 import { pick, report } from "./utility";
 import { REST } from "@discordjs/rest";
 import { Routes } from "discord-api-types/v9";
+import { ComponentHandler } from "./componentHandler";
 
 interface BotOptions {
   prefix?: string;
@@ -69,6 +70,8 @@ export class Bot extends BotBase {
 
   private middlewareArray: ParametersMiddleWare<any>[] = [];
 
+  private componentHandler: ComponentHandler;
+
   constructor(token: string, options: BotOptions) {
     super(token, options.intents);
     this.prefix = options.ignoreCaps
@@ -85,6 +88,7 @@ export class Bot extends BotBase {
         "You need to provide at least one of the following: prefix or suffix"
       );
     this.handler = new CommandsHandler();
+    this.componentHandler = new ComponentHandler();
     this.messageHandler = this.messageHandler.bind(this);
     this.interactionHandler = this.interactionHandler.bind(this);
     this.actionHandler = this.actionHandler.bind(this);
@@ -245,6 +249,19 @@ export class Bot extends BotBase {
         : message;
     };
 
+    const subscribe: ActionParameters["subscribe"] = (
+      componentOptions,
+      action,
+      idle
+    ) => {
+      const [customIds, actionRow] = ComponentHandler.getActionRow(
+        componentOptions,
+        author
+      );
+      this.componentHandler.addSubscription(customIds, msg, action, idle);
+      return actionRow;
+    };
+
     const vanillaParams: ActionParameters = {
       createEmbed: this.embed.create,
       trigger,
@@ -256,6 +273,7 @@ export class Bot extends BotBase {
       guild: msg.guild ?? undefined,
       expectReply,
       dm,
+      subscribe,
       middleware: undefined,
     };
 
@@ -269,8 +287,36 @@ export class Bot extends BotBase {
   }
 
   private async interactionHandler(interaction: Interaction) {
+    if (interaction.isButton() || interaction.isSelectMenu()) {
+      interaction.deferUpdate();
+      const subscription = this.componentHandler.getSubscription(
+        interaction.customId
+      );
+      if (!subscription) {
+        return;
+      }
+      const interactionActionParameters = await this.createParams(
+        interaction.message as Message,
+        undefined,
+        {},
+        interaction.customId
+      );
+      let msgReply = await subscription.action(
+        interactionActionParameters,
+        interaction
+      );
+      const newMsg =
+        msgReply &&
+        (subscription.msg instanceof Message
+          ? await (interaction.message as Message).edit(msgReply)
+          : await subscription.msg.editReply(msgReply));
+      this.componentHandler.renewSubscription(
+        interaction.customId,
+        !!newMsg ? (newMsg as Message) : undefined
+      );
+    }
+
     if (!interaction.isCommand()) {
-      //todo implement buttons
       return;
     }
 

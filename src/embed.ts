@@ -1,7 +1,9 @@
 import {
   ColorResolvable,
+  MessageActionRow,
   MessageAttachment,
   MessageEmbed,
+  MessageOptions,
   User,
 } from "discord.js";
 import { SendableMessage } from "./types";
@@ -24,6 +26,7 @@ interface EmbedOptions {
   sideImage?: string;
   localImage?: string;
   reference?: User;
+  components: MessageOptions["components"];
 }
 
 interface EmbedSettings {
@@ -112,21 +115,22 @@ export class Embed {
     return {
       embeds: [embed],
       files: attachments.length ? attachments : undefined,
+      components: options.components,
     };
   }
 
   create(options: EmbedOptions | EmbedOptions[]): SendableMessage {
-    type ProtoSendableMessage = { embeds: any[]; files: any[] };
-
     if (options instanceof Array) {
       const sendables = (
-        options.map((x) =>
-          this.createSingularEmbed(x)
-        ) as ProtoSendableMessage[]
+        options.map((x) => this.createSingularEmbed(x)) as MessageOptions[]
       ).reduce(
-        (acc, { embeds = [], files = [] }) => ({
-          embeds: [...acc.embeds, ...embeds],
-          files: [...acc.files, ...files],
+        (acc, { embeds = [], files = [], components = [] }) => ({
+          embeds: [...(acc.embeds as Array<MessageEmbed>), ...embeds],
+          files: [...(acc.files as Array<MessageAttachment>), ...files],
+          components: [
+            ...(acc.components as Array<MessageActionRow>),
+            ...components,
+          ],
         }),
         { embeds: [], files: [] }
       );
