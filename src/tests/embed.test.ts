@@ -14,6 +14,7 @@ describe("create", () => {
   });
 
   test("should not give an error", () => {
+    //@ts-expect-error
     expect(() => embed.create({})).not.toThrowError();
   });
 });

@@ -1,14 +1,19 @@
 import { APIRole } from "discord-api-types";
 import {
   ApplicationCommandOptionType,
+  ButtonInteraction,
   EmojiResolvable,
   Guild,
   GuildMember,
   Interaction,
   Message,
+  MessageActionRow,
+  MessageButton,
   MessageOptions,
   MessagePayload,
+  MessageSelectMenu,
   Role,
+  SelectMenuInteraction,
   TextBasedChannels,
   User,
 } from "discord.js";
@@ -17,6 +22,10 @@ import { Embed } from "./embed";
 interface GenericObject {
   [name: string]: any;
 }
+
+// type NonNullableObject<T> = {
+//   [K in keyof T]: Exclude<T[K], null>;
+// };
 
 /**Object passed to the action functions on every trigger */
 export interface ActionParameters<
@@ -66,6 +75,24 @@ export interface ActionParameters<
 
   /**Sends a DM to the author of the message, resolves to undefined if an error occurs */
   dm: (msg: SendableMessage) => Promise<Message | undefined>;
+
+  subscribe(
+    componentOptions: NonNullable<
+      // | Omit<
+      //     NonNullableObject<
+      //       NonNullable<ConstructorParameters<typeof MessageButton>[0]>
+      //     >,
+      //     "customId"
+      //   >[]
+      | Partial<ConstructorParameters<typeof MessageButton>[0]>
+      | Partial<ConstructorParameters<typeof MessageSelectMenu>[0]>
+    >,
+    action: (
+      params: ActionParameters,
+      interaction: ButtonInteraction | SelectMenuInteraction
+    ) => SendableMessage | undefined,
+    idle?: number
+  ): MessageActionRow;
 
   middleware?: MW;
 }
