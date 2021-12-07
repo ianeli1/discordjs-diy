@@ -1,6 +1,5 @@
 import {
   ColorResolvable,
-  MessageActionRow,
   MessageAttachment,
   MessageEmbed,
   MessageOptions,
@@ -125,12 +124,9 @@ export class Embed {
         options.map((x) => this.createSingularEmbed(x)) as MessageOptions[]
       ).reduce(
         (acc, { embeds = [], files = [], components = [] }) => ({
-          embeds: [...(acc.embeds as Array<MessageEmbed>), ...embeds],
-          files: [...(acc.files as Array<MessageAttachment>), ...files],
-          components: [
-            ...(acc.components as Array<MessageActionRow>),
-            ...components,
-          ],
+          embeds: [...(acc.embeds ?? []), ...embeds],
+          files: [...(acc.files ?? []), ...files],
+          components: [...(acc.components ?? []), ...components],
         }),
         { embeds: [], files: [] }
       );
