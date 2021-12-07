@@ -23,9 +23,9 @@ interface GenericObject {
   [name: string]: any;
 }
 
-// type NonNullableObject<T> = {
-//   [K in keyof T]: Exclude<T[K], null>;
-// };
+type NonNullableObject<T> = {
+  [K in keyof T]: Exclude<T[K], null>;
+};
 
 /**Object passed to the action functions on every trigger */
 export interface ActionParameters<
@@ -78,18 +78,16 @@ export interface ActionParameters<
 
   subscribe(
     componentOptions: NonNullable<
-      // | Omit<
-      //     NonNullableObject<
-      //       NonNullable<ConstructorParameters<typeof MessageButton>[0]>
-      //     >,
-      //     "customId"
-      //   >[]
+      | NonNullableObject<
+          NonNullable<ConstructorParameters<typeof MessageButton>[0]>
+        >[]
       | Partial<ConstructorParameters<typeof MessageButton>[0]>
       | Partial<ConstructorParameters<typeof MessageSelectMenu>[0]>
     >,
     action: (
       params: ActionParameters,
-      interaction: ButtonInteraction | SelectMenuInteraction
+      interaction: ButtonInteraction | SelectMenuInteraction,
+      value: number | string
     ) => SendableMessage | undefined,
     idle?: number
   ): MessageActionRow;

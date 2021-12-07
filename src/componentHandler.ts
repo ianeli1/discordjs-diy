@@ -129,7 +129,7 @@ export class ComponentHandler {
       [customIdBase],
       actionRow.addComponents(
         new MessageButton(componentOptions as MessageButton).setCustomId(
-          customIdBase
+          `${customIdBase}-0`
         )
       ),
     ];

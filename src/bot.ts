@@ -295,6 +295,9 @@ export class Bot extends BotBase {
       if (!subscription) {
         return;
       }
+      if (subscription.msg.member?.user.id !== interaction.member?.user.id) {
+        return;
+      }
       const interactionActionParameters = await this.createParams(
         interaction.message as Message,
         undefined,
@@ -303,17 +306,17 @@ export class Bot extends BotBase {
       );
       let msgReply = await subscription.action(
         interactionActionParameters,
-        interaction
+        interaction,
+        interaction.isButton()
+          ? +(interaction.customId.split("-").pop() ?? 0)
+          : interaction.values[0]
       );
-      const newMsg =
-        msgReply &&
+
+      msgReply &&
         (subscription.msg instanceof Message
           ? await (interaction.message as Message).edit(msgReply)
           : await subscription.msg.editReply(msgReply));
-      this.componentHandler.renewSubscription(
-        interaction.customId,
-        !!newMsg ? (newMsg as Message) : undefined
-      );
+      this.componentHandler.renewSubscription(interaction.customId, undefined);
     }
 
     if (!interaction.isCommand()) {
