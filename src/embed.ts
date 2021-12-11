@@ -10,6 +10,7 @@ import { SendableMessage } from "./types";
 interface EmbedOptions {
   title?: string;
   desc?: string;
+  color?: ColorResolvable;
   fields?:
     | {
         title: string;
@@ -24,6 +25,9 @@ interface EmbedOptions {
   image?: string;
   sideImage?: string;
   localImage?: string;
+  author?: Parameters<MessageEmbed["setAuthor"]>;
+  url?: string;
+  footer?: Parameters<MessageEmbed["setFooter"]>;
   reference?: User;
   components?: MessageOptions["components"];
 }
@@ -62,7 +66,7 @@ export class Embed {
   private createSingularEmbed(options: EmbedOptions): SendableMessage {
     let embed = new MessageEmbed()
       .setDescription(this.descTransform(options.desc ?? ""))
-      .setColor(this.color);
+      .setColor(options.color ?? this.color);
 
     const attachments = [];
 
@@ -92,14 +96,22 @@ export class Embed {
       );
     }
 
-    if (this.author) {
+    if (options.author) {
+      embed = embed.setAuthor(...options.author);
+    } else if (this.author) {
       embed = embed.setAuthor(
         this.author.username,
         this.author.avatarURL() ?? undefined
       );
     }
 
-    if (options.reference) {
+    if (options.url) {
+      embed = embed.setURL(options.url);
+    }
+
+    if (options.footer) {
+      embed = embed.setFooter(...options.footer);
+    } else if (options.reference) {
       embed = embed.setFooter(...this.refTransform(options.reference));
     }
 
