@@ -252,13 +252,20 @@ export class Bot extends BotBase {
     const subscribe: ActionParameters["subscribe"] = (
       componentOptions,
       action,
-      idle
+      idle,
+      expectAdditionalIds
     ) => {
       const [customIds, actionRow] = ComponentHandler.getActionRow(
         componentOptions,
         author
       );
-      this.componentHandler.addSubscription(customIds, msg, action, idle);
+      this.componentHandler.addSubscription(
+        customIds,
+        msg,
+        action,
+        idle,
+        expectAdditionalIds
+      );
       return actionRow;
     };
 
@@ -295,7 +302,11 @@ export class Bot extends BotBase {
       if (!subscription) {
         return;
       }
-      if (subscription.msg.member?.user.id !== interaction.member?.user.id) {
+      if (
+        interaction.member &&
+        subscription.msg.member?.user.id !== interaction.member?.user.id &&
+        !subscription.additionalUserIds.includes(interaction.member?.user.id)
+      ) {
         return;
       }
       const interactionActionParameters = await this.createParams(

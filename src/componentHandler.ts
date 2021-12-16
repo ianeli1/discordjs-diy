@@ -13,6 +13,7 @@ type ComponentAction = Parameters<ActionParameters["subscribe"]>[1];
 export class ComponentHandler {
   private pendingSubscriptions: {
     customIds: string[];
+    additionalUserIds: string[];
     msg: Message | CommandInteraction;
     action: ComponentAction;
     lastUpdate: number; //Date.now()
@@ -48,7 +49,8 @@ export class ComponentHandler {
     customIds: string[],
     msg: Message | CommandInteraction,
     action: ComponentAction,
-    timeout: number = 60000
+    timeout: number = 60000,
+    expectIds: string[] = []
   ) {
     this.pendingSubscriptions.push({
       msg,
@@ -56,6 +58,7 @@ export class ComponentHandler {
       customIds,
       timeout,
       lastUpdate: Date.now(),
+      additionalUserIds: expectIds,
     });
     if (!this.interval) {
       this.interval = setInterval(

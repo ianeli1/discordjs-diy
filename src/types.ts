@@ -91,7 +91,8 @@ export interface ActionParameters<
       interaction: ButtonInteraction | SelectMenuInteraction,
       value: number | string
     ) => SendableMessage | undefined,
-    idle?: number
+    idle?: number,
+    expectAdditionalUserIds?: string[]
   ): MessageActionRow;
 
   middleware?: MW;
