@@ -92,7 +92,7 @@ export interface ActionParameters<
       value: number | string
     ) => SendableMessage | undefined,
     idle?: number,
-    expectAdditionalUserIds?: string[]
+    expectFromUserIds?: string[]
   ): MessageActionRow;
 
   middleware?: MW;

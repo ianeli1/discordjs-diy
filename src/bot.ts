@@ -304,8 +304,11 @@ export class Bot extends BotBase {
       }
       if (
         interaction.member &&
-        subscription.msg.member?.user.id !== interaction.member?.user.id &&
-        !subscription.additionalUserIds.includes(interaction.member?.user.id)
+        (subscription.additionalUserIds.length === 0
+          ? subscription.msg.member?.user.id !== interaction.member?.user.id
+          : !subscription.additionalUserIds.includes(
+              interaction.member?.user.id
+            ))
       ) {
         return;
       }
