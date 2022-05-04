@@ -269,10 +269,9 @@ export class Bot extends BotBase {
       return actionRow;
     };
 
-    const asyncEffect: ActionParameters["asyncEffect"] = (waitFor, thenDo) => {
+    const asyncEffect: ActionParameters["asyncEffect"] = (doAfter) => {
       moddedParams.__asyncJobs.push({
-        waitFor,
-        thenDo,
+        doAfter,
       });
     };
 

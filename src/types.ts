@@ -103,18 +103,15 @@ export interface ActionParameters<
    * @param waitFor value to be passed on to thenDo. Receives the newly created response
    * @param thenDo a function that will receive the newly created response + the return value of waitFor
    */
-  asyncEffect<T>(
-    waitFor: (params: ActionParameters) => T,
-    thenDo: (params: ActionParameters, value: Awaited<T>) => void
+  asyncEffect(
+    doAfter: (
+      params: Omit<ActionParameters, "msg"> & { msg: Message }
+    ) => Promise<void> | void
   ): void;
 
   /**Internal, used for `asyncEffect` */
   __asyncJobs: {
-    waitFor: (params: ActionParameters) => any;
-    thenDo: (
-      params: ActionParameters,
-      value: Awaited<any>
-    ) => void | Promise<void>;
+    doAfter: Parameters<ActionParameters["asyncEffect"]>[0];
   }[];
 
   middleware?: MW;

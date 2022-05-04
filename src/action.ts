@@ -71,7 +71,7 @@ export async function executeAction(
         try {
           const newParams = { ...params, msg: responseMsg as Message };
           for (const asyncJob of asyncJobs) {
-            await asyncJob.thenDo(newParams, await asyncJob.waitFor(newParams));
+            await asyncJob.doAfter(newParams);
           }
         } catch (e) {
           report(
