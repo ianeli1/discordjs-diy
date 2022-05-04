@@ -192,6 +192,24 @@ Example parameters array:
 
 The `Bot` object now provides a `.registerSlashCommands` method. On its own, it'll register the commands globally (Read about the implications [here](https://discordjs.guide/interactions/registering-slash-commands.html#global-commands)). You can pass an array of strings if you only want to register the commands on certain guilds (for development, etc).
 
+### Async Jobs
+
+DJS-diy offers a small addon for running jobs _after_ a response has been issued.
+You can enqueue these jobs by calling `asyncEffect` from the `ActionParameters` received by an action.
+Should be noted that `msg` in the passed `ActionParameters` object will contain the newly created response.
+
+```ts
+bot.registerAction("image", async ({ createEmbed, asyncEffect }) => {
+  asyncEffect(async ({ msg }) => {
+    await msg.edit({
+      content: "Hello there",
+    });
+  });
+
+  return "This message will change";
+});
+```
+
 ### Middleware
 
 Discordjs-diy provides support for custom middleware.
