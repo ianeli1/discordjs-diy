@@ -95,6 +95,28 @@ export interface ActionParameters<
     expectFromUserIds?: string[]
   ): MessageActionRow;
 
+  /**
+   * Creates a minijob that will be run once a response is created
+   *
+   * This does nothing if an action has no response
+   *
+   * @param waitFor value to be passed on to thenDo. Receives the newly created response
+   * @param thenDo a function that will receive the newly created response + the return value of waitFor
+   */
+  asyncEffect<T>(
+    waitFor: (params: ActionParameters) => T,
+    thenDo: (params: ActionParameters, value: Awaited<T>) => void
+  ): void;
+
+  /**Internal, used for `asyncEffect` */
+  __asyncJobs: {
+    waitFor: (params: ActionParameters) => any;
+    thenDo: (
+      params: ActionParameters,
+      value: Awaited<any>
+    ) => void | Promise<void>;
+  }[];
+
   middleware?: MW;
 }
 

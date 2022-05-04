@@ -5,7 +5,6 @@ import {
   MessageOptions,
   User,
 } from "discord.js";
-import { SendableMessage } from "./types";
 
 interface EmbedOptions {
   title?: string;
@@ -63,7 +62,7 @@ export class Embed {
     this.createSingularEmbed = this.createSingularEmbed.bind(this);
   }
 
-  private createSingularEmbed(options: EmbedOptions): SendableMessage {
+  private createSingularEmbed(options: EmbedOptions): MessageOptions {
     let embed = new MessageEmbed()
       .setDescription(this.descTransform(options.desc ?? ""))
       .setColor(options.color ?? this.color);
@@ -130,19 +129,19 @@ export class Embed {
     };
   }
 
-  create(options: EmbedOptions | EmbedOptions[]): SendableMessage {
+  create(options: EmbedOptions | EmbedOptions[]): MessageOptions {
     if (options instanceof Array) {
-      const sendables = (
-        options.map((x) => this.createSingularEmbed(x)) as MessageOptions[]
-      ).reduce(
-        (acc, { embeds = [], files = [], components = [] }) => ({
-          embeds: [...(acc.embeds ?? []), ...embeds],
-          files: [...(acc.files ?? []), ...files],
-          components: [...(acc.components ?? []), ...components],
-        }),
-        { embeds: [], files: [] }
-      );
-      return sendables as SendableMessage;
+      const sendables = options
+        .map((x) => this.createSingularEmbed(x))
+        .reduce(
+          (acc, { embeds = [], files = [], components = [] }) => ({
+            embeds: [...(acc.embeds ?? []), ...embeds],
+            files: [...(acc.files ?? []), ...files],
+            components: [...(acc.components ?? []), ...components],
+          }),
+          { embeds: [], files: [] }
+        );
+      return sendables;
     }
     return this.createSingularEmbed(options);
   }

@@ -269,6 +269,13 @@ export class Bot extends BotBase {
       return actionRow;
     };
 
+    const asyncEffect: ActionParameters["asyncEffect"] = (waitFor, thenDo) => {
+      moddedParams.__asyncJobs.push({
+        waitFor,
+        thenDo,
+      });
+    };
+
     const vanillaParams: ActionParameters = {
       createEmbed: this.embed.create,
       trigger,
@@ -282,6 +289,8 @@ export class Bot extends BotBase {
       dm,
       subscribe,
       middleware: undefined,
+      asyncEffect,
+      __asyncJobs: [],
     };
 
     let moddedParams: ActionParameters = vanillaParams;

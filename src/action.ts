@@ -3,6 +3,7 @@ import {
   CommandInteraction,
   EmojiResolvable,
   Interaction,
+  Message,
 } from "discord.js";
 import { SendableMessage } from "./types";
 import {
@@ -31,13 +32,12 @@ export async function executeAction(
     else if (typeof response === "function") reply = await response(params);
     if (msg instanceof CommandInteraction) {
       if (msg.replied) {
-        reply && msg.editReply(await reply);
-        return;
+        return !!reply && msg.editReply(await reply);
       }
-      reply && msg.reply(await reply);
-      return;
+      reply && (await msg.reply(await reply));
+      return msg.fetchReply();
     }
-    reply && (await msg.channel.send(await reply));
+    return !!reply && (await msg.channel.send(await reply));
   }
 
   async function execReaction(reaction: ReactionAction) {
@@ -55,7 +55,7 @@ export async function executeAction(
   }
 
   const { reaction, response, onError } = action;
-  const { msg, args, trigger, author } = params;
+  const { msg, args, trigger, author, __asyncJobs: asyncJobs } = params;
 
   let error: MessageError | undefined = undefined;
   report(
@@ -66,7 +66,19 @@ export async function executeAction(
 
   if (response) {
     try {
-      await execResponse(response);
+      const responseMsg = await execResponse(response);
+      if (responseMsg) {
+        try {
+          const newParams = { ...params, msg: responseMsg as Message };
+          for (const asyncJob of asyncJobs) {
+            await asyncJob.thenDo(newParams, await asyncJob.waitFor(newParams));
+          }
+        } catch (e) {
+          report(
+            `An error ocurred trying to execute async job. TriggerMsgId: ${msg.id}, ReplyMsgId: ${responseMsg.id}, e => ${e}`
+          );
+        }
+      }
     } catch (e) {
       if (onError?.response) {
         params.error = e;
