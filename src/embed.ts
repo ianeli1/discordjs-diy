@@ -29,6 +29,7 @@ interface EmbedOptions {
   footer?: Parameters<MessageEmbed["setFooter"]>;
   reference?: User;
   components?: MessageOptions["components"];
+  files?: MessageOptions["files"];
 }
 
 interface EmbedSettings {
@@ -67,7 +68,7 @@ export class Embed {
       .setDescription(this.descTransform(options.desc ?? ""))
       .setColor(options.color ?? this.color);
 
-    const attachments = [];
+    const attachments = options.files ?? [];
 
     if (options.fields instanceof Array) {
       embed = embed.addFields(
