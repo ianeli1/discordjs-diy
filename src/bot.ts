@@ -96,7 +96,7 @@ export class Bot extends BotBase {
     this.componentHandler = new ComponentHandler();
     this.messageHandler = this.messageHandler.bind(this);
     this.interactionHandler = this.interactionHandler.bind(this);
-    this.actionHandler = this.actionHandler.bind(this);
+    this.handleAction = this.handleAction.bind(this);
     this.Action = ActionFactory(this);
     this.client.on("messageCreate", this.messageHandler);
     this.client.on("interactionCreate", this.interactionHandler);
@@ -391,7 +391,7 @@ export class Bot extends BotBase {
         interaction.commandName
       );
 
-      return await this.actionHandler(actionParameters, action);
+      return await this.handleAction(actionParameters, action);
     } catch (e) {}
   }
 
@@ -436,20 +436,17 @@ export class Bot extends BotBase {
 
     const action = this.handler.findAction(trigger);
 
-    return await this.actionHandler(params, action);
+    return await this.handleAction(params, action);
   }
 
-  private async actionHandler(
-    params: ActionParameters,
-    actionObj: ActionObject
-  ) {
+  async handleAction(params: ActionParameters, actionObj: ActionObject) {
     const action = new this.Action(params, actionObj);
     try {
       await action.executeAll();
     } catch (e) {
       if (e instanceof ActionError) {
         report(
-          `[actionHandler] => An error ocurred processing the action of type: ${
+          `[handleAction] => An error ocurred processing the action of type: ${
             e.type
           }. ${e.message ? `Message(${e.message}).` : ""} e =>`,
           e.e
@@ -463,7 +460,7 @@ export class Bot extends BotBase {
             errorActionInstance.executeAll();
           } catch (e) {
             report(
-              `[actionHandler] => An error ocurred performing the error action! e =>`,
+              `[handleAction] => An error ocurred performing the error action! e =>`,
               e
             );
           }
