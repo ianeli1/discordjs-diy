@@ -13,7 +13,8 @@ import {
   ReactionAction,
   ResponseAction,
 } from "./types";
-import { handleEmoji, report } from "./utility";
+import { handleEmoji, report as _report } from "./utility";
+import { v4 } from "uuid";
 
 /**
  * Creates a new class containing the passed `Bot` value inside of it
@@ -23,10 +24,24 @@ import { handleEmoji, report } from "./utility";
 export const ActionFactory = (bot: Bot) =>
   class Action {
     bot: Bot = bot;
-    constructor(public params: ActionParameters, public action: ActionObject) {
+    id: string;
+    constructor(
+      public params: ActionParameters,
+      public action: ActionObject,
+      invokerId: string | undefined = undefined
+    ) {
       this.execResponse = this.execResponse.bind(this);
       this.execReaction = this.execReaction.bind(this);
       this.executeAll = this.executeAll.bind(this);
+      if (action === this.bot.errorAction) {
+        this.id = `GlobalError<-${invokerId}`;
+      } else if (invokerId) {
+        this.id = `@onError<-${invokerId}`;
+      } else this.id = v4();
+    }
+
+    report(...stuff: string[]) {
+      _report(`[Action(${this.id})] =>`, ...stuff);
     }
 
     async execResponse(_response?: ResponseAction) {
@@ -92,7 +107,7 @@ export const ActionFactory = (bot: Bot) =>
         __asyncJobs: asyncJobs,
       } = this.params;
 
-      report(
+      this.report(
         `Command triggered, user: ${
           author.tag
         }, trigger: ${trigger}, args: ${args}, hasResponse: ${!!response}, hasReaction: ${!!reaction}`
@@ -116,13 +131,15 @@ export const ActionFactory = (bot: Bot) =>
         const output = await Promise.all(promiseArray);
         responseMessage = output[0] || undefined;
       } catch (e) {
+        this.report("Exception raised =>", e);
         if (onError) {
           await this.bot.handleAction(
             {
               ...this.params,
               args: e.message,
             },
-            onError
+            onError,
+            this.id
           );
         } else if (e instanceof ActionError) {
           throw e;
@@ -142,7 +159,7 @@ export const ActionFactory = (bot: Bot) =>
             )
           );
         } catch (e) {
-          report(
+          this.report(
             `An error ocurred trying to execute async job. TriggerMsgId: ${msg.id}, ReplyMsgId: ${responseMessage.id}, e => ${e}`
           );
         }

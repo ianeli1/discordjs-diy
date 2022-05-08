@@ -56,7 +56,7 @@ type PresenceType = Required<ActivityOptions["type"]>;
 
 export class Bot extends BotBase {
   private handler: CommandsHandler;
-  private errorAction: ActionObject;
+  readonly errorAction: ActionObject;
 
   /**The embed object used for creating embeds in your actions */
   readonly embed: Embed;
@@ -174,7 +174,7 @@ export class Bot extends BotBase {
   }
 
   setErrorAction(action: BotAction) {
-    this.errorAction = this.padAction(action);
+    (this.errorAction as ActionObject) = this.padAction(action);
   }
 
   /**
@@ -439,28 +439,35 @@ export class Bot extends BotBase {
     return await this.handleAction(params, action);
   }
 
-  async handleAction(params: ActionParameters, actionObj: ActionObject) {
-    const action = new this.Action(params, actionObj);
+  async handleAction(
+    params: ActionParameters,
+    actionObj: ActionObject,
+    invokerId: string | undefined = undefined
+  ) {
+    const action = new this.Action(params, actionObj, invokerId);
     try {
       await action.executeAll();
     } catch (e) {
       if (e instanceof ActionError) {
         report(
-          `[handleAction] => An error ocurred processing the action of type: ${
-            e.type
-          }. ${e.message ? `Message(${e.message}).` : ""} e =>`,
+          `[handleAction Action(${
+            action.id
+          })] => An error ocurred processing the action of type: ${e.type}. ${
+            e.message ? `Message(${e.message}).` : ""
+          } e =>`,
           e.e
         );
         if (this.errorAction) {
           const errorActionInstance = new this.Action(
             { ...params, args: e.message },
-            this.errorAction
+            this.errorAction,
+            action.id
           );
           try {
             errorActionInstance.executeAll();
           } catch (e) {
             report(
-              `[handleAction] => An error ocurred performing the error action! e =>`,
+              `[handleAction Action(${action.id})] => An error ocurred performing the error action! e =>`,
               e
             );
           }
