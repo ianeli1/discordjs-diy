@@ -1,5 +1,5 @@
 import {
-  ActivityType,
+  ActivityOptions,
   ClientOptions,
   CommandInteraction,
   Interaction,
@@ -51,6 +51,9 @@ export type BotAction = ActionObject | ResponseAction;
  * The Bot object, pass in a Discord API token and set the options according to your needs.
  * Note that you're required to set either a prefix and/or a suffix
  */
+
+type PresenceType = Required<ActivityOptions["type"]>;
+
 export class Bot extends BotBase {
   private handler: CommandsHandler;
   private errorAction: ActionObject;
@@ -456,10 +459,10 @@ export class Bot extends BotBase {
   }
 
   setPresence(
-    activities: [string, ActivityType] | [string, ActivityType][],
+    activities: [string, PresenceType] | [string, PresenceType][],
     interval: number = 10 * 60 * 1000 /*10 minutes*/
   ) {
-    function setActivity(this: Bot, activity: [string, ActivityType]) {
+    function setActivity(this: Bot, activity: [string, PresenceType]) {
       this.client.user?.setActivity(activity[0], { type: activity[1] }) ??
         report(
           "User missing from client object, bot was unable to update presence."

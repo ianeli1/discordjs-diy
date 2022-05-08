@@ -8,13 +8,13 @@ import {
   Interaction,
   Message,
   MessageActionRow,
-  MessageButton,
+  MessageButtonOptions,
   MessageOptions,
   MessagePayload,
-  MessageSelectMenu,
+  MessageSelectMenuOptions,
   Role,
   SelectMenuInteraction,
-  TextBasedChannels,
+  TextBasedChannel,
   User,
 } from "discord.js";
 import { Embed } from "./embed";
@@ -55,7 +55,7 @@ export interface ActionParameters<
   /**The user who triggered the action */
   author: User;
   /**The channel this command will be sent in */
-  channel?: TextBasedChannels;
+  channel?: TextBasedChannel;
   /**The server */
   guild?: Guild;
 
@@ -78,13 +78,9 @@ export interface ActionParameters<
 
   subscribe(
     componentOptions: NonNullable<
-      | NonNullableObject<
-          NonNullable<
-            Omit<ConstructorParameters<typeof MessageButton>[0], "customId">
-          >
-        >[]
-      | Partial<ConstructorParameters<typeof MessageButton>[0]>
-      | Partial<ConstructorParameters<typeof MessageSelectMenu>[0]>
+      | NonNullableObject<NonNullable<Omit<MessageButtonOptions, "customId">>>[]
+      | Partial<MessageButtonOptions>
+      | Partial<MessageSelectMenuOptions>
     >,
     action: (
       params: ActionParameters,

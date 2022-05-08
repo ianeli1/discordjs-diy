@@ -1,6 +1,6 @@
 {
   "name": "discordjs-diy",
-  "version": "1.1.14",
+  "version": "1.1.15",
   "main": "./dist/index.js",
   "license": "MIT",
   "devDependencies": {
@@ -20,7 +20,7 @@
     "@discordjs/builders": "^0.6.0",
     "@discordjs/rest": "^0.1.0-canary.0",
     "discord-api-types": "^0.22.0",
-    "discord.js": "^13.1.0",
+    "discord.js": "^13.6.0",
     "mongodb": "^4.2.0"
   },
   "files": [

@@ -3,7 +3,9 @@ import {
   Message,
   MessageActionRow,
   MessageButton,
+  MessageButtonOptions,
   MessageSelectMenu,
+  MessageSelectMenuOptions,
   User,
 } from "discord.js";
 import { ActionParameters } from ".";
@@ -103,7 +105,7 @@ export class ComponentHandler {
           return new MessageButton({
             ...x,
             customId,
-          } as MessageButton);
+          } as MessageButtonOptions);
         })
       );
       return [customIdArray, actionRow];
@@ -124,7 +126,7 @@ export class ComponentHandler {
             })),
             placeholder: componentOptions.placeholder ?? undefined,
             customId: customIdBase,
-          }).setCustomId(customIdBase)
+          } as MessageSelectMenuOptions).setCustomId(customIdBase)
         ),
       ];
     }
