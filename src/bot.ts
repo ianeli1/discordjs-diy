@@ -5,7 +5,7 @@ import {
   Interaction,
   Message,
 } from "discord.js";
-import { executeAction } from "./action";
+import { ActionFactory } from "./action";
 import { BotBase } from "./base";
 import { Embed } from "./embed";
 import { CommandsHandler } from "./handler";
@@ -75,6 +75,8 @@ export class Bot extends BotBase {
 
   private componentHandler: ComponentHandler;
 
+  private Action: ReturnType<typeof ActionFactory>;
+
   constructor(token: string, options: BotOptions) {
     super(token, options.intents);
     this.prefix = options.ignoreCaps
@@ -95,6 +97,7 @@ export class Bot extends BotBase {
     this.messageHandler = this.messageHandler.bind(this);
     this.interactionHandler = this.interactionHandler.bind(this);
     this.actionHandler = this.actionHandler.bind(this);
+    this.Action = ActionFactory(this);
     this.client.on("messageCreate", this.messageHandler);
     this.client.on("interactionCreate", this.interactionHandler);
   }
@@ -436,18 +439,19 @@ export class Bot extends BotBase {
     return await this.actionHandler(params, action);
   }
 
-  private async actionHandler(params: ActionParameters, action: ActionObject) {
+  private async actionHandler(
+    params: ActionParameters,
+    actionObj: ActionObject
+  ) {
+    const action = new this.Action(params, actionObj);
     try {
-      await executeAction(this.client, params, action);
+      await action.executeAll();
     } catch (e) {
       if (e.type && e.error) {
         const { error } = e as MessageError;
         if (this.errorAction) {
-          await executeAction(
-            this.client,
-            { ...params, args: error },
-            this.errorAction
-          );
+          action.params = { ...params, args: error };
+          await action.executeAll(this.errorAction);
         }
       } else {
         console.trace(
