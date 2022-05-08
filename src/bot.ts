@@ -12,7 +12,6 @@ import { CommandsHandler } from "./handler";
 import {
   ActionObject,
   ActionParameters,
-  MessageError,
   ResponseAction,
   ParametersMiddleWare,
 } from "./types";
@@ -20,6 +19,7 @@ import { pick, report } from "./utility";
 import { REST } from "@discordjs/rest";
 import { Routes } from "discord-api-types/v9";
 import { ComponentHandler } from "./componentHandler";
+import { ActionError } from "./error";
 
 interface BotOptions {
   prefix?: string;
@@ -447,17 +447,27 @@ export class Bot extends BotBase {
     try {
       await action.executeAll();
     } catch (e) {
-      if (e.type && e.error) {
-        const { error } = e as MessageError;
-        if (this.errorAction) {
-          action.params = { ...params, args: error };
-          await action.executeAll(this.errorAction);
-        }
-      } else {
-        console.trace(
-          "[discordjs-diy] => Unknown error ocurred while tring to execute an action",
-          e
+      if (e instanceof ActionError) {
+        report(
+          `[actionHandler] => An error ocurred processing the action of type: ${
+            e.type
+          }. ${e.message ? `Message(${e.message}).` : ""} e =>`,
+          e.e
         );
+        if (this.errorAction) {
+          const errorActionInstance = new this.Action(
+            { ...params, args: e.message },
+            this.errorAction
+          );
+          try {
+            errorActionInstance.executeAll();
+          } catch (e) {
+            report(
+              `[actionHandler] => An error ocurred performing the error action! e =>`,
+              e
+            );
+          }
+        }
       }
     }
   }

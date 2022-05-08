@@ -5,11 +5,11 @@ import {
   Message,
 } from "discord.js";
 import { Bot } from "./bot";
+import { ActionError } from "./error";
 import { SendableMessage } from "./types";
 import {
   ActionObject,
   ActionParameters,
-  MessageError,
   ReactionAction,
   ResponseAction,
 } from "./types";
@@ -83,7 +83,6 @@ export const ActionFactory = (bot: Bot) =>
         __asyncJobs: asyncJobs,
       } = this.params;
 
-      let error: MessageError | undefined = undefined;
       report(
         `Command triggered, user: ${
           author.tag
@@ -108,16 +107,23 @@ export const ActionFactory = (bot: Bot) =>
         } catch (e) {
           if (onError?.response) {
             this.params.error = e;
+            try {
+              await this.execResponse(onError.response);
+            } catch (e) {
+              throw new ActionError(
+                "reaction",
+                e.message || "Error performing fallback action",
+                e
+              );
+            }
             await this.execResponse(onError.response);
+          } else {
+            throw new ActionError(
+              "response",
+              e.message || "Error performing response action",
+              e
+            );
           }
-          console.trace(
-            `An unhandled error ocurred while triggering an action response, trigger: ${trigger}\n`,
-            e
-          );
-          error = {
-            type: "response",
-            error: e,
-          };
         }
       }
 
@@ -127,21 +133,23 @@ export const ActionFactory = (bot: Bot) =>
         } catch (e) {
           if (onError?.reaction) {
             this.params.error = e;
-            await this.execReaction(onError.reaction);
+            try {
+              await this.execReaction(onError.reaction);
+            } catch (e) {
+              throw new ActionError(
+                "reaction",
+                e.message || "Error performing fallback action",
+                e
+              );
+            }
+          } else {
+            throw new ActionError(
+              "reaction",
+              e.message || "Error performing reaction action",
+              e
+            );
           }
-          console.trace(
-            `An unhandled error ocurred while triggering an action reaction, trigger: ${trigger}\n`,
-            e
-          );
-          error = {
-            type: "reaction",
-            error: e,
-          };
         }
-      }
-
-      if (error) {
-        throw error;
       }
     }
   };
