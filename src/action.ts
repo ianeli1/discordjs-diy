@@ -34,23 +34,28 @@ export const ActionFactory = (bot: Bot) =>
       if (!response) return;
       const { msg } = this.params;
       if (!msg.channel) {
-        throw new Error(
+        throw new ActionError(
+          "response",
           "A channel could not be found for this command execution"
         );
       }
 
-      let reply: SendableMessage | undefined;
-      if (typeof response === "string") reply = response;
-      else if (typeof response === "function")
-        reply = await response(this.params);
-      if (msg instanceof CommandInteraction) {
-        if (msg.replied) {
-          return !!reply && msg.editReply(await reply);
+      try {
+        let reply: SendableMessage | undefined;
+        if (typeof response === "string") reply = response;
+        else if (typeof response === "function")
+          reply = await response(this.params);
+        if (msg instanceof CommandInteraction) {
+          if (msg.replied) {
+            return !!reply && msg.editReply(await reply);
+          }
+          reply && (await msg.reply(await reply));
+          return msg.fetchReply();
         }
-        reply && (await msg.reply(await reply));
-        return msg.fetchReply();
+        return !!reply && (await msg.channel.send(await reply));
+      } catch (e) {
+        throw new ActionError("response", e.message, e);
       }
-      return !!reply && (await msg.channel.send(await reply));
     }
 
     async execReaction(_reaction?: ReactionAction) {
@@ -59,18 +64,22 @@ export const ActionFactory = (bot: Bot) =>
       const { msg } = this.params;
       const { client } = this.bot;
       if (msg instanceof Interaction) {
-        report(
-          `[ExecuteAction] => Ignoring react action as reactions are not supported for slash commands`
+        throw new ActionError(
+          "reaction",
+          "React action as reactions are not supported for slash commands"
         );
-        return;
       }
-      let emoji: EmojiResolvable | undefined;
-      if (typeof reaction === "string") {
-        emoji = handleEmoji(client, reaction);
-      } else if (typeof reaction === "function") {
-        emoji = handleEmoji(client, await reaction(this.params));
+      try {
+        let emoji: EmojiResolvable | undefined;
+        if (typeof reaction === "string") {
+          emoji = handleEmoji(client, reaction);
+        } else if (typeof reaction === "function") {
+          emoji = handleEmoji(client, await reaction(this.params));
+        }
+        emoji && (await msg.react(emoji));
+      } catch (e) {
+        throw new ActionError("reaction", e.message, e);
       }
-      emoji && (await msg.react(emoji));
     }
 
     async executeAll(_action?: ActionObject) {
@@ -89,66 +98,53 @@ export const ActionFactory = (bot: Bot) =>
         }, trigger: ${trigger}, args: ${args}, hasResponse: ${!!response}, hasReaction: ${!!reaction}`
       );
 
+      const promiseArray: [
+        ReturnType<typeof this["execResponse"]> | undefined,
+        ReturnType<typeof this["execReaction"]> | undefined
+      ] = [undefined, undefined];
+
       if (response) {
-        try {
-          const responseMsg = await this.execResponse();
-          if (responseMsg) {
-            try {
-              const newParams = { ...this.params, msg: responseMsg as Message };
-              for (const asyncJob of asyncJobs) {
-                await asyncJob.doAfter(newParams);
-              }
-            } catch (e) {
-              report(
-                `An error ocurred trying to execute async job. TriggerMsgId: ${msg.id}, ReplyMsgId: ${responseMsg.id}, e => ${e}`
-              );
-            }
-          }
-        } catch (e) {
-          if (onError?.response) {
-            this.params.error = e;
-            try {
-              await this.execResponse(onError.response);
-            } catch (e) {
-              throw new ActionError(
-                "reaction",
-                e.message || "Error performing fallback action",
-                e
-              );
-            }
-            await this.execResponse(onError.response);
-          } else {
-            throw new ActionError(
-              "response",
-              e.message || "Error performing response action",
-              e
-            );
-          }
-        }
+        promiseArray[0] = this.execResponse() as typeof promiseArray[0];
       }
 
       if (reaction) {
+        promiseArray[1] = this.execReaction() as typeof promiseArray[1];
+      }
+
+      let responseMessage: Message | undefined = undefined;
+      try {
+        const output = await Promise.all(promiseArray);
+        responseMessage = output[0] || undefined;
+      } catch (e) {
+        if (onError) {
+          await this.bot.handleAction(
+            {
+              ...this.params,
+              args: e.message,
+            },
+            onError
+          );
+        } else if (e instanceof ActionError) {
+          throw e;
+        } else {
+          throw new ActionError("unknown", "An unhandled error ocurred!", e);
+        }
+      }
+
+      if (responseMessage && asyncJobs.length) {
         try {
-          await this.execReaction();
+          await Promise.all(
+            asyncJobs.map(({ doAfter }) =>
+              doAfter({
+                ...this.params,
+                msg: responseMessage!,
+              })
+            )
+          );
         } catch (e) {
-          if (onError?.reaction) {
-            this.params.error = e;
-            try {
-              await this.execReaction(onError.reaction);
-            } catch (e) {
-              throw new ActionError(
-                "reaction",
-                e.message || "Error performing fallback action",
-                e
-              );
-            }
-          } else {
-            throw new ActionError(
-              "reaction",
-              e.message || "Error performing reaction action",
-              e
-            );
-          }
+          report(
+            `An error ocurred trying to execute async job. TriggerMsgId: ${msg.id}, ReplyMsgId: ${responseMessage.id}, e => ${e}`
+          );
         }
       }
     }
