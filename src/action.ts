@@ -37,8 +37,10 @@ export const ActionFactory = (bot: Bot) =>
       this.execResponse = this.execResponse.bind(this);
       this.execReaction = this.execReaction.bind(this);
       this.executeAll = this.executeAll.bind(this);
-      if (action === this.bot.router.errorAction) {
+      if (action.rawAction === this.bot.router.errorAction) {
         this.id = `GlobalError<-${invokerId}`;
+      } else if (action.rawAction === this.router.errorAction) {
+        this.id = `@Router(${this.router.trigger}).errorAction<-${invokerId}`;
       } else if (invokerId) {
         this.id = `@onError<-${invokerId}`;
       } else this.id = v4();

@@ -7,12 +7,12 @@ export class RoutedAction implements ActionObject {
   parameters?: ActionObject["parameters"];
   response?: ActionObject["response"];
   reaction?: ActionObject["reaction"];
-  constructor(public router: Router, action: ActionObject) {
-    this.description = action.description;
-    this.onError = action.onError;
-    this.parameters = action.parameters;
-    this.reaction = action.reaction;
-    this.response = action.response;
+  constructor(public router: Router, public rawAction: ActionObject) {
+    this.description = rawAction.description;
+    this.onError = rawAction.onError;
+    this.parameters = rawAction.parameters;
+    this.reaction = rawAction.reaction;
+    this.response = rawAction.response;
     this.routeError = this.routeError.bind(this);
   }
 
