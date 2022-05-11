@@ -127,7 +127,9 @@ export const ActionFactory = (bot: Bot) =>
       this.report(
         `Command triggered, user: ${
           author.tag
-        }, trigger: ${trigger}, args: ${args}, hasResponse: ${!!response}, hasReaction: ${!!reaction}`
+        }, trigger: ${trigger}, args: ${args}, response: ${
+          response ? typeof response : "no"
+        }, reaction: ${reaction ? typeof response : "no"}`
       );
 
       const promiseArray: [
