@@ -1,120 +1,168 @@
 import {
-  Client,
   CommandInteraction,
   EmojiResolvable,
   Interaction,
   Message,
 } from "discord.js";
+import { Bot } from "./bot";
+import { ActionError } from "./error";
 import { SendableMessage } from "./types";
 import {
   ActionObject,
   ActionParameters,
-  MessageError,
   ReactionAction,
   ResponseAction,
 } from "./types";
-import { handleEmoji, report } from "./utility";
+import { handleEmoji, report as _report } from "./utility";
+import { v4 } from "uuid";
 
-export async function executeAction(
-  client: Client,
-  params: ActionParameters,
-  action: ActionObject
-) {
-  async function execResponse(response: ResponseAction) {
-    if (!msg.channel) {
-      throw new Error(
-        "A channel could not be found for this command execution"
-      );
+/**
+ * Creates a new class containing the passed `Bot` value inside of it
+ * @param bot `Bot` object
+ * @returns `Action` class
+ */
+export const ActionFactory = (bot: Bot) =>
+  class Action {
+    bot: Bot = bot;
+    id: string;
+    constructor(
+      public params: ActionParameters,
+      public action: ActionObject,
+      invokerId: string | undefined = undefined
+    ) {
+      this.execResponse = this.execResponse.bind(this);
+      this.execReaction = this.execReaction.bind(this);
+      this.executeAll = this.executeAll.bind(this);
+      if (action === this.bot.errorAction) {
+        this.id = `GlobalError<-${invokerId}`;
+      } else if (invokerId) {
+        this.id = `@onError<-${invokerId}`;
+      } else this.id = v4();
     }
 
-    let reply: SendableMessage | undefined;
-    if (typeof response === "string") reply = response;
-    else if (typeof response === "function") reply = await response(params);
-    if (msg instanceof CommandInteraction) {
-      if (msg.replied) {
-        return !!reply && msg.editReply(await reply);
+    report(...stuff: string[]) {
+      _report(`[Action(${this.id})] =>`, ...stuff);
+    }
+
+    async execResponse(_response?: ResponseAction) {
+      const response = _response ?? this.action.response;
+      if (!response) return;
+      const { msg } = this.params;
+      if (!msg.channel) {
+        throw new ActionError(
+          "response",
+          "A channel could not be found for this command execution"
+        );
       }
-      reply && (await msg.reply(await reply));
-      return msg.fetchReply();
-    }
-    return !!reply && (await msg.channel.send(await reply));
-  }
 
-  async function execReaction(reaction: ReactionAction) {
-    if (msg instanceof Interaction) {
-      report(
-        `[ExecuteAction] => Ignoring react action as reactions are not supported for slash commands`
-      );
-      return;
-    }
-    let emoji: EmojiResolvable | undefined;
-    if (typeof reaction === "string") emoji = handleEmoji(client, reaction);
-    else if (typeof reaction === "function")
-      emoji = handleEmoji(client, await reaction(params));
-    emoji && (await msg.react(emoji));
-  }
-
-  const { reaction, response, onError } = action;
-  const { msg, args, trigger, author, __asyncJobs: asyncJobs } = params;
-
-  let error: MessageError | undefined = undefined;
-  report(
-    `Command triggered, user: ${
-      author.tag
-    }, trigger: ${trigger}, args: ${args}, hasResponse: ${!!response}, hasReaction: ${!!reaction}`
-  );
-
-  if (response) {
-    try {
-      const responseMsg = await execResponse(response);
-      if (responseMsg) {
-        try {
-          const newParams = { ...params, msg: responseMsg as Message };
-          for (const asyncJob of asyncJobs) {
-            await asyncJob.doAfter(newParams);
+      try {
+        let reply: SendableMessage | undefined;
+        if (typeof response === "string") reply = response;
+        else if (typeof response === "function")
+          reply = await response(this.params);
+        if (msg instanceof CommandInteraction) {
+          if (msg.replied) {
+            return !!reply && msg.editReply(await reply);
           }
+          reply && (await msg.reply(await reply));
+          return msg.fetchReply();
+        }
+        return !!reply && (await msg.channel.send(await reply));
+      } catch (e) {
+        throw new ActionError("response", e.message, e);
+      }
+    }
+
+    async execReaction(_reaction?: ReactionAction) {
+      const reaction = _reaction ?? this.action.reaction;
+      if (!reaction) return;
+      const { msg } = this.params;
+      const { client } = this.bot;
+      if (msg instanceof Interaction) {
+        throw new ActionError(
+          "reaction",
+          "React action as reactions are not supported for slash commands"
+        );
+      }
+      try {
+        let emoji: EmojiResolvable | undefined;
+        if (typeof reaction === "string") {
+          emoji = handleEmoji(client, reaction);
+        } else if (typeof reaction === "function") {
+          emoji = handleEmoji(client, await reaction(this.params));
+        }
+        emoji && (await msg.react(emoji));
+      } catch (e) {
+        throw new ActionError("reaction", e.message, e);
+      }
+    }
+
+    async executeAll(_action?: ActionObject) {
+      const { reaction, response, onError } = _action ?? this.action;
+      const {
+        msg,
+        args,
+        trigger,
+        author,
+        __asyncJobs: asyncJobs,
+      } = this.params;
+
+      this.report(
+        `Command triggered, user: ${
+          author.tag
+        }, trigger: ${trigger}, args: ${args}, hasResponse: ${!!response}, hasReaction: ${!!reaction}`
+      );
+
+      const promiseArray: [
+        ReturnType<typeof this["execResponse"]> | undefined,
+        ReturnType<typeof this["execReaction"]> | undefined
+      ] = [undefined, undefined];
+
+      if (response) {
+        promiseArray[0] = this.execResponse() as typeof promiseArray[0];
+      }
+
+      if (reaction) {
+        promiseArray[1] = this.execReaction() as typeof promiseArray[1];
+      }
+
+      let responseMessage: Message | undefined = undefined;
+      try {
+        const output = await Promise.all(promiseArray);
+        responseMessage = output[0] || undefined;
+      } catch (e) {
+        this.report("Exception raised =>", e);
+        if (onError) {
+          await this.bot.handleAction(
+            {
+              ...this.params,
+              args: e.message,
+            },
+            onError,
+            this.id
+          );
+        } else if (e instanceof ActionError) {
+          throw e;
+        } else {
+          throw new ActionError("unknown", "An unhandled error ocurred!", e);
+        }
+      }
+
+      if (responseMessage && asyncJobs.length) {
+        try {
+          await Promise.all(
+            asyncJobs.map(({ doAfter }) =>
+              doAfter({
+                ...this.params,
+                msg: responseMessage!,
+              })
+            )
+          );
         } catch (e) {
-          report(
-            `An error ocurred trying to execute async job. TriggerMsgId: ${msg.id}, ReplyMsgId: ${responseMsg.id}, e => ${e}`
+          this.report(
+            `An error ocurred trying to execute async job. TriggerMsgId: ${msg.id}, ReplyMsgId: ${responseMessage.id}, e => ${e}`
           );
         }
       }
-    } catch (e) {
-      if (onError?.response) {
-        params.error = e;
-        await execResponse(onError.response);
-      }
-      console.trace(
-        `An unhandled error ocurred while triggering an action response, trigger: ${trigger}\n`,
-        e
-      );
-      error = {
-        type: "response",
-        error: e,
-      };
     }
-  }
-
-  if (reaction) {
-    try {
-      await execReaction(reaction);
-    } catch (e) {
-      if (onError?.reaction) {
-        params.error = e;
-        await execReaction(onError.reaction);
-      }
-      console.trace(
-        `An unhandled error ocurred while triggering an action reaction, trigger: ${trigger}\n`,
-        e
-      );
-      error = {
-        type: "reaction",
-        error: e,
-      };
-    }
-  }
-
-  if (error) {
-    throw error;
-  }
-}
+  };

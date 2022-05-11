@@ -1,12 +1,13 @@
 {
   "name": "discordjs-diy",
-  "version": "1.1.15",
+  "version": "1.2.0",
   "main": "./dist/index.js",
   "license": "MIT",
   "devDependencies": {
     "@types/jest": "^26.0.22",
     "@types/node": "^14.14.37",
     "@types/node-fetch": "^2.5.12",
+    "@types/uuid": "^8.3.4",
     "@types/ws": "^7.4.0",
     "jest": "^26.6.3",
     "node-fetch": "^2.6.1",
@@ -21,7 +22,8 @@
     "@discordjs/rest": "^0.1.0-canary.0",
     "discord-api-types": "^0.22.0",
     "discord.js": "^13.6.0",
-    "mongodb": "^4.2.0"
+    "mongodb": "^4.2.0",
+    "uuid": "^8.3.2"
   },
   "files": [
     "dist",

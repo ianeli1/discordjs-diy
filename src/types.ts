@@ -157,8 +157,3 @@ export interface ActionObject {
     description?: string;
   }[];
 }
-
-export interface MessageError {
-  type: "reaction" | "response";
-  error: any;
-}

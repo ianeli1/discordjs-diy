@@ -6,6 +6,7 @@ jest.mock("../utility", () => ({
   report: jest.fn(),
   handleEmoji: jest.fn().mockImplementation((_, x: string) => x),
 }));
+//@ts-ignore
 import { executeAction } from "../action";
 jest.useFakeTimers();
 //@ts-ignore

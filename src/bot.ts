@@ -5,14 +5,13 @@ import {
   Interaction,
   Message,
 } from "discord.js";
-import { executeAction } from "./action";
+import { ActionFactory } from "./action";
 import { BotBase } from "./base";
 import { Embed } from "./embed";
 import { CommandsHandler } from "./handler";
 import {
   ActionObject,
   ActionParameters,
-  MessageError,
   ResponseAction,
   ParametersMiddleWare,
 } from "./types";
@@ -20,6 +19,7 @@ import { pick, report } from "./utility";
 import { REST } from "@discordjs/rest";
 import { Routes } from "discord-api-types/v9";
 import { ComponentHandler } from "./componentHandler";
+import { ActionError } from "./error";
 
 interface BotOptions {
   prefix?: string;
@@ -56,7 +56,7 @@ type PresenceType = Required<ActivityOptions["type"]>;
 
 export class Bot extends BotBase {
   private handler: CommandsHandler;
-  private errorAction: ActionObject;
+  readonly errorAction: ActionObject;
 
   /**The embed object used for creating embeds in your actions */
   readonly embed: Embed;
@@ -74,6 +74,8 @@ export class Bot extends BotBase {
   private middlewareArray: ParametersMiddleWare<any>[] = [];
 
   private componentHandler: ComponentHandler;
+
+  private Action: ReturnType<typeof ActionFactory>;
 
   constructor(token: string, options: BotOptions) {
     super(token, options.intents);
@@ -94,7 +96,8 @@ export class Bot extends BotBase {
     this.componentHandler = new ComponentHandler();
     this.messageHandler = this.messageHandler.bind(this);
     this.interactionHandler = this.interactionHandler.bind(this);
-    this.actionHandler = this.actionHandler.bind(this);
+    this.handleAction = this.handleAction.bind(this);
+    this.Action = ActionFactory(this);
     this.client.on("messageCreate", this.messageHandler);
     this.client.on("interactionCreate", this.interactionHandler);
   }
@@ -171,7 +174,7 @@ export class Bot extends BotBase {
   }
 
   setErrorAction(action: BotAction) {
-    this.errorAction = this.padAction(action);
+    (this.errorAction as ActionObject) = this.padAction(action);
   }
 
   /**
@@ -388,7 +391,7 @@ export class Bot extends BotBase {
         interaction.commandName
       );
 
-      return await this.actionHandler(actionParameters, action);
+      return await this.handleAction(actionParameters, action);
     } catch (e) {}
   }
 
@@ -433,27 +436,42 @@ export class Bot extends BotBase {
 
     const action = this.handler.findAction(trigger);
 
-    return await this.actionHandler(params, action);
+    return await this.handleAction(params, action);
   }
 
-  private async actionHandler(params: ActionParameters, action: ActionObject) {
+  async handleAction(
+    params: ActionParameters,
+    actionObj: ActionObject,
+    invokerId: string | undefined = undefined
+  ) {
+    const action = new this.Action(params, actionObj, invokerId);
     try {
-      await executeAction(this.client, params, action);
+      await action.executeAll();
     } catch (e) {
-      if (e.type && e.error) {
-        const { error } = e as MessageError;
-        if (this.errorAction) {
-          await executeAction(
-            this.client,
-            { ...params, args: error },
-            this.errorAction
-          );
-        }
-      } else {
-        console.trace(
-          "[discordjs-diy] => Unknown error ocurred while tring to execute an action",
-          e
+      if (e instanceof ActionError) {
+        report(
+          `[handleAction Action(${
+            action.id
+          })] => An error ocurred processing the action of type: ${e.type}. ${
+            e.message ? `Message(${e.message}).` : ""
+          } e =>`,
+          e.e
         );
+        if (this.errorAction) {
+          const errorActionInstance = new this.Action(
+            { ...params, args: e.message },
+            this.errorAction,
+            action.id
+          );
+          try {
+            errorActionInstance.executeAll();
+          } catch (e) {
+            report(
+              `[handleAction Action(${action.id})] => An error ocurred performing the error action! e =>`,
+              e
+            );
+          }
+        }
       }
     }
   }

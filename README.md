@@ -210,6 +210,35 @@ bot.registerAction("image", async ({ createEmbed, asyncEffect }) => {
 });
 ```
 
+### Error handling
+
+DJS-diy offers per-action and global approaches to error handling.
+
+To handle any exception using the same action:
+
+```ts
+bot.setErrorAction({
+  reaction: "😭",
+  response({ args }) {
+    //args will contain the value of `e.message`
+    return `Error ocurred => ${args}`;
+  },
+});
+```
+
+To handle an exception for a specific action, pass in an object and include the `onError` `ActionObject`:
+
+```ts
+bot.registerAction("hello", {
+  response() {
+    throw new Error("No hellos for you today");
+  },
+  onError: {
+    reaction: "😭",
+  },
+});
+```
+
 ### Middleware
 
 Discordjs-diy provides support for custom middleware.

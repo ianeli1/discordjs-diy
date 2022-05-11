@@ -215,6 +215,7 @@ describe("setPresence method", () => {
 
   test("setting a single status", () => {
     const presence = ["game", "PLAYING"] as [string, ActivityType];
+    //@ts-ignore
     bot.setPresence(presence);
     expect(bot.client.user!.setActivity).toHaveBeenCalledWith(presence[0], {
       type: presence[1],
@@ -226,6 +227,7 @@ describe("setPresence method", () => {
       ["1", "PLAYING"],
       ["2", "PLAYING"],
     ] as [string, ActivityType][];
+    //@ts-ignore
     bot.setPresence(presences);
     expect(bot.client.user?.setActivity).toHaveBeenCalled();
   });
