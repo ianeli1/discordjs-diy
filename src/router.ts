@@ -50,7 +50,7 @@ export class Router {
    * @returns
    */
   @autobind
-  on<T>(
+  on<T extends BotAction>(
     trigger: string | string[] | RegExp,
     action: T,
     parameters?: T extends Router ? never : ActionObject["parameters"]
@@ -68,20 +68,20 @@ export class Router {
         ? trigger.toLowerCase()
         : trigger;
 
-    const paddedAction = this.padAction(action, parameters);
+    const paddedAction = isRouter ? action : this.padAction(action, parameters);
     this.report(
       `[Trigger: "${trigger}"] =>`,
       isRouter
         ? `Routing to Router(${trigger})`
         : `Created a new action => (${[
-            paddedAction.response && "response",
-            paddedAction.reaction && "reaction",
-            paddedAction.onError && "onErr",
+            (paddedAction as ActionObject).response && "response",
+            (paddedAction as ActionObject).reaction && "reaction",
+            (paddedAction as ActionObject).onError && "onErr",
           ].filter(Boolean)})`
     );
     this.handler.setAction(
       trigger instanceof Array ? this.turnArrayToRegex(trigger) : trigger,
-      paddedAction
+      paddedAction as ActionObject | Router
     );
     return this;
   }
