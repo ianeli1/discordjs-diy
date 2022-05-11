@@ -16,11 +16,6 @@ export class Router {
   options: RouterOptions;
   readonly errorAction: ActionObject;
 
-  /**
-   *
-   * @param trigger Will be replaced by `Bot` values
-   * @param options Will be replaced by `Bot` values
-   */
   constructor() {
     this.options = {
       ignoreCaps: false,
