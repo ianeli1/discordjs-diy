@@ -1,19 +1,22 @@
 import { ActionObject } from "./types";
 import { SlashCommandBuilder } from "@discordjs/builders";
 import { report } from "./utility";
+import { Router } from "./router";
+
+type HandlerContent = ActionObject | Router;
 
 interface MessageActions {
-  [trigger: string]: ActionObject;
+  [trigger: string]: HandlerContent;
 }
 
-type RegexActions = Map<RegExp, ActionObject>;
+type RegexActions = Map<RegExp, HandlerContent>;
 
 type TriggerType = string | RegExp;
 
 export class CommandsHandler {
   private stringActions: MessageActions;
   private regexActions: RegexActions;
-  private defaultAction: ActionObject;
+  private defaultAction: ActionObject | undefined;
   readonly commands: ReturnType<SlashCommandBuilder["toJSON"]>[];
 
   constructor() {
@@ -142,19 +145,19 @@ export class CommandsHandler {
     return command.toJSON();
   }
 
-  setAction(trigger: TriggerType, action: ActionObject) {
+  setAction(trigger: TriggerType, action: HandlerContent) {
     if (typeof trigger === "string") {
       this.stringActions[trigger] = action;
 
-      //Create new slash command JSON, ignores Regex commands as they're not supported
+      //FIXME //Create new slash command JSON, ignores Regex commands as they're not supported
 
-      this.commands.push(
-        this.createSlashCommandParams(
-          trigger,
-          action.description ?? "",
-          action.parameters
-        )
-      );
+      // this.commands.push(
+      //   this.createSlashCommandParams(
+      //     trigger,
+      //     action.description ?? "",
+      //     action.parameters
+      //   )
+      // );
       return trigger;
     }
     this.regexActions.set(trigger, action);

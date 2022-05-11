@@ -18,6 +18,7 @@ import {
   User,
 } from "discord.js";
 import { Embed } from "./embed";
+import { Router } from "./router";
 
 interface GenericObject {
   [name: string]: any;
@@ -157,3 +158,5 @@ export interface ActionObject {
     description?: string;
   }[];
 }
+
+export type BotAction = ActionObject | ResponseAction | Router;

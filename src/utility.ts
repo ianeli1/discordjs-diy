@@ -1,7 +1,7 @@
 import { Client, EmojiResolvable } from "discord.js";
 
 export function report(...stuff: string[]) {
-  console.log("[discord.js-diy] =>", ...stuff);
+  console.log("[djs-diy] =>", ...stuff);
 }
 
 export function handleEmoji(
@@ -15,4 +15,8 @@ export function handleEmoji(
 
 export function pick(list: any[]) {
   return list[Math.floor(Math.random() * list.length)];
+}
+
+export function firstWord(content: string) {
+  return content.split(" ")[0];
 }

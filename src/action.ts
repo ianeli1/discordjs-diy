@@ -15,6 +15,7 @@ import {
 } from "./types";
 import { handleEmoji, report as _report } from "./utility";
 import { v4 } from "uuid";
+import { RoutedAction } from "./routedAction";
 
 /**
  * Creates a new class containing the passed `Bot` value inside of it
@@ -27,13 +28,13 @@ export const ActionFactory = (bot: Bot) =>
     id: string;
     constructor(
       public params: ActionParameters,
-      public action: ActionObject,
+      public action: RoutedAction,
       invokerId: string | undefined = undefined
     ) {
       this.execResponse = this.execResponse.bind(this);
       this.execReaction = this.execReaction.bind(this);
       this.executeAll = this.executeAll.bind(this);
-      if (action === this.bot.errorAction) {
+      if (action === this.bot.router.errorAction) {
         this.id = `GlobalError<-${invokerId}`;
       } else if (invokerId) {
         this.id = `@onError<-${invokerId}`;
@@ -42,6 +43,22 @@ export const ActionFactory = (bot: Bot) =>
 
     report(...stuff: string[]) {
       _report(`[Action(${this.id})] =>`, ...stuff);
+    }
+
+    hasError() {
+      return !!this.action.onError;
+    }
+
+    getError(newParams: Partial<ActionParameters>): Action | undefined {
+      if (this.hasError()) {
+        const routedError = this.action.routeError();
+        return new Action(
+          { ...this.params, ...newParams },
+          routedError!,
+          this.id
+        );
+      }
+      return undefined;
     }
 
     async execResponse(_response?: ResponseAction) {
@@ -138,7 +155,7 @@ export const ActionFactory = (bot: Bot) =>
               ...this.params,
               args: e.message,
             },
-            onError,
+            new RoutedAction(this.action.router, onError),
             this.id
           );
         } else if (e instanceof ActionError) {
