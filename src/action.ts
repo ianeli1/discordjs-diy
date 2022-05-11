@@ -16,6 +16,7 @@ import {
 import { handleEmoji, report as _report } from "./utility";
 import { v4 } from "uuid";
 import { RoutedAction } from "./routedAction";
+import { Router } from "./router";
 
 /**
  * Creates a new class containing the passed `Bot` value inside of it
@@ -26,11 +27,13 @@ export const ActionFactory = (bot: Bot) =>
   class Action {
     bot: Bot = bot;
     id: string;
+    router: Router;
     constructor(
       public params: ActionParameters,
       public action: RoutedAction,
       invokerId: string | undefined = undefined
     ) {
+      this.router = this.action.router;
       this.execResponse = this.execResponse.bind(this);
       this.execReaction = this.execReaction.bind(this);
       this.executeAll = this.executeAll.bind(this);
@@ -49,16 +52,35 @@ export const ActionFactory = (bot: Bot) =>
       return !!this.action.onError;
     }
 
-    getError(newParams: Partial<ActionParameters>): Action | undefined {
+    /**
+     * Tries to get the error:
+     * - First tries to get the error from the ActionObject
+     * - Check router for an `onError` ActionObject
+     * - Checks the parent routers
+     * @param newParams
+     */
+    *getError(newParams: Partial<ActionParameters>) {
+      let pointer: Router | undefined = this.router;
+      let prevAction: Action = this;
       if (this.hasError()) {
         const routedError = this.action.routeError();
-        return new Action(
+        yield (prevAction = new Action(
           { ...this.params, ...newParams },
           routedError!,
-          this.id
-        );
+          prevAction.id
+        ));
       }
-      return undefined;
+      while (pointer) {
+        if (pointer.errorAction) {
+          yield (prevAction = new Action(
+            { ...this.params, ...newParams },
+            new RoutedAction(this.router, pointer.errorAction),
+            prevAction.id
+          ));
+        }
+        pointer = pointer.parent;
+      }
+      yield undefined;
     }
 
     async execResponse(_response?: ResponseAction) {
@@ -115,7 +137,7 @@ export const ActionFactory = (bot: Bot) =>
     }
 
     async executeAll(_action?: ActionObject) {
-      const { reaction, response, onError } = _action ?? this.action;
+      const { reaction, response } = _action ?? this.action;
       const {
         msg,
         args,
@@ -151,16 +173,7 @@ export const ActionFactory = (bot: Bot) =>
         responseMessage = output[0] || undefined;
       } catch (e) {
         this.report("Exception raised =>", e);
-        if (onError) {
-          await this.bot.handleAction(
-            {
-              ...this.params,
-              args: e.message,
-            },
-            new RoutedAction(this.action.router, onError),
-            this.id
-          );
-        } else if (e instanceof ActionError) {
+        if (e instanceof ActionError) {
           throw e;
         } else {
           throw new ActionError("unknown", "An unhandled error ocurred!", e);

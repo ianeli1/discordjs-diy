@@ -13,6 +13,7 @@ export class Router {
   public trigger: string | undefined = undefined;
   private handler: CommandsHandler = new CommandsHandler();
   _bot: Bot;
+  parent: Router | undefined = undefined;
   options: RouterOptions;
   readonly errorAction: ActionObject;
 
@@ -20,6 +21,17 @@ export class Router {
     this.options = {
       ignoreCaps: false,
     };
+  }
+
+  /**
+   * @returns an error action available in the route, if any
+   */
+  @autobind
+  findError(): ActionObject | undefined {
+    if (!this.errorAction) {
+      return this.parent?.findError();
+    }
+    return this.errorAction;
   }
 
   @autobind
@@ -61,6 +73,7 @@ export class Router {
         action.trigger = trigger;
         action._bot = this._bot;
         action.options.ignoreCaps = this._bot.ignoreCaps;
+        action.parent = this;
       } else throw new Error("Routers only support string triggers");
     }
     trigger =

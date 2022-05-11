@@ -13,7 +13,6 @@ import { firstWord, pick, report as _report } from "./utility";
 // import { REST } from "@discordjs/rest";
 // import { Routes } from "discord-api-types/v9";
 import { ComponentHandler } from "./componentHandler";
-import { ActionError } from "./error";
 import { Router } from "./router";
 import { RoutedAction } from "./routedAction";
 
@@ -417,27 +416,20 @@ export class Bot extends BotBase {
     try {
       await action.executeAll();
     } catch (e) {
-      if (e instanceof ActionError) {
-        this.report(
-          `[handleAction Action(${
-            action.id
-          })] => An error ocurred processing the action of type: ${e.type}. ${
-            e.message ? `Message(${e.message}).` : ""
-          } e =>`,
-          e.e
-        );
-        if (action.hasError()) {
-          const errorActionInstance = action.getError({
-            args: e.message,
-          })!;
-          try {
-            errorActionInstance.executeAll();
-          } catch (e) {
-            this.report(
-              `[handleAction Action(${action.id})] => An error ocurred performing the error action! e =>`,
-              e
-            );
-          }
+      for (const errorAction of action.getError({ args: e.message })) {
+        if (!errorAction) break;
+        try {
+          await errorAction.executeAll();
+          break;
+        } catch (e) {
+          this.report(
+            `[handleAction Action(${
+              errorAction.id
+            })] => An error ocurred processing the fallback action. ${
+              e.message ? `Message(${e.message}).` : ""
+            } e =>`,
+            e.e
+          );
         }
       }
     }
