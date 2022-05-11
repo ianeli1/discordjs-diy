@@ -9,7 +9,7 @@ import { ActionFactory } from "./action";
 import { BotBase } from "./base";
 import { Embed } from "./embed";
 import { ActionParameters, ParametersMiddleWare } from "./types";
-import { firstWord, pick, report } from "./utility";
+import { firstWord, pick, report as _report } from "./utility";
 // import { REST } from "@discordjs/rest";
 // import { Routes } from "discord-api-types/v9";
 import { ComponentHandler } from "./componentHandler";
@@ -187,7 +187,7 @@ export class Bot extends BotBase {
     ) => {
       if (!response) return;
       if (!msg.channel) {
-        report(
+        this.report(
           "[CreateParams] => A channel for this command call could not be located."
         );
         return;
@@ -207,7 +207,7 @@ export class Bot extends BotBase {
             })
         ).first();
       } catch (e) {
-        report(
+        this.report(
           `An error ocurred while expecting a reply from ${author.tag}`,
           e
         );
@@ -418,7 +418,7 @@ export class Bot extends BotBase {
       await action.executeAll();
     } catch (e) {
       if (e instanceof ActionError) {
-        report(
+        this.report(
           `[handleAction Action(${
             action.id
           })] => An error ocurred processing the action of type: ${e.type}. ${
@@ -433,7 +433,7 @@ export class Bot extends BotBase {
           try {
             errorActionInstance.executeAll();
           } catch (e) {
-            report(
+            this.report(
               `[handleAction Action(${action.id})] => An error ocurred performing the error action! e =>`,
               e
             );
@@ -449,7 +449,7 @@ export class Bot extends BotBase {
   ) {
     function setActivity(this: Bot, activity: [string, PresenceType]) {
       this.client.user?.setActivity(activity[0], { type: activity[1] }) ??
-        report(
+        this.report(
           "User missing from client object, bot was unable to update presence."
         );
     }
