@@ -25,9 +25,17 @@ export class Router {
   @autobind
   findAction(content: string): RoutedAction | undefined {
     this.report(`Content: "${content}"`);
-    const searchResult = this.handler.findAction(firstWord(content));
+    const searchResult = this.handler.findAction(
+      this.options.ignoreCaps
+        ? firstWord(content).toLowerCase()
+        : firstWord(content)
+    );
     if (searchResult instanceof Router) {
-      const newContent = content.replace(searchResult.trigger ?? "", "").trim();
+      let newContent = (
+        this.options.ignoreCaps ? content.toLowerCase() : content
+      )
+        .replace(searchResult.trigger ?? "", "")
+        .trim();
       return searchResult.findAction(newContent);
     }
     return searchResult && new RoutedAction(this, searchResult);
