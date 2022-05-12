@@ -27,21 +27,6 @@ interface BotOptions {
 }
 
 /**
- * The action your bot will be executing on every trigger
- * It can be:
- *  - A function
- *  - A function that returns a Promise
- *  - A function that returns an embed
- *  - A promise
- *  - A string
- *  - Standard Discordjs Message object
- *  - An embed
- *
- * Returning undefined for slash commands will result in an error
- * Note that it can be undefined or a function that returns undefined, but this will simply be ignored
- */
-
-/**
  * The Bot object, pass in a Discord API token and set the options according to your needs.
  * Note that you're required to set either a prefix and/or a suffix
  */

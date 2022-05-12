@@ -159,4 +159,19 @@ export interface ActionObject {
   }[];
 }
 
+/**
+ * The action your bot will be executing on every trigger
+ * It can be:
+ *  - A function
+ *  - A function that returns a Promise
+ *  - A function that returns an embed
+ *  - A promise
+ *  - A string
+ *  - Standard Discordjs Message object
+ *  - An embed
+ *  - A router
+ *
+ * Returning undefined for slash commands will result in an error
+ * Note that it can be undefined or a function that returns undefined, but this will simply be ignored
+ */
 export type BotAction = ActionObject | ResponseAction | Router;
