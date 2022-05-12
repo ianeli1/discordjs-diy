@@ -1,5 +1,4 @@
 import {
-  ActivityOptions,
   ClientOptions,
   CommandInteraction,
   Interaction,
@@ -9,7 +8,7 @@ import { ActionFactory } from "./action";
 import { BotBase } from "./base";
 import { Embed } from "./embed";
 import { ActionParameters, ParametersMiddleWare } from "./types";
-import { firstWord, pick, report as _report } from "./utility";
+import { firstWord, report as _report } from "./utility";
 // import { REST } from "@discordjs/rest";
 // import { Routes } from "discord-api-types/v9";
 import { ComponentHandler } from "./componentHandler";
@@ -31,12 +30,9 @@ interface BotOptions {
  * Note that you're required to set either a prefix and/or a suffix
  */
 
-type PresenceType = Required<ActivityOptions["type"]>;
-
 export class Bot extends BotBase {
   /**The embed object used for creating embeds in your actions */
   readonly embed: Embed;
-  private presenceInterval: NodeJS.Timeout;
 
   /**The prefix used by your bot */
   readonly prefix: string | undefined;
@@ -417,30 +413,6 @@ export class Bot extends BotBase {
           );
         }
       }
-    }
-  }
-
-  setPresence(
-    activities: [string, PresenceType] | [string, PresenceType][],
-    interval: number = 10 * 60 * 1000 /*10 minutes*/
-  ) {
-    function setActivity(this: Bot, activity: [string, PresenceType]) {
-      this.client.user?.setActivity(activity[0], { type: activity[1] }) ??
-        this.report(
-          "User missing from client object, bot was unable to update presence."
-        );
-    }
-
-    if (activities.length === 0)
-      throw new Error("Presence list can't be empty");
-
-    clearInterval(this.presenceInterval);
-    if (activities[0] instanceof Array) {
-      this.presenceInterval = setInterval(() => {
-        setActivity.bind(this, pick(activities))();
-      }, interval);
-    } else {
-      setActivity.bind(this, activities)();
     }
   }
 }
