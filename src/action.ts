@@ -47,7 +47,7 @@ export const ActionFactory = (bot: Bot) =>
     }
 
     report(...stuff: string[]) {
-      _report(`[Action(${this.id})] =>`, ...stuff);
+      this.router.report(`[Action(${this.id})] =>`, ...stuff);
     }
 
     hasError() {

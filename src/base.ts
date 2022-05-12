@@ -1,3 +1,4 @@
+import autobind from "autobind-decorator";
 import { Client, ClientOptions, Intents } from "discord.js";
 import { report as _report } from "./utility";
 
@@ -29,6 +30,7 @@ export class BotBase {
     });
   }
 
+  @autobind
   report(...stuff: any[]) {
     _report(`[Bot(${this.id})] =>`, ...stuff);
   }

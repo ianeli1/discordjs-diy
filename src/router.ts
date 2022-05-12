@@ -119,8 +119,17 @@ export class Router {
     );
   }
 
-  private report(...stuff: any[]) {
-    _report(`[Router(${this.trigger ?? "@Bot"})] =>`, ...stuff);
+  @autobind
+  report(...stuff: any[]) {
+    const isGlobal = this === this._bot?.router;
+    const reportFn = this._bot?.report ?? _report;
+
+    reportFn(
+      `[Router(${
+        this.trigger ?? (isGlobal ? "@Bot" : "<trigger to be assigned>")
+      })] =>`,
+      ...stuff
+    );
   }
 
   private padAction(action: Router): Router;
