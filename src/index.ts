@@ -9,12 +9,4 @@ export type {
 } from "./types";
 export { Session, SessionConfig, SessionMW } from "./session";
 
-export type {
-  Message,
-  Interaction,
-  ButtonInteraction,
-  SelectMenuInteraction,
-  MessageEmbed,
-  MessageOptions,
-  MessagePayload,
-} from "discord.js";
+export * from "discord.js";
