@@ -1,8 +1,8 @@
 import {
-  ClientOptions,
-  CommandInteraction,
-  Interaction,
-  Message,
+    ClientOptions,
+    CommandInteraction,
+    Interaction,
+    Message,
 } from "discord.js";
 import { ActionFactory } from "./action";
 import { BotBase } from "./base";
@@ -14,15 +14,17 @@ import { firstWord, report as _report } from "./utility";
 import { ComponentHandler } from "./componentHandler";
 import { Router } from "./router";
 import { RoutedAction } from "./routedAction";
+import autobind from "autobind-decorator";
+import { SlashCommands } from "./slashCommands";
 
 interface BotOptions {
-  prefix?: string;
-  suffix?: string;
-  ignoreCaps?: boolean;
-  embed?: Embed;
+    prefix?: string;
+    suffix?: string;
+    ignoreCaps?: boolean;
+    embed?: Embed;
 
-  /**Custom intents array https://discord.js.org/#/docs/main/stable/class/Intents */
-  intents?: ClientOptions["intents"];
+    /**Custom intents array https://discord.js.org/#/docs/main/stable/class/Intents */
+    intents?: ClientOptions["intents"];
 }
 
 /**
@@ -31,388 +33,372 @@ interface BotOptions {
  */
 
 export class Bot extends BotBase {
-  /**The embed object used for creating embeds in your actions */
-  readonly embed: Embed;
+    /**The embed object used for creating embeds in your actions */
+    readonly embed: Embed;
 
-  /**The prefix used by your bot */
-  readonly prefix: string | undefined;
+    /**The prefix used by your bot */
+    readonly prefix: string | undefined;
 
-  /**The suffix used by your bot */
-  readonly suffix: string | undefined;
+    /**The suffix used by your bot */
+    readonly suffix: string | undefined;
 
-  /**The bot will automatically ignore caps on the trigger keyword if enabled */
-  readonly ignoreCaps: boolean;
+    /**The bot will automatically ignore caps on the trigger keyword if enabled */
+    readonly ignoreCaps: boolean;
 
-  private middlewareArray: ParametersMiddleWare<any>[] = [];
+    private middlewareArray: ParametersMiddleWare<any>[] = [];
 
-  private componentHandler: ComponentHandler;
+    private componentHandler: ComponentHandler;
 
-  private Action: ReturnType<typeof ActionFactory>;
+    private Action: ReturnType<typeof ActionFactory>;
 
-  /**@private */
-  router: Router;
+    /**@private */
+    router: Router;
 
-  constructor(token: string, options: BotOptions) {
-    super(token, options.intents);
-    this.prefix = options.ignoreCaps
-      ? options.prefix?.toLowerCase()
-      : options.prefix;
-    this.suffix = options.ignoreCaps
-      ? options.suffix?.toLowerCase()
-      : options.suffix;
-    this.embed = options.embed ?? new Embed({});
-    this.ignoreCaps = options.ignoreCaps ?? false;
-    if (!this.suffix && !this.prefix)
-      throw new Error(
-        "You need to provide at least one of the following: prefix or suffix"
-      );
+    constructor(token: string, options: BotOptions) {
+        super(token, options.intents);
+        this.prefix = options.ignoreCaps
+            ? options.prefix?.toLowerCase()
+            : options.prefix;
+        this.suffix = options.ignoreCaps
+            ? options.suffix?.toLowerCase()
+            : options.suffix;
+        this.embed = options.embed ?? new Embed({});
+        this.ignoreCaps = options.ignoreCaps ?? false;
+        if (!this.suffix && !this.prefix)
+            throw new Error(
+                "You need to provide at least one of the following: prefix or suffix"
+            );
 
-    this.router = new Router();
-    this.router.options.ignoreCaps = this.ignoreCaps;
-    this.router._bot = this;
-    this.on = this.router.on;
-    this.onDefault = this.router.onDefault;
-    this.onError = this.router.onError;
+        this.router = new Router();
+        this.router.options.ignoreCaps = this.ignoreCaps;
+        this.router._bot = this;
+        this.on = this.router.on;
+        this.onDefault = this.router.onDefault;
+        this.onError = this.router.onError;
 
-    this.componentHandler = new ComponentHandler();
-    this.messageHandler = this.messageHandler.bind(this);
-    this.interactionHandler = this.interactionHandler.bind(this);
-    this.handleAction = this.handleAction.bind(this);
-    this.Action = ActionFactory(this);
-    this.client.on("messageCreate", this.messageHandler);
-    this.client.on("interactionCreate", this.interactionHandler);
+        this.componentHandler = new ComponentHandler();
+        this.messageHandler = this.messageHandler.bind(this);
+        this.interactionHandler = this.interactionHandler.bind(this);
+        this.handleAction = this.handleAction.bind(this);
+        this.Action = ActionFactory(this);
+        this.client.on("messageCreate", this.messageHandler);
+        this.client.on("interactionCreate", this.interactionHandler);
 
-    /** @deprecated */
-    this.registerAction = this.on;
-    this.setDefaultAction = this.onDefault;
-    this.setErrorAction = this.onError;
-  }
+        /** @deprecated */
+        this.registerAction = this.on;
+        this.setDefaultAction = this.onDefault;
+        this.setErrorAction = this.onError;
 
-  /**
-   * Creates a new action that the bot will react to.
-   * Replaces the now deprecated `registerAction`
-   * @param trigger Name of the trigger
-   * @param action Action to perform on this command
-   * @param parameters [Optional] Parameters to be registered for slash command, defaults to [{name: "arguments", type: "STRING"}]
-   * @returns
-   */
-  on: Router["on"];
-  onDefault: Router["onDefault"];
-  onError: Router["onError"];
-
-  /**@deprecated */
-  setDefaultAction: Router["onDefault"];
-
-  /**@deprecated */
-  setErrorAction: Router["onError"];
-
-  /**@deprecated */
-  registerAction: Router["on"];
-
-  // async registerSlashCommands(
-  //   /**Guild IDs to use for slash commands */ guilds?: string[]
-  // ) {
-  //   const rest = new REST({ version: "9" }).setToken(this.token);
-  //   report(JSON.stringify(this.handler.commands, null, 2));
-
-  //   try {
-  //     if (!this.client.application?.id) throw "Aplication ID missing!";
-  //     if (guilds) {
-  //       for (const guild of guilds) {
-  //         await rest.put(
-  //           //@ts-ignore
-  //           Routes.applicationGuildCommands(this.client.application.id, guild),
-  //           {
-  //             body: this.handler.commands,
-  //             headers: {
-  //               "Content-Type": "application/json",
-  //             },
-  //           }
-  //         );
-  //       }
-  //     } else {
-  //       //@ts-ignore
-  //       await rest.put(Routes.applicationCommands(this.client.application.id), {
-  //         body: this.handler.commands,
-  //         headers: {
-  //           "Content-Type": "application/json",
-  //         },
-  //       });
-  //     }
-
-  //     const commands = this.handler.commands.map((x) => x.name);
-
-  //     report(`[registerSlashCommands] => ${commands} registered`);
-  //     return commands;
-  //   } catch (e) {
-  //     report("[registerSlashCommands] => Encountered an error! >", e);
-  //   }
-  //   return false;
-  // }
-
-  useMiddleware<T>(middleware: ParametersMiddleWare<T>) {
-    return !!this.middlewareArray.push(middleware);
-  }
-
-  async createParams(
-    msg: Message | CommandInteraction,
-    args: string | undefined,
-    parameters: ActionParameters["parameters"],
-    trigger: string
-  ): Promise<ActionParameters> {
-    const author = "user" in msg ? msg.user : msg.author;
-    const expectReply: ActionParameters["expectReply"] = async (
-      response,
-      remove
-    ) => {
-      if (!response) return;
-      if (!msg.channel) {
-        this.report(
-          "[CreateParams] => A channel for this command call could not be located."
-        );
-        return;
-      }
-      try {
-        const reply = await msg.reply(await response);
-        return (
-          await msg.channel
-            .awaitMessages({
-              filter: (message) => message.author.id === author.id,
-              max: 1,
-              time: 15000,
-              errors: ["time"],
-            })
-            .finally(() => {
-              reply && remove && reply.delete();
-            })
-        ).first();
-      } catch (e) {
-        this.report(
-          `An error ocurred while expecting a reply from ${author.tag}`,
-          e
-        );
-        return;
-      }
-    };
-
-    const dm: ActionParameters["dm"] = async (message) => {
-      const channel = await author.createDM();
-      return message !== undefined
-        ? await channel.send(await message)
-        : message;
-    };
-
-    const subscribe: ActionParameters["subscribe"] = (
-      componentOptions,
-      action,
-      idle,
-      expectAdditionalIds
-    ) => {
-      const [customIds, actionRow] = ComponentHandler.getActionRow(
-        componentOptions,
-        author
-      );
-      this.componentHandler.addSubscription(
-        customIds,
-        msg,
-        action,
-        idle,
-        expectAdditionalIds
-      );
-      return actionRow;
-    };
-
-    const asyncEffect: ActionParameters["asyncEffect"] = (doAfter) => {
-      moddedParams.__asyncJobs.push({
-        doAfter,
-      });
-    };
-
-    const vanillaParams: ActionParameters = {
-      createEmbed: this.embed.create,
-      trigger,
-      msg,
-      args,
-      parameters,
-      author,
-      channel: msg.channel ?? undefined,
-      guild: msg.guild ?? undefined,
-      expectReply,
-      dm,
-      subscribe,
-      middleware: undefined,
-      asyncEffect,
-      __asyncJobs: [],
-    };
-
-    let moddedParams: ActionParameters = vanillaParams;
-
-    for (const middleware of this.middlewareArray) {
-      moddedParams = await middleware(moddedParams);
+        this.compileCommands = this.router.compileAll;
     }
 
-    return moddedParams;
-  }
+    /**
+     * Creates a new action that the bot will react to.
+     * Replaces the now deprecated `registerAction`
+     * @param trigger Name of the trigger
+     * @param action Action to perform on this command
+     * @param parameters [Optional] Parameters to be registered for slash command, defaults to [{name: "arguments", type: "STRING"}]
+     * @returns
+     */
+    on: Router["on"];
+    onDefault: Router["onDefault"];
+    onError: Router["onError"];
 
-  private async interactionHandler(interaction: Interaction) {
-    if (interaction.isButton() || interaction.isSelectMenu()) {
-      interaction.deferUpdate();
-      const subscription = this.componentHandler.getSubscription(
-        interaction.customId
-      );
-      if (!subscription) {
-        return;
-      }
-      if (
-        interaction.member &&
-        (subscription.additionalUserIds.length === 0
-          ? subscription.msg.member?.user.id !== interaction.member?.user.id
-          : !subscription.additionalUserIds.includes(
-              interaction.member?.user.id
-            ))
-      ) {
-        return;
-      }
-      const interactionActionParameters = await this.createParams(
-        interaction.message as Message,
-        undefined,
-        {},
-        interaction.customId
-      );
-      let msgReply = await subscription.action(
-        interactionActionParameters,
-        interaction,
-        interaction.isButton()
-          ? +(interaction.customId.split("-").pop() ?? 0)
-          : interaction.values[0]
-      );
+    /**@deprecated */
+    setDefaultAction: Router["onDefault"];
 
-      msgReply &&
-        (subscription.msg instanceof Message
-          ? await (interaction.message as Message).edit(msgReply)
-          : await subscription.msg.editReply(msgReply));
-      this.componentHandler.renewSubscription(interaction.customId, undefined);
+    /**@deprecated */
+    setErrorAction: Router["onError"];
+
+    /**@deprecated */
+    registerAction: Router["on"];
+
+    compileCommands: Router["compileAll"];
+
+    @autobind
+    registerCommands(guilds: string | string[]) {
+        const _guilds = typeof guilds === "string" ? [guilds] : guilds;
+        return SlashCommands.register(this, this.token, _guilds);
     }
 
-    if (!interaction.isCommand()) {
-      return;
+    useMiddleware<T>(middleware: ParametersMiddleWare<T>) {
+        return !!this.middlewareArray.push(middleware);
     }
 
-    const action = this.router.findAction(interaction.commandName); //FIXME
+    async createParams(
+        msg: Message | CommandInteraction,
+        args: string | undefined,
+        parameters: ActionParameters["parameters"],
+        trigger: string
+    ): Promise<ActionParameters> {
+        const author = "user" in msg ? msg.user : msg.author;
+        const expectReply: ActionParameters["expectReply"] = async (
+            response,
+            remove
+        ) => {
+            if (!response) return;
+            if (!msg.channel) {
+                this.report(
+                    "[CreateParams] => A channel for this command call could not be located."
+                );
+                return;
+            }
+            try {
+                const reply = await msg.reply(await response);
+                return (
+                    await msg.channel
+                        .awaitMessages({
+                            filter: (message) =>
+                                message.author.id === author.id,
+                            max: 1,
+                            time: 15000,
+                            errors: ["time"],
+                        })
+                        .finally(() => {
+                            reply && remove && reply.delete();
+                        })
+                ).first();
+            } catch (e) {
+                this.report(
+                    `An error ocurred while expecting a reply from ${author.tag}`,
+                    e
+                );
+                return;
+            }
+        };
 
-    if (!action) return;
+        const dm: ActionParameters["dm"] = async (message) => {
+            const channel = await author.createDM();
+            return message !== undefined
+                ? await channel.send(await message)
+                : message;
+        };
 
-    const params: ActionParameters["parameters"] = {};
+        const subscribe: ActionParameters["subscribe"] = (
+            componentOptions,
+            action,
+            idle,
+            expectAdditionalIds
+        ) => {
+            const [customIds, actionRow] = ComponentHandler.getActionRow(
+                componentOptions,
+                author
+            );
+            this.componentHandler.addSubscription(
+                customIds,
+                msg,
+                action,
+                idle,
+                expectAdditionalIds
+            );
+            return actionRow;
+        };
 
-    try {
-      if (action.parameters) {
-        for (const param of action.parameters) {
-          switch (param.type ?? "STRING") {
-            case "USER":
-              const user = interaction.options.getUser(param.name);
-              user && (params[param.name] = user);
-              break;
-            case "ROLE":
-              const role = interaction.options.getRole(param.name);
-              role && (params[param.name] = role);
-              break;
-            case "MENTIONABLE":
-              const mentionable = interaction.options.getMentionable(
-                param.name
-              );
-              //@ts-ignore todo idk
-              mentionable && (params[param.name] = mentionable);
-              break;
+        const asyncEffect: ActionParameters["asyncEffect"] = (doAfter) => {
+            moddedParams.__asyncJobs.push({
+                doAfter,
+            });
+        };
 
-            default:
-              const val = interaction.options.get(param.name)?.value;
-              val && (params[param.name] = val);
-          }
+        const vanillaParams: ActionParameters = {
+            createEmbed: this.embed.create,
+            trigger,
+            msg,
+            args,
+            parameters,
+            author,
+            channel: msg.channel ?? undefined,
+            guild: msg.guild ?? undefined,
+            expectReply,
+            dm,
+            subscribe,
+            middleware: undefined,
+            asyncEffect,
+            __asyncJobs: [],
+        };
+
+        let moddedParams: ActionParameters = vanillaParams;
+
+        for (const middleware of this.middlewareArray) {
+            moddedParams = await middleware(moddedParams);
         }
-      } else {
-        params["arguments"] = interaction.options.getString("arguments", true);
-      }
 
-      const actionParameters = await this.createParams(
-        interaction,
-        params.arguments as string | undefined,
-        params,
-        interaction.commandName
-      );
-
-      return await this.handleAction(actionParameters, action);
-    } catch (e) {}
-  }
-
-  private async messageHandler(msg: Message) {
-    const { content: rawContent } = msg;
-    if (!this.prefix && !this.suffix) throw new Error("NO PREFIX OR SUFFIX");
-    if (msg.author === this.client.user) return;
-
-    const hasPrefix =
-      this.prefix !== undefined &&
-      (this.ignoreCaps
-        ? rawContent.slice(0, this.prefix.length).toLowerCase() === this.prefix
-        : rawContent.slice(0, this.prefix.length) === this.prefix);
-    const hasSuffix =
-      this.suffix !== undefined &&
-      (this.ignoreCaps
-        ? rawContent.slice(-1 * this.suffix.length).toLowerCase() ===
-          this.suffix
-        : rawContent.slice(-1 * this.suffix.length) === this.suffix);
-
-    if (!hasPrefix && !hasSuffix) {
-      return;
+        return moddedParams;
     }
 
-    const content = rawContent
-      .slice(hasPrefix ? this.prefix!.length : 0)
-      .slice(0, hasSuffix ? -1 * this.suffix!.length || 0 : undefined)
-      .trim(); //remove suffix and prefix
+    private async interactionHandler(interaction: Interaction) {
+        if (interaction.isButton() || interaction.isSelectMenu()) {
+            interaction.deferUpdate();
+            const subscription = this.componentHandler.getSubscription(
+                interaction.customId
+            );
+            if (!subscription) {
+                return;
+            }
+            if (
+                interaction.member &&
+                (subscription.additionalUserIds.length === 0
+                    ? subscription.msg.member?.user.id !==
+                      interaction.member?.user.id
+                    : !subscription.additionalUserIds.includes(
+                          interaction.member?.user.id
+                      ))
+            ) {
+                return;
+            }
+            const interactionActionParameters = await this.createParams(
+                interaction.message as Message,
+                undefined,
+                {},
+                interaction.customId
+            );
+            let msgReply = await subscription.action(
+                interactionActionParameters,
+                interaction,
+                interaction.isButton()
+                    ? +(interaction.customId.split("-").pop() ?? 0)
+                    : interaction.values[0]
+            );
 
-    let trigger = firstWord(content); //get first word
+            msgReply &&
+                (subscription.msg instanceof Message
+                    ? await (interaction.message as Message).edit(msgReply)
+                    : await subscription.msg.editReply(msgReply));
+            this.componentHandler.renewSubscription(
+                interaction.customId,
+                undefined
+            );
+        }
 
-    if (this.ignoreCaps) trigger = trigger.toLowerCase();
+        if (!interaction.isCommand()) {
+            return;
+        }
 
-    const args = content.slice(trigger.length).trim();
+        const action = this.router.findAction(interaction.commandName); //FIXME
 
-    const params = await this.createParams(
-      msg,
-      args,
-      { arguments: args },
-      trigger
-    );
+        if (!action) return;
 
-    const action = this.router.findAction(content);
+        const params: ActionParameters["parameters"] = {};
 
-    return action && (await this.handleAction(params, action));
-  }
-
-  async handleAction(
-    params: ActionParameters,
-    routedAction: RoutedAction,
-    invokerId: string | undefined = undefined
-  ) {
-    const action = new this.Action(params, routedAction, invokerId);
-    try {
-      await action.executeAll();
-    } catch (e) {
-      for (const errorAction of action.getError({ args: e.message })) {
-        if (!errorAction) break;
         try {
-          await errorAction.executeAll();
-          break;
-        } catch (e) {
-          this.report(
-            `[handleAction Action(${
-              errorAction.id
-            })] => An error ocurred processing the fallback action. ${
-              e.message ? `Message(${e.message}).` : ""
-            } e =>`,
-            e.e
-          );
-        }
-      }
+            if (action.parameters) {
+                for (const param of action.parameters) {
+                    switch (param.type ?? "STRING") {
+                        case "USER":
+                            const user = interaction.options.getUser(
+                                param.name
+                            );
+                            user && (params[param.name] = user);
+                            break;
+                        case "ROLE":
+                            const role = interaction.options.getRole(
+                                param.name
+                            );
+                            role && (params[param.name] = role);
+                            break;
+                        case "MENTIONABLE":
+                            const mentionable =
+                                interaction.options.getMentionable(param.name);
+                            //@ts-ignore todo idk
+                            mentionable && (params[param.name] = mentionable);
+                            break;
+
+                        default:
+                            const val = interaction.options.get(
+                                param.name
+                            )?.value;
+                            val && (params[param.name] = val);
+                    }
+                }
+            } else {
+                params["arguments"] = interaction.options.getString(
+                    "arguments",
+                    true
+                );
+            }
+
+            const actionParameters = await this.createParams(
+                interaction,
+                params.arguments as string | undefined,
+                params,
+                interaction.commandName
+            );
+
+            return await this.handleAction(actionParameters, action);
+        } catch (e) {}
     }
-  }
+
+    private async messageHandler(msg: Message) {
+        const { content: rawContent } = msg;
+        if (!this.prefix && !this.suffix)
+            throw new Error("NO PREFIX OR SUFFIX");
+        if (msg.author === this.client.user) return;
+
+        const hasPrefix =
+            this.prefix !== undefined &&
+            (this.ignoreCaps
+                ? rawContent.slice(0, this.prefix.length).toLowerCase() ===
+                  this.prefix
+                : rawContent.slice(0, this.prefix.length) === this.prefix);
+        const hasSuffix =
+            this.suffix !== undefined &&
+            (this.ignoreCaps
+                ? rawContent.slice(-1 * this.suffix.length).toLowerCase() ===
+                  this.suffix
+                : rawContent.slice(-1 * this.suffix.length) === this.suffix);
+
+        if (!hasPrefix && !hasSuffix) {
+            return;
+        }
+
+        const content = rawContent
+            .slice(hasPrefix ? this.prefix!.length : 0)
+            .slice(0, hasSuffix ? -1 * this.suffix!.length || 0 : undefined)
+            .trim(); //remove suffix and prefix
+
+        let trigger = firstWord(content); //get first word
+
+        if (this.ignoreCaps) trigger = trigger.toLowerCase();
+
+        const args = content.slice(trigger.length).trim();
+
+        const params = await this.createParams(
+            msg,
+            args,
+            { arguments: args },
+            trigger
+        );
+
+        const action = this.router.findAction(content);
+
+        return action && (await this.handleAction(params, action));
+    }
+
+    async handleAction(
+        params: ActionParameters,
+        routedAction: RoutedAction,
+        invokerId: string | undefined = undefined
+    ) {
+        const action = new this.Action(params, routedAction, invokerId);
+        try {
+            await action.executeAll();
+        } catch (e) {
+            for (const errorAction of action.getError({ args: e.message })) {
+                if (!errorAction) break;
+                try {
+                    await errorAction.executeAll();
+                    break;
+                } catch (e) {
+                    this.report(
+                        `[handleAction Action(${
+                            errorAction.id
+                        })] => An error ocurred processing the fallback action. ${
+                            e.message ? `Message(${e.message}).` : ""
+                        } e =>`,
+                        e.e
+                    );
+                }
+            }
+        }
+    }
 }
