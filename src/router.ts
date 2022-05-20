@@ -2,6 +2,7 @@ import autobind from "autobind-decorator";
 import { Bot } from ".";
 import { CommandsHandler } from "./handler";
 import { RoutedAction } from "./routedAction";
+import { SlashCommands } from "./slashCommands";
 import { BotAction, ActionObject, ResponseAction } from "./types";
 import { firstWord, report as _report } from "./utility";
 
@@ -21,6 +22,18 @@ export class Router {
     this.options = {
       ignoreCaps: false,
     };
+  }
+
+  @autobind
+  compileAll(){
+    const main = (this.isGlobal() ? )
+    for(const trigger in this.handler.stringActions){
+      const actionObj = this.handler.stringActions[trigger]
+      if(actionObj instanceof Router){
+        
+      }
+      const compiled = SlashCommands.createSlashCommandParams(trigger, )
+    }
   }
 
   /**
@@ -121,15 +134,19 @@ export class Router {
 
   @autobind
   report(...stuff: any[]) {
-    const isGlobal = this === this._bot?.router;
     const reportFn = this._bot?.report ?? _report;
 
     reportFn(
       `[Router(${
-        this.trigger ?? (isGlobal ? "@Bot" : "<trigger to be assigned>")
+        this.trigger ?? (this.isGlobal() ? "@Bot" : "<trigger to be assigned>")
       })] =>`,
       ...stuff
     );
+  }
+
+  @autobind
+  isGlobal() {
+    return this === this._bot?.router;
   }
 
   private padAction(action: Router): Router;
