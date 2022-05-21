@@ -1,0 +1,5 @@
+{
+  "$schema": "https://raw.githubusercontent.com/SchemaStore/schemastore/30de045757d96289c473aeacafb1df3074a4e05e/src/schemas/json/typedoc.json",
+  "excludeExternals": true
+}
+
