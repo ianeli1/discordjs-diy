@@ -1,19 +1,21 @@
 import { ActionObject } from "./types";
 import { SlashCommandBuilder } from "@discordjs/builders";
-import { report } from "./utility";
+import { Router } from "./router";
+
+type HandlerContent = ActionObject | Router;
 
 interface MessageActions {
-  [trigger: string]: ActionObject;
+  [trigger: string]: HandlerContent;
 }
 
-type RegexActions = Map<RegExp, ActionObject>;
+type RegexActions = Map<RegExp, HandlerContent>;
 
 type TriggerType = string | RegExp;
 
 export class CommandsHandler {
-  private stringActions: MessageActions;
+  readonly stringActions: MessageActions;
   private regexActions: RegexActions;
-  private defaultAction: ActionObject;
+  private defaultAction: ActionObject | undefined;
   readonly commands: ReturnType<SlashCommandBuilder["toJSON"]>[];
 
   constructor() {
@@ -24,137 +26,21 @@ export class CommandsHandler {
     this.findAction = this.findAction.bind(this);
     this.setAction = this.setAction.bind(this);
     this.removeAction = this.removeAction.bind(this);
-    this.createSlashCommandParams = this.createSlashCommandParams.bind(this);
   }
 
-  //Creates a new Slash command JSON to send to the API
-  createSlashCommandParams(
-    name: string,
-    description: string,
-    parameters: ActionObject["parameters"]
-  ) {
-    const isUppercase = (t: string) => /[A-Z]/.test(t);
-    if (isUppercase(name))
-      throw new Error(
-        `[CreateSlashCommandParams] => Trigger "${name}" must not have uppercase letters`
-      );
-
-    const command = new SlashCommandBuilder()
-      .setName(name)
-      .setDescription(description || "A command");
-
-    if (parameters) {
-      parameters.forEach((param) => {
-        if (isUppercase(param.name))
-          throw new Error(
-            `[CreateSlashCommandParams] => Parameter "${param.name}" must not have uppercase letters`
-          );
-        switch (param.type ?? "STRING") {
-          case "STRING":
-            {
-              command.addStringOption((option) =>
-                option
-                  .setName(param.name)
-                  .setDescription(description || "A command")
-                  .setRequired(true)
-              );
-            }
-            break;
-          case "BOOLEAN":
-            {
-              command.addBooleanOption((option) =>
-                option
-                  .setName(param.name)
-                  .setDescription(description || "A command")
-                  .setRequired(true)
-              );
-            }
-            break;
-          case "INTEGER":
-            {
-              command.addIntegerOption((option) =>
-                option
-                  .setName(param.name)
-                  .setDescription(description || "A command")
-                  .setRequired(true)
-              );
-            }
-            break;
-          case "MENTIONABLE":
-            {
-              command.addMentionableOption((option) =>
-                option
-                  .setName(param.name)
-                  .setDescription(description || "A command")
-                  .setRequired(true)
-              );
-            }
-            break;
-
-          case "NUMBER":
-            {
-              command.addNumberOption((option) =>
-                option
-                  .setName(param.name)
-                  .setDescription(description || "A command")
-                  .setRequired(true)
-              );
-            }
-            break;
-
-          case "ROLE":
-            {
-              command.addRoleOption((option) =>
-                option
-                  .setName(param.name)
-                  .setDescription(description || "A command")
-                  .setRequired(true)
-              );
-            }
-            break;
-
-          case "USER":
-            {
-              command.addUserOption((option) =>
-                option
-                  .setName(param.name)
-                  .setDescription(description || "A command")
-                  .setRequired(true)
-              );
-            }
-            break;
-
-          default:
-            report(
-              `[CommandsHandler] => Parameter type "${param.type}" is unsupported`
-            );
-        }
-      });
-    } else {
-      command.addStringOption((option) =>
-        option
-          .setName("arguments")
-          .setRequired(true)
-          .setDescription(description || "A command")
-      );
-    }
-
-    return command.toJSON();
-  }
-
-  setAction(trigger: TriggerType, action: ActionObject) {
+  setAction(trigger: TriggerType, action: HandlerContent) {
     if (typeof trigger === "string") {
       this.stringActions[trigger] = action;
 
-      //Create new slash command JSON, ignores Regex commands as they're not supported
+      //FIXME //Create new slash command JSON, ignores Regex commands as they're not supported
 
-      this.commands.push(
-        this.createSlashCommandParams(
-          trigger,
-          action.description ?? "",
-          action.parameters
-        )
-      );
+      // this.commands.push(
+      //   this.createSlashCommandParams(
+      //     trigger,
+      //     action.description ?? "",
+      //     action.parameters
+      //   )
+      // );
       return trigger;
     }
     this.regexActions.set(trigger, action);

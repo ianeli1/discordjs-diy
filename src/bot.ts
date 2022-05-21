@@ -1,5 +1,4 @@
 import {
-  ActivityOptions,
   ClientOptions,
   CommandInteraction,
   Interaction,
@@ -8,18 +7,14 @@ import {
 import { ActionFactory } from "./action";
 import { BotBase } from "./base";
 import { Embed } from "./embed";
-import { CommandsHandler } from "./handler";
-import {
-  ActionObject,
-  ActionParameters,
-  ResponseAction,
-  ParametersMiddleWare,
-} from "./types";
-import { pick, report } from "./utility";
-import { REST } from "@discordjs/rest";
-import { Routes } from "discord-api-types/v9";
+import { ActionParameters, ParametersMiddleWare } from "./types";
+import { firstWord, report as _report } from "./utility";
+// import { REST } from "@discordjs/rest";
+// import { Routes } from "discord-api-types/v9";
 import { ComponentHandler } from "./componentHandler";
-import { ActionError } from "./error";
+import { Router } from "./router";
+import { RoutedAction } from "./routedAction";
+import { SlashCommands } from "./slashCommands";
 
 interface BotOptions {
   prefix?: string;
@@ -32,35 +27,13 @@ interface BotOptions {
 }
 
 /**
- * The action your bot will be executing on every trigger
- * It can be:
- *  - A function
- *  - A function that returns a Promise
- *  - A function that returns an embed
- *  - A promise
- *  - A string
- *  - Standard Discordjs Message object
- *  - An embed
- *
- * Returning undefined for slash commands will result in an error
- * Note that it can be undefined or a function that returns undefined, but this will simply be ignored
- */
-export type BotAction = ActionObject | ResponseAction;
-
-/**
  * The Bot object, pass in a Discord API token and set the options according to your needs.
  * Note that you're required to set either a prefix and/or a suffix
  */
 
-type PresenceType = Required<ActivityOptions["type"]>;
-
 export class Bot extends BotBase {
-  private handler: CommandsHandler;
-  readonly errorAction: ActionObject;
-
   /**The embed object used for creating embeds in your actions */
   readonly embed: Embed;
-  private presenceInterval: NodeJS.Timeout;
 
   /**The prefix used by your bot */
   readonly prefix: string | undefined;
@@ -77,6 +50,11 @@ export class Bot extends BotBase {
 
   private Action: ReturnType<typeof ActionFactory>;
 
+  /**@private */
+  router: Router;
+
+  readonly commands = new SlashCommands(this);
+
   constructor(token: string, options: BotOptions) {
     super(token, options.intents);
     this.prefix = options.ignoreCaps
@@ -86,13 +64,19 @@ export class Bot extends BotBase {
       ? options.suffix?.toLowerCase()
       : options.suffix;
     this.embed = options.embed ?? new Embed({});
-
     this.ignoreCaps = options.ignoreCaps ?? false;
     if (!this.suffix && !this.prefix)
       throw new Error(
         "You need to provide at least one of the following: prefix or suffix"
       );
-    this.handler = new CommandsHandler();
+
+    this.router = new Router();
+    this.router.options.ignoreCaps = this.ignoreCaps;
+    this.router._bot = this;
+    this.on = this.router.on;
+    this.onDefault = this.router.onDefault;
+    this.onError = this.router.onError;
+
     this.componentHandler = new ComponentHandler();
     this.messageHandler = this.messageHandler.bind(this);
     this.interactionHandler = this.interactionHandler.bind(this);
@@ -100,111 +84,40 @@ export class Bot extends BotBase {
     this.Action = ActionFactory(this);
     this.client.on("messageCreate", this.messageHandler);
     this.client.on("interactionCreate", this.interactionHandler);
-  }
 
-  async registerSlashCommands(
-    /**Guild IDs to use for slash commands */ guilds?: string[]
-  ) {
-    const rest = new REST({ version: "9" }).setToken(this.token);
-    report(JSON.stringify(this.handler.commands, null, 2));
+    /** @deprecated */
+    this.registerAction = this.on;
+    this.setDefaultAction = this.onDefault;
+    this.setErrorAction = this.onError;
 
-    try {
-      if (!this.client.application?.id) throw "Aplication ID missing!";
-      if (guilds) {
-        for (const guild of guilds) {
-          await rest.put(
-            //@ts-ignore
-            Routes.applicationGuildCommands(this.client.application.id, guild),
-            {
-              body: this.handler.commands,
-              headers: {
-                "Content-Type": "application/json",
-              },
-            }
-          );
-        }
-      } else {
-        //@ts-ignore
-        await rest.put(Routes.applicationCommands(this.client.application.id), {
-          body: this.handler.commands,
-          headers: {
-            "Content-Type": "application/json",
-          },
-        });
-      }
-
-      const commands = this.handler.commands.map((x) => x.name);
-
-      report(`[registerSlashCommands] => ${commands} registered`);
-      return commands;
-    } catch (e) {
-      report("[registerSlashCommands] => Encountered an error! >", e);
-    }
-    return false;
-  }
-
-  useMiddleware<T>(middleware: ParametersMiddleWare<T>) {
-    return !!this.middlewareArray.push(middleware);
-  }
-
-  private turnArrayToRegex(trigger: string[]): RegExp {
-    return new RegExp(
-      `(${trigger.join("|")})`,
-      this.ignoreCaps ? "i" : undefined
-    );
-  }
-
-  private padAction(
-    action: BotAction,
-    parameters?: ActionObject["parameters"]
-  ): ActionObject {
-    if (
-      typeof action === "object" &&
-      ("response" in action || "reaction" in action)
-    ) {
-      return parameters ? { ...action, parameters } : action;
-    } else
-      return {
-        response: action as ResponseAction,
-        parameters,
-      };
-  }
-  setDefaultAction(action: BotAction) {
-    return this.handler.setDefaultAction(this.padAction(action));
-  }
-
-  setErrorAction(action: BotAction) {
-    (this.errorAction as ActionObject) = this.padAction(action);
+    this.compileCommands = this.router.compileAll;
   }
 
   /**
-   *
+   * Creates a new action that the bot will react to.
+   * Replaces the now deprecated `registerAction`
    * @param trigger Name of the trigger
    * @param action Action to perform on this command
    * @param parameters [Optional] Parameters to be registered for slash command, defaults to [{name: "arguments", type: "STRING"}]
    * @returns
    */
-  registerAction(
-    trigger: string | string[] | RegExp,
-    action: BotAction,
-    parameters: ActionObject["parameters"] = []
-  ) {
-    trigger =
-      this.ignoreCaps && typeof trigger === "string"
-        ? trigger.toLowerCase()
-        : trigger;
-    report(`Created a new action, trigger: ${trigger}`);
-    return this.handler.setAction(
-      trigger instanceof Array ? this.turnArrayToRegex(trigger) : trigger,
-      this.padAction(action, parameters)
-    );
-  }
+  on: Router["on"];
+  onDefault: Router["onDefault"];
+  onError: Router["onError"];
 
-  removeAction(trigger: string | RegExp | string[]) {
-    report(`Removed an action, trigger: ${trigger}`);
-    return this.handler.removeAction(
-      trigger instanceof Array ? this.turnArrayToRegex(trigger) : trigger
-    );
+  /**@deprecated */
+  setDefaultAction: Router["onDefault"];
+
+  /**@deprecated */
+  setErrorAction: Router["onError"];
+
+  /**@deprecated */
+  registerAction: Router["on"];
+
+  compileCommands: Router["compileAll"];
+
+  useMiddleware<T>(middleware: ParametersMiddleWare<T>) {
+    return !!this.middlewareArray.push(middleware);
   }
 
   async createParams(
@@ -220,7 +133,7 @@ export class Bot extends BotBase {
     ) => {
       if (!response) return;
       if (!msg.channel) {
-        report(
+        this.report(
           "[CreateParams] => A channel for this command call could not be located."
         );
         return;
@@ -240,7 +153,7 @@ export class Bot extends BotBase {
             })
         ).first();
       } catch (e) {
-        report(
+        this.report(
           `An error ocurred while expecting a reply from ${author.tag}`,
           e
         );
@@ -351,7 +264,9 @@ export class Bot extends BotBase {
       return;
     }
 
-    const action = this.handler.findAction(interaction.commandName);
+    const action = this.router.findAction(interaction.commandName); //FIXME
+
+    if (!action) return;
 
     const params: ActionParameters["parameters"] = {};
 
@@ -421,7 +336,7 @@ export class Bot extends BotBase {
       .slice(0, hasSuffix ? -1 * this.suffix!.length || 0 : undefined)
       .trim(); //remove suffix and prefix
 
-    let trigger = content.split(" ")[0]; //get first word
+    let trigger = firstWord(content); //get first word
 
     if (this.ignoreCaps) trigger = trigger.toLowerCase();
 
@@ -434,69 +349,36 @@ export class Bot extends BotBase {
       trigger
     );
 
-    const action = this.handler.findAction(trigger);
+    const action = this.router.findAction(content);
 
-    return await this.handleAction(params, action);
+    return action && (await this.handleAction(params, action));
   }
 
   async handleAction(
     params: ActionParameters,
-    actionObj: ActionObject,
+    routedAction: RoutedAction,
     invokerId: string | undefined = undefined
   ) {
-    const action = new this.Action(params, actionObj, invokerId);
+    const action = new this.Action(params, routedAction, invokerId);
     try {
       await action.executeAll();
     } catch (e) {
-      if (e instanceof ActionError) {
-        report(
-          `[handleAction Action(${
-            action.id
-          })] => An error ocurred processing the action of type: ${e.type}. ${
-            e.message ? `Message(${e.message}).` : ""
-          } e =>`,
-          e.e
-        );
-        if (this.errorAction) {
-          const errorActionInstance = new this.Action(
-            { ...params, args: e.message },
-            this.errorAction,
-            action.id
+      for (const errorAction of action.getError({ args: e.message })) {
+        if (!errorAction) break;
+        try {
+          await errorAction.executeAll();
+          break;
+        } catch (e) {
+          this.report(
+            `[handleAction Action(${
+              errorAction.id
+            })] => An error ocurred processing the fallback action. ${
+              e.message ? `Message(${e.message}).` : ""
+            } e =>`,
+            e.e
           );
-          try {
-            errorActionInstance.executeAll();
-          } catch (e) {
-            report(
-              `[handleAction Action(${action.id})] => An error ocurred performing the error action! e =>`,
-              e
-            );
-          }
         }
       }
-    }
-  }
-
-  setPresence(
-    activities: [string, PresenceType] | [string, PresenceType][],
-    interval: number = 10 * 60 * 1000 /*10 minutes*/
-  ) {
-    function setActivity(this: Bot, activity: [string, PresenceType]) {
-      this.client.user?.setActivity(activity[0], { type: activity[1] }) ??
-        report(
-          "User missing from client object, bot was unable to update presence."
-        );
-    }
-
-    if (activities.length === 0)
-      throw new Error("Presence list can't be empty");
-
-    clearInterval(this.presenceInterval);
-    if (activities[0] instanceof Array) {
-      this.presenceInterval = setInterval(() => {
-        setActivity.bind(this, pick(activities))();
-      }, interval);
-    } else {
-      setActivity.bind(this, activities)();
     }
   }
 }

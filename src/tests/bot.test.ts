@@ -45,30 +45,30 @@ describe("registerAction method", () => {
   });
 });
 
-describe("removeAction method", () => {
-  const bot = new Bot("test", { prefix: "!" });
-  const response = () => "hello";
-  const triggerName = "test";
-  bot.registerAction(triggerName, response);
+// describe("removeAction method", () => {
+//   const bot = new Bot("test", { prefix: "!" });
+//   const response = () => "hello";
+//   const triggerName = "test";
+//   bot.registerAction(triggerName, response);
 
-  test("check response exists and remove it", () => {
-    expect(bot.removeAction(triggerName)).toBe(triggerName);
-  });
+//   test("check response exists and remove it", () => {
+//     expect(bot.removeAction(triggerName)).toBe(triggerName);
+//   });
 
-  test("return undefined if doesn't exist", () => {
-    expect(bot.removeAction("what1231231")).toBe(undefined);
-  });
+//   test("return undefined if doesn't exist", () => {
+//     expect(bot.removeAction("what1231231")).toBe(undefined);
+//   });
 
-  test("remove regex action", () => {
-    const trigger = /test/;
-    bot.registerAction(trigger, "test");
-    expect(bot.removeAction(trigger)).toBe(trigger);
-  });
+//   test("remove regex action", () => {
+//     const trigger = /test/;
+//     bot.registerAction(trigger, "test");
+//     expect(bot.removeAction(trigger)).toBe(trigger);
+//   });
 
-  test("don't do anything if doesn't exist, regex", () => {
-    expect(bot.removeAction(/hi/)).toBe(undefined);
-  });
-});
+//   test("don't do anything if doesn't exist, regex", () => {
+//     expect(bot.removeAction(/hi/)).toBe(undefined);
+//   });
+// });
 
 let manTrigger: (msg: Message) => Promise<void>;
 let bot: Bot;

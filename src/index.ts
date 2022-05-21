@@ -1,4 +1,4 @@
-export { Bot, BotAction as Action } from "./bot";
+export { Bot } from "./bot";
 export { Embed } from "./embed";
 export type {
   ActionObject,
@@ -6,7 +6,9 @@ export type {
   SendableMessage,
   ActionParameters,
   ParametersMiddleWare,
+  BotAction as Action,
 } from "./types";
 export { Session, SessionConfig, SessionMW } from "./session";
+export { Router } from "./router";
 
 export * from "discord.js";
