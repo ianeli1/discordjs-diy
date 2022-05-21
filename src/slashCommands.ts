@@ -2,7 +2,7 @@ import {
   SlashCommandBuilder,
   SlashCommandSubcommandBuilder,
 } from "@discordjs/builders";
-import { REST } from "@discordjs/rest/dist/lib/REST";
+import { REST } from "@discordjs/rest";
 import autobind from "autobind-decorator";
 import { Routes } from "discord.js/node_modules/discord-api-types/v9";
 import { Bot } from "./bot";
