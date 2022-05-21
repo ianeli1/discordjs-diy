@@ -144,6 +144,29 @@ bot.registerAction("test", ({ args, createEmbed }) =>
 );
 ```
 
+### Routing
+
+Sometimes you may want a command to contain a subcommand. This is where routers come in. To use them, create a new Router object then assign commands to it. Finally assign it as an action in your main `Bot` object. Don't worry about the constructor parameters, they'll be filled in for you.
+
+```ts
+const bot = new Bot("<token>", { prefix: "!" });
+
+const helpRouter = new Router();
+helpRouter.on("info", "lorem ipsum");
+
+bot.on("help", helpRouter);
+//Bot will now respond to `!help info` with "lorem ipsum"
+```
+
+Routers have their own error handling too.
+
+```ts
+helpRouter.onError("Oh no!");
+//if any of the commands under help router fail, "Oh no!" will be sent instead
+```
+
+Routers also have full support for slash commands.
+
 ### Expecting replies
 
 You can easily do a 2 part command, expecting a reply from the same user
