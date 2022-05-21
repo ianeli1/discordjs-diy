@@ -6,14 +6,13 @@ let botCount = 0;
 type PresenceType = Required<ActivityOptions["type"]>;
 
 export class BotBase {
-  protected token: string;
   id: number;
   private presenceInterval: NodeJS.Timeout;
 
   /**Discord.js client object */
   readonly client: Client;
 
-  constructor(token: string, intents?: ClientOptions["intents"]) {
+  constructor(readonly token: string, intents?: ClientOptions["intents"]) {
     if (!token) throw new Error("No token was provided");
     this.id = botCount++;
     this.token = token;

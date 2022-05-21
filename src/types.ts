@@ -1,4 +1,8 @@
-import { APIRole } from "discord-api-types";
+import {
+  SlashCommandBuilder,
+  SlashCommandSubcommandBuilder,
+} from "@discordjs/builders";
+import { APIRole } from "discord-api-types/v9";
 import {
   ApplicationCommandOptionType,
   ButtonInteraction,
@@ -175,3 +179,8 @@ export interface ActionObject {
  * Note that it can be undefined or a function that returns undefined, but this will simply be ignored
  */
 export type BotAction = ActionObject | ResponseAction | Router;
+
+export type CommandCollection = (
+  | SlashCommandBuilder
+  | SlashCommandSubcommandBuilder
+)[];
