@@ -90,7 +90,6 @@ export class Router {
 
   @autobind
   findAction(content: string): RoutedAction | undefined {
-    this.report(`Content: "${content}"`);
     const searchResult = this.handler.findAction(
       this.options.ignoreCaps
         ? firstWord(content).toLowerCase()
