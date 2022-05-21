@@ -12,6 +12,8 @@ export class BotBase {
   /**Discord.js client object */
   readonly client: Client;
 
+  name: string | undefined = undefined;
+
   constructor(readonly token: string, intents?: ClientOptions["intents"]) {
     if (!token) throw new Error("No token was provided");
     this.id = botCount++;
@@ -25,9 +27,8 @@ export class BotBase {
     });
     this.client.login(this.token);
     this.client.once("ready", () => {
-      this.report(
-        `Bot created and logged in => (${this.client.user?.tag ?? "NO TAG!!!"})`
-      );
+      this.name = this.client.user?.tag;
+      this.report(`Bot created and logged in`);
     });
   }
 
@@ -57,6 +58,6 @@ export class BotBase {
 
   @autobind
   report(...stuff: any[]) {
-    _report(`[Bot(${this.id})] =>`, ...stuff);
+    _report(`[Bot(${this.name ?? this.id})] =>`, ...stuff);
   }
 }
