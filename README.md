@@ -190,7 +190,17 @@ Example parameters array:
 ];
 ```
 
-The `Bot` object now provides a `.registerSlashCommands` method. On its own, it'll register the commands globally (Read about the implications [here](https://discordjs.guide/interactions/registering-slash-commands.html#global-commands)). You can pass an array of strings if you only want to register the commands on certain guilds (for development, etc).
+The `Bot` object now provides a `Bot#commands.register` method. On its own, it'll register the commands globally (Read about the implications [here](https://discordjs.guide/interactions/registering-slash-commands.html#global-commands)). You can pass an array of strings if you only want to register the commands on certain guild IDs (for development, etc).
+
+```ts
+bot.on("debug_register", async ({ guild }) =>
+  (await bot.commands.register(guild.id)) ? "Done" : "Something went wrong"
+); //registers all the available slash commands , in the guild this message was sent in
+```
+
+Be sure to call this method _AFTER_ all of your commands and routers have been registered. For troubleshooting, `Bot#compileCommands` will return the objects that will then be passed to the Discord API (via `Bot#commands.overwriteCommands`)
+
+DJS-diy will automatically create subcommands in the case of routers. Be mindful of the [nesting limitations](https://discord.com/developers/docs/interactions/application-commands#subcommands-and-subcommand-groups).
 
 ### Async Jobs
 
