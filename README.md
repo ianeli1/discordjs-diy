@@ -1,5 +1,7 @@
 # Discord.js - DIY
 
+[![npm](https://img.shields.io/npm/v/discordjs-diy.svg?maxAge=2592000&style=flat-square)]()
+
 Easy to use, do-it-yourself Discord.js mini-framework
 
 You can find [the full reference wiki here.](https://ianeli1.github.io/discordjs-diy/)
