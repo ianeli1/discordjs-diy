@@ -40,29 +40,63 @@ export class Router {
     const classType = this.isGlobal()
       ? SlashCommandBuilder
       : SlashCommandSubcommandBuilder;
-    printNested(nesting, `[Router(${this.trigger})]`);
+
+    this.isGlobal() && printNested(nesting, `[Router(${this.trigger})]`);
+
     for (const trigger in this.handler.stringActions) {
+      //create a command if global, otherwise create subcommand
       const command = new classType()
         .setName(trigger)
         .setDescription("A command");
       const actionObj = this.handler.stringActions[trigger];
+
+      //if current trigger is a router
       if (actionObj instanceof Router) {
-        printNested(nesting, "-> Router");
-        const thisCommand = this.isGlobal()
-          ? (command as SlashCommandBuilder)
-          : new SlashCommandSubcommandGroupBuilder()
-              .setName(trigger)
-              .setDescription("A description");
-        actionObj
-          .compileAll(nesting + 1)
-          .forEach((com) =>
-            thisCommand.addSubcommand(com as SlashCommandSubcommandBuilder)
-          );
-        if (thisCommand instanceof SlashCommandSubcommandGroupBuilder) {
-          (command as SlashCommandBuilder).addSubcommandGroup(thisCommand);
+        printNested(nesting, `-> Router(${trigger})`);
+        const childCommands = actionObj.compileAll(nesting + 1);
+
+        //if we're global
+        if (command instanceof SlashCommandBuilder) {
+          for (const subcom of childCommands) {
+            if (subcom instanceof SlashCommandSubcommandBuilder) {
+              command.addSubcommand(subcom);
+            } else if (subcom instanceof SlashCommandSubcommandGroupBuilder) {
+              command.addSubcommandGroup(subcom);
+            } else
+              this.report(
+                `Error => subcom "${subcom.name}" is not a subcommand or subcommand group and will be ignored. Type: ${subcom.constructor.name}`
+              );
+          }
+          commands.push(command);
+          continue;
         }
-        commands.push(command);
-        continue;
+
+        //if were not global
+        //at this point there can't be no subcommand groups added
+        {
+          if (childCommands instanceof SlashCommandSubcommandGroupBuilder) {
+            this.report(
+              `Error => trigger "${trigger}" will be ignored as it violates Discord's nesting rules https://discord.com/developers/docs/interactions/application-commands#subcommands-and-subcommand-groups`
+            );
+            continue;
+          }
+
+          const group = new SlashCommandSubcommandGroupBuilder()
+            .setName(trigger)
+            .setDescription("Group");
+
+          for (const subcom of childCommands) {
+            if (subcom instanceof SlashCommandSubcommandBuilder) {
+              group.addSubcommand(subcom);
+            } else
+              this.report(
+                `Error => subcom "${subcom.name}" is not a subcommand. Instead: ${subcom.constructor.name}`
+              );
+          }
+
+          commands.push(group);
+          continue;
+        }
       }
       printNested(nesting, `-> Command: ${trigger}`);
       //if it's a regular command

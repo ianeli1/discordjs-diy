@@ -1,6 +1,7 @@
 import {
   SlashCommandBuilder,
   SlashCommandSubcommandBuilder,
+  SlashCommandSubcommandGroupBuilder,
 } from "@discordjs/builders";
 import { APIRole } from "discord-api-types/v9";
 import {
@@ -183,4 +184,5 @@ export type BotAction = ActionObject | ResponseAction | Router;
 export type CommandCollection = (
   | SlashCommandBuilder
   | SlashCommandSubcommandBuilder
+  | SlashCommandSubcommandGroupBuilder
 )[];
