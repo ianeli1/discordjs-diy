@@ -31,16 +31,6 @@ export class CommandsHandler {
   setAction(trigger: TriggerType, action: HandlerContent) {
     if (typeof trigger === "string") {
       this.stringActions[trigger] = action;
-
-      //FIXME //Create new slash command JSON, ignores Regex commands as they're not supported
-
-      // this.commands.push(
-      //   this.createSlashCommandParams(
-      //     trigger,
-      //     action.description ?? "",
-      //     action.parameters
-      //   )
-      // );
       return trigger;
     }
     this.regexActions.set(trigger, action);
