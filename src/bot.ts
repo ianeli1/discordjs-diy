@@ -264,7 +264,19 @@ export class Bot extends BotBase {
       return;
     }
 
-    const action = this.router.findAction(interaction.commandName); //FIXME
+    let commandName = interaction.commandName;
+
+    const group = interaction.options.getSubcommandGroup(false);
+    if (group) {
+      commandName += ` ${group}`;
+    }
+
+    const sub = interaction.options.getSubcommand(false);
+    if (sub) {
+      commandName += ` ${sub}`;
+    }
+
+    const action = this.router.findAction(commandName);
 
     if (!action) return;
 
