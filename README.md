@@ -1,6 +1,6 @@
 # Discord.js - DIY
 
-[![npm](https://img.shields.io/npm/v/discordjs-diy.svg?maxAge=2592000&style=flat-square)]()
+[![npm](https://img.shields.io/npm/v/discordjs-diy)]()
 
 Easy to use, do-it-yourself Discord.js mini-framework
 
