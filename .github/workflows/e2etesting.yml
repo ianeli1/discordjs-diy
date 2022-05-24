@@ -24,3 +24,9 @@ jobs:
 
       - name: E2E
         run: yarn e2e
+        env:
+          TOKEN: ${{ secrets.TOKEN }}
+          MY_TOKEN: ${{ secrets.MY_TOKEN }}
+          BOT_ID: ${{ secrets.BOT_ID }}
+          GUILD_ID: ${{ secrets.GUILD_ID }}
+          CHANNEL_ID: ${{ secrets.CHANNEL_ID }}
