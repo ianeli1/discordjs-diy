@@ -22,12 +22,15 @@
     "experimentalDecorators": true,
     "resolveJsonModule": true,
     "baseUrl": ".",
+    "rootDir": "./src",
     "types": ["node", "@types/jest"],
-    "typeRoots": ["./node_modules/@types/node", "./node_modules/@types/jest"],
-    "paths": {
-      "discord.js": ["node_modules/discord.js/"]
-    }
+    "typeRoots": ["./node_modules/@types/node", "./node_modules/@types/jest"]
   },
-  "exclude": ["node_modules"],
+  "exclude": [
+    "node_modules",
+    "./src/**/*.e2e.ts",
+    "./*.config.ts",
+    "./**/createBot.ts"
+  ],
   "include": ["./src/**/*.tsx", "./src/**/*.ts"]
 }
