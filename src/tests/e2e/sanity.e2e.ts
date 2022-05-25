@@ -1,4 +1,4 @@
-import { beforeStart, group, afterAll, expect, test } from "corde";
+import { beforeStart, group, expect, test } from "corde";
 import { Bot } from "../..";
 import { createBot } from "./createBot";
 
@@ -13,10 +13,12 @@ group("Sanity test", () => {
     expect("ping").toReturn("pong");
   });
 
+  test("!PiNg => pong", () => {
+    expect("PiNg").toReturn("pong");
+  });
+
   test("!hello => nothing", () => {
     expect("hello").not.toReturn("pong");
   });
 });
-
-afterAll(() => bot.client.destroy());
 

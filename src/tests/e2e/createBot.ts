@@ -1,12 +1,19 @@
 import Config from "../../../corde.config";
 import { Bot } from "../../";
 
-export function createBot() {
-  const bot = new Bot(Config.myToken!, {
-    prefix: Config.botPrefix!,
-    ignoreCaps: true,
-  });
+//due to the way djs-diy works (aka being mostly immutable) we can reuse
+//the same object for performance
+const bot = new Bot(Config.myToken!, {
+  prefix: Config.botPrefix!,
+  ignoreCaps: true,
+});
 
-  return new Promise<Bot>((res) => void bot.client.on("ready", () => res(bot)));
+export function createBot() {
+  return new Promise<Bot>((res) => {
+    if (bot.client.user) {
+      return res(bot);
+    }
+    bot.client.on("ready", () => res(bot));
+  });
 }
 
