@@ -153,7 +153,7 @@ export const ActionFactory = (bot: Bot) =>
           author.tag
         }, trigger: ${trigger}, args: ${args}, response: ${
           response ? typeof response : "no"
-        }, reaction: ${reaction ? typeof response : "no"}`
+        }, reaction: ${reaction ? typeof reaction : "no"}`
       );
 
       const promiseArray: [
