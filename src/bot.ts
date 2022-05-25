@@ -352,7 +352,15 @@ export class Bot extends BotBase {
 
     if (this.ignoreCaps) trigger = trigger.toLowerCase();
 
-    const args = content.slice(trigger.length).trim();
+    const action = this.router.findAction(content);
+
+    if (!action) return;
+
+    const routedTrigger = action.router.fullTrigger().concat(trigger);
+
+    //args defaults to undefined if no actual arg is provided. AKA empty string
+    const args =
+      content.slice(routedTrigger.join(" ").length).trim() || undefined;
 
     const params = await this.createParams(
       msg,
@@ -361,9 +369,7 @@ export class Bot extends BotBase {
       trigger
     );
 
-    const action = this.router.findAction(content);
-
-    return action && (await this.handleAction(params, action));
+    return await this.handleAction(params, action);
   }
 
   async handleAction(

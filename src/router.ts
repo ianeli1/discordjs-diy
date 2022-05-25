@@ -123,6 +123,13 @@ export class Router {
   }
 
   @autobind
+  fullTrigger(): string[] {
+    return [...(this.parent?.fullTrigger() ?? []), this.trigger].filter(
+      (x): x is string => typeof x === "string"
+    );
+  }
+
+  @autobind
   findAction(content: string): RoutedAction | undefined {
     const searchResult = this.handler.findAction(
       this.options.ignoreCaps

@@ -45,7 +45,7 @@ export interface ActionParameters<
    */
   parameters: Record<
     string,
-    string | boolean | User | GuildMember | Role | APIRole | number
+    string | boolean | User | GuildMember | Role | APIRole | number | undefined
   >;
 
   /**Keyword used to trigger the command */
