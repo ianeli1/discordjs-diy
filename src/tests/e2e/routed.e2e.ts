@@ -25,6 +25,10 @@ group("Standard routing", () => {
     expect("1 2 3").toReturn("3");
   });
 
+  test("extracts multiple arguments", () => {
+    expect("1 2 3 4").toReturn("3 4");
+  });
+
   test("defaults to router value", () => {
     expect("1 4").toReturn("default");
   });
