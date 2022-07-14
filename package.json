@@ -9,6 +9,7 @@
     "autobind-decorator": "^2.4.0",
     "discord-api-types": "^0.33.0",
     "discord.js": "^13.6.0",
+    "levenshtein-edit-distance": "2.0.5",
     "mongodb": "^4.2.0",
     "uuid": "^8.3.2"
   },
