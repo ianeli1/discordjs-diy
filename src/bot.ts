@@ -76,6 +76,7 @@ export class Bot extends BotBase {
     this.on = this.router.on;
     this.onDefault = this.router.onDefault;
     this.onError = this.router.onError;
+    this.onTypo = this.router.onTypo;
 
     this.componentHandler = new ComponentHandler();
     this.messageHandler = this.messageHandler.bind(this);
@@ -104,6 +105,11 @@ export class Bot extends BotBase {
   on: Router["on"];
   onDefault: Router["onDefault"];
   onError: Router["onError"];
+
+  /**
+   * @param action Callback function to be called if similar commands are found
+   */
+  onTypo: Router["onTypo"];
 
   /**@deprecated */
   setDefaultAction: Router["onDefault"];

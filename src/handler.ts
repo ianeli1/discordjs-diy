@@ -1,6 +1,7 @@
 import { ActionObject } from "./types";
 import { SlashCommandBuilder } from "@discordjs/builders";
 import { Router } from "./router";
+import { sortByDistance } from "./utility";
 
 type HandlerContent = ActionObject | Router;
 
@@ -15,13 +16,13 @@ type TriggerType = string | RegExp;
 export class CommandsHandler {
   readonly stringActions: MessageActions;
   private regexActions: RegexActions;
-  private defaultAction: ActionObject | undefined;
+  private _defaultAction: ActionObject | undefined;
   readonly commands: ReturnType<SlashCommandBuilder["toJSON"]>[];
 
   constructor() {
     this.stringActions = {};
     this.regexActions = new Map();
-    this.defaultAction = {};
+    this._defaultAction = {};
     this.commands = [];
     this.findAction = this.findAction.bind(this);
     this.setAction = this.setAction.bind(this);
@@ -39,8 +40,12 @@ export class CommandsHandler {
   }
 
   setDefaultAction(action: ActionObject) {
-    this.defaultAction = action;
+    this._defaultAction = action;
     return action;
+  }
+
+  get defaultAction(){
+    return this._defaultAction
   }
 
   removeAction(trig: TriggerType) {
@@ -61,6 +66,18 @@ export class CommandsHandler {
     return;
   }
 
+  /**
+   * Returns an array of similar triggers to the one provided and sorts them by similarity
+   * Only supports string triggers
+   */
+  findSimilar(pattern: string, limit = 3) {
+    const triggers = Object.keys(this.stringActions);
+    return sortByDistance(pattern, triggers).slice(0, limit);
+  }
+
+  /**
+   * Tries to find an action in this handler that matches the `trigger`
+   */
   findAction(trigger: string) {
     if (trigger in this.stringActions) {
       return this.stringActions[trigger];
@@ -68,7 +85,7 @@ export class CommandsHandler {
     return (
       [...this.regexActions.entries()].find(([regex]) =>
         regex.test(trigger)
-      )?.[1] ?? this.defaultAction
+      )?.[1] ?? this._defaultAction
     );
   }
 }
