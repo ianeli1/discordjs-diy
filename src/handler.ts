@@ -1,4 +1,4 @@
-import { ActionObject } from "./types";
+import { ActionObject, TypoOptions } from "./types";
 import { SlashCommandBuilder } from "@discordjs/builders";
 import { Router } from "./router";
 import { sortByDistance } from "./utility";
@@ -70,9 +70,9 @@ export class CommandsHandler {
    * Returns an array of similar triggers to the one provided and sorts them by similarity
    * Only supports string triggers
    */
-  findSimilar(pattern: string, limit = 3) {
+  findSimilar(pattern: string, {maxDistance, maxSuggestions}: TypoOptions) {
     const triggers = Object.keys(this.stringActions);
-    return sortByDistance(pattern, triggers).slice(0, limit);
+    return sortByDistance(pattern, triggers, maxDistance).slice(0, maxSuggestions);
   }
 
   /**

@@ -14,6 +14,7 @@ import {
   ResponseAction,
   CommandCollection,
   TypoAction,
+  TypoOptions,
 } from "./types";
 import { firstWord, printNested, report as _report } from "./utility";
 
@@ -29,6 +30,7 @@ export class Router {
   options: RouterOptions;
   readonly errorAction: ActionObject;
   typoAction: TypoAction | undefined = undefined;
+  typoOptions: TypoOptions | undefined = undefined;
 
   constructor() {
     this.options = {
@@ -125,11 +127,18 @@ export class Router {
   }
 
   @autobind
-  findOnTypo(): TypoAction | undefined {
+  findOnTypo(): [TypoAction, TypoOptions] | undefined {
     if (!this.typoAction) {
       return this.parent?.findOnTypo();
     }
-    return this.typoAction;
+    return [
+      this.typoAction,
+      {
+        maxDistance: 3,
+        maxSuggestions: 3,
+        ...this.typoOptions,
+      },
+    ];
   }
 
   @autobind
@@ -156,9 +165,10 @@ export class Router {
     }
 
     if (searchResult === this.handler.defaultAction) {
-      const typoAction = this.findOnTypo();
-      if (typoAction) {
-        const matches = this.handler.findSimilar(trigger);
+      const typoArray = this.findOnTypo();
+      if (typoArray) {
+        const [typoAction, options] = typoArray;
+        const matches = this.handler.findSimilar(trigger, options);
         if (matches.length) {
           return new RoutedAction(this, {
             response: (params) => typoAction(params, matches),
@@ -229,8 +239,11 @@ export class Router {
   }
 
   @autobind
-  onTypo(action: TypoAction) {
+  onTypo(action: TypoAction, options?: TypoOptions) {
     this.typoAction = action;
+    if (options) {
+      this.typoOptions = options;
+    }
     return this;
   }
 
