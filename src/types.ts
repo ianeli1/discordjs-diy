@@ -186,3 +186,16 @@ export type CommandCollection = (
   | SlashCommandSubcommandBuilder
   | SlashCommandSubcommandGroupBuilder
 )[];
+
+/**
+ * Callback. Called when a possible typo is detected and gets passed 3 (or less) most relevant suggestions
+ */
+export type TypoAction = (
+  params: ActionParameters,
+  similar: string[]
+) => SendableMessage;
+
+export interface TypoOptions {
+  maxDistance?: number;
+  maxSuggestions?: number;
+}

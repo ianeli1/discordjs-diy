@@ -1,4 +1,6 @@
 import { Client, EmojiResolvable } from "discord.js";
+//@ts-expect-error
+import distance from "levenshtein-edit-distance"
 
 export function report(...stuff: string[]) {
     console.log("[diy] =>", ...stuff);
@@ -28,4 +30,12 @@ export function printNested(level: number, ...stuff: any[]) {
         .forEach((x) => (nesting += x));
     const [first, ...rest] = stuff;
     console.log(`${nesting}\u001b[32m└> \u001b[0m${first}`, ...rest);
+}
+
+export function sortByDistance(pattern: string, input: string[], weightLimit = 3): string[]{
+    const trimmedPattern = pattern.trim()
+    return input.map((value) => ({
+        value,
+        weight: distance(trimmedPattern, value, true /** ignore caps */)
+    })).sort((a,b) => a.weight - b.weight).filter(x => x.weight < weightLimit).map(x => x.value)
 }

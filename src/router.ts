@@ -13,6 +13,8 @@ import {
   ActionObject,
   ResponseAction,
   CommandCollection,
+  TypoAction,
+  TypoOptions,
 } from "./types";
 import { firstWord, printNested, report as _report } from "./utility";
 
@@ -27,6 +29,8 @@ export class Router {
   parent: Router | undefined = undefined;
   options: RouterOptions;
   readonly errorAction: ActionObject;
+  typoAction: TypoAction | undefined = undefined;
+  typoOptions: TypoOptions | undefined = undefined;
 
   constructor() {
     this.options = {
@@ -123,6 +127,21 @@ export class Router {
   }
 
   @autobind
+  findOnTypo(): [TypoAction, TypoOptions] | undefined {
+    if (!this.typoAction) {
+      return this.parent?.findOnTypo();
+    }
+    return [
+      this.typoAction,
+      {
+        maxDistance: 3,
+        maxSuggestions: 3,
+        ...this.typoOptions,
+      },
+    ];
+  }
+
+  @autobind
   fullTrigger(): string[] {
     return [...(this.parent?.fullTrigger() ?? []), this.trigger].filter(
       (x): x is string => typeof x === "string"
@@ -131,11 +150,11 @@ export class Router {
 
   @autobind
   findAction(content: string): RoutedAction | undefined {
-    const searchResult = this.handler.findAction(
-      this.options.ignoreCaps
-        ? firstWord(content).toLowerCase()
-        : firstWord(content)
-    );
+    const trigger = this.options.ignoreCaps
+      ? firstWord(content).toLowerCase()
+      : firstWord(content);
+    const searchResult = this.handler.findAction(trigger);
+
     if (searchResult instanceof Router) {
       let newContent = (
         this.options.ignoreCaps ? content.toLowerCase() : content
@@ -144,6 +163,20 @@ export class Router {
         .trim();
       return searchResult.findAction(newContent);
     }
+
+    if (searchResult === this.handler.defaultAction) {
+      const typoArray = this.findOnTypo();
+      if (typoArray) {
+        const [typoAction, options] = typoArray;
+        const matches = this.handler.findSimilar(trigger, options);
+        if (matches.length) {
+          return new RoutedAction(this, {
+            response: (params) => typoAction(params, matches),
+          });
+        }
+      }
+    }
+
     return searchResult && new RoutedAction(this, searchResult);
   }
 
@@ -202,6 +235,15 @@ export class Router {
   @autobind
   onError(action: Exclude<BotAction, Router>) {
     (this.errorAction as ActionObject) = this.padAction(action);
+    return this;
+  }
+
+  @autobind
+  onTypo(action: TypoAction, options?: TypoOptions) {
+    this.typoAction = action;
+    if (options) {
+      this.typoOptions = options;
+    }
     return this;
   }
 

@@ -146,6 +146,36 @@ bot.registerAction("test", ({ args, createEmbed }) =>
 );
 ```
 
+### Handling typos
+
+Your users can be overwhelmed and confused by your bot's syntax. To aid them in the process, djs-diy offers a way to immediately point out which options they might have meant to type instead.
+
+```ts
+const bot = new Bot("<token>", { prefix: "!", embed });
+bot.on("test", "hi there!");
+bot.onTypo(
+  ({ author }, [first, ...rest]) =>
+    `Hey there, ${
+      author.username
+    }! Did you mean to type !${first}? Other options: ${rest.join(", ")}`
+);
+```
+
+`Bot#onTypo` can set a callback for an scenario where an user types "tsst" or something similar as any other trigger.
+Should be noted that onTypo is available router-wise and will always attempt to fetch a callback from any parent router (incluiding the Bot object's)
+
+`onTypo` can take a second argument in the form of an object
+```ts
+{
+  maxDistance: number 
+  maxSuggestions: number
+}
+```
+
+`maxDistance`: Maximum [Levenshtein distance](https://en.wikipedia.org/wiki/Levenshtein_distance) allowed
+`maxSuggestions`: Max amount of suggestions to be provided to the callback
+
+
 ### Routing
 
 Sometimes you may want a command to contain a subcommand. This is where routers come in. To use them, create a new Router object then assign commands to it. Finally assign it as an action in your main `Bot` object. Don't worry about the constructor parameters, they'll be filled in for you.
