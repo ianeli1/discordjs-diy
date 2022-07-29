@@ -8,12 +8,12 @@ import { ActionFactory } from "./action";
 import { BotBase } from "./base";
 import { Embed } from "./embed";
 import { ActionParameters, ParametersMiddleWare } from "./types";
-import { firstWord, report as _report } from "./utility";
+import { report as _report } from "./utility";
 // import { REST } from "@discordjs/rest";
 // import { Routes } from "discord-api-types/v9";
 import { ComponentHandler } from "./componentHandler";
 import { Router } from "./router";
-import { RoutedAction } from "./routedAction";
+import { errorTrigger, RoutedAction, typoTrigger } from "./routedAction";
 import { SlashCommands } from "./slashCommands";
 
 interface BotOptions {
@@ -354,25 +354,42 @@ export class Bot extends BotBase {
       .slice(0, hasSuffix ? -1 * this.suffix!.length || 0 : undefined)
       .trim(); //remove suffix and prefix
 
-    let trigger = firstWord(content); //get first word
-
-    if (this.ignoreCaps) trigger = trigger.toLowerCase();
-
     const action = this.router.findAction(content);
 
     if (!action) return;
 
-    const routedTrigger = action.router.fullTrigger().concat(trigger);
+    const routedTriggerArray = action.router.fullTrigger();
+
+    switch (typeof action.trigger) {
+      case "string":
+        routedTriggerArray.push(action.trigger);
+        break;
+      case "symbol":
+        switch (action.trigger) {
+          case errorTrigger:
+            routedTriggerArray.push("<!onError>");
+            break;
+          case typoTrigger:
+            routedTriggerArray.push("<!onTypo>");
+            break;
+        }
+        break;
+    }
+
+    let routedTrigger = routedTriggerArray.join(" ").trim();
+
+    if (this.ignoreCaps) {
+      routedTrigger = routedTrigger.toLowerCase();
+    }
 
     //args defaults to undefined if no actual arg is provided. AKA empty string
-    const args =
-      content.slice(routedTrigger.join(" ").length).trim() || undefined;
+    const args = content.slice(routedTrigger.length).trim() || undefined;
 
     const params = await this.createParams(
       msg,
       args,
       { arguments: args },
-      trigger
+      routedTrigger
     );
 
     return await this.handleAction(params, action);
