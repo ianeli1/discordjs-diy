@@ -6,7 +6,7 @@ import {
 import autobind from "autobind-decorator";
 import { Bot } from ".";
 import { CommandsHandler } from "./handler";
-import { RoutedAction } from "./routedAction";
+import { RoutedAction, typoTrigger } from "./routedAction";
 import { SlashCommands } from "./slashCommands";
 import {
   BotAction,
@@ -170,14 +170,18 @@ export class Router {
         const [typoAction, options] = typoArray;
         const matches = this.handler.findSimilar(trigger, options);
         if (matches.length) {
-          return new RoutedAction(this, {
-            response: (params) => typoAction(params, matches),
-          });
+          return new RoutedAction(
+            this,
+            {
+              response: (params) => typoAction(params, matches),
+            },
+            typoTrigger
+          );
         }
       }
     }
 
-    return searchResult && new RoutedAction(this, searchResult);
+    return searchResult && new RoutedAction(this, searchResult, trigger);
   }
 
   /**

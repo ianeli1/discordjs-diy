@@ -15,7 +15,7 @@ import {
 } from "./types";
 import { handleEmoji, report as _report } from "./utility";
 import { v4 } from "uuid";
-import { RoutedAction } from "./routedAction";
+import { errorTrigger, RoutedAction } from "./routedAction";
 import { Router } from "./router";
 
 /**
@@ -76,7 +76,7 @@ export const ActionFactory = (bot: Bot) =>
         if (pointer.errorAction) {
           yield (prevAction = new Action(
             { ...this.params, ...newParams },
-            new RoutedAction(this.router, pointer.errorAction),
+            new RoutedAction(this.router, pointer.errorAction, errorTrigger),
             prevAction.id
           ));
         }
