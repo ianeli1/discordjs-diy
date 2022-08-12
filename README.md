@@ -165,16 +165,16 @@ bot.onTypo(
 Should be noted that onTypo is available router-wise and will always attempt to fetch a callback from any parent router (incluiding the Bot object's)
 
 `onTypo` can take a second argument in the form of an object
+
 ```ts
 {
-  maxDistance: number 
-  maxSuggestions: number
+  maxDistance: number;
+  maxSuggestions: number;
 }
 ```
 
 `maxDistance`: Maximum [Levenshtein distance](https://en.wikipedia.org/wiki/Levenshtein_distance) allowed
 `maxSuggestions`: Max amount of suggestions to be provided to the callback
-
 
 ### Routing
 
@@ -256,6 +256,17 @@ bot.on("debug_register", async ({ guild }) =>
 Be sure to call this method _AFTER_ all of your commands and routers have been registered. For troubleshooting, `Bot#compileCommands` will return the objects that will then be passed to the Discord API (via `Bot#commands.overwriteCommands`)
 
 DJS-diy will automatically create subcommands in the case of routers. Be mindful of the [nesting limitations](https://discord.com/developers/docs/interactions/application-commands#subcommands-and-subcommand-groups).
+
+### Slash command timeout prevention
+
+Routers (and the Bot object) support having a loading action be executed for any slash command interactions that may take longer than 2.5s to execute [(Discord's official timeout is 3s)](https://discord.com/developers/docs/interactions/receiving-and-responding#responding-to-an-interaction).
+
+This action is a sendable message, meaning it can be a string or a function which receives ActionParameters. Do note that for performance reasons, this action can't be `async`
+
+```ts
+bot.onLoading(({ author }) => `I'm working on it, ${author.username}!`);
+router1.onLoading("Hold tight!!!");
+```
 
 ### Async Jobs
 
