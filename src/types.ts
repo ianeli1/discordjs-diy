@@ -7,10 +7,10 @@ import { APIRole } from "discord-api-types/v9";
 import {
   ApplicationCommandOptionType,
   ButtonInteraction,
+  CommandInteraction,
   EmojiResolvable,
   Guild,
   GuildMember,
-  Interaction,
   Message,
   MessageActionRow,
   MessageButtonOptions,
@@ -33,10 +33,36 @@ type NonNullableObject<T> = {
   [K in keyof T]: Exclude<T[K], null>;
 };
 
-/**Object passed to the action functions on every trigger */
-export interface ActionParameters<
+export type ActionParameters<MW = undefined> = MWActionParameters<MW> &
+  (TextActionParameters | CommandActionParameters);
+
+type ActionTypes = "text" | "command";
+
+export interface MWActionParameters<
   MW extends GenericObject | undefined = undefined
-> {
+> extends BaseActionParameters {
+  middleware?: MW;
+  msg: Message | CommandInteraction;
+  type: ActionTypes;
+}
+
+interface TextActionParameters {
+  /**
+   * Identifies the type of this action, if it's invoked by slash command ("command") or legacy text command ("text")
+   */
+  type: "text";
+  msg: Message;
+}
+interface CommandActionParameters {
+  /**
+   * Identifies the type of this action, if it's invoked by slash command ("command") or legacy text command ("text")
+   */
+  type: "command";
+  msg: CommandInteraction;
+}
+
+/**Object passed to the action functions on every trigger */
+interface BaseActionParameters {
   /**Arguments from the command executed, undefined for slash commands unless no parameter definition was provided */
   args?: string;
 
@@ -55,9 +81,6 @@ export interface ActionParameters<
    * Contains the full error obtained from the catch
    */
   error?: any;
-
-  /**Message that triggered this action */
-  msg: Message | Interaction;
   /**The user who triggered the action */
   author: User;
   /**The channel this command will be sent in */
@@ -113,10 +136,8 @@ export interface ActionParameters<
 
   /**Internal, used for `asyncEffect` */
   __asyncJobs: {
-    doAfter: Parameters<ActionParameters["asyncEffect"]>[0];
+    doAfter: Parameters<BaseActionParameters["asyncEffect"]>[0];
   }[];
-
-  middleware?: MW;
 }
 
 export type ParametersMiddleWare<

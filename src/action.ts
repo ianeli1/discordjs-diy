@@ -16,15 +16,19 @@ import {
 import { handleEmoji, report as _report } from "./utility";
 import { v4 } from "uuid";
 import { errorTrigger, RoutedAction } from "./routedAction";
-import { Router } from "./router";
+import type { Router } from "./router";
+import { INTERACTION_PROCESS_MS } from "./constants";
+import { IAction } from "./IAction";
 
 /**
  * Creates a new class containing the passed `Bot` value inside of it
  * @param bot `Bot` object
  * @returns `Action` class
  */
-export const ActionFactory = (bot: Bot) =>
-  class Action {
+export const ActionFactory = (
+  bot: Bot
+): new (...k: ConstructorParameters<typeof IAction>) => IAction =>
+  class Action implements IAction {
     bot: Bot = bot;
     id: string;
     router: Router;
