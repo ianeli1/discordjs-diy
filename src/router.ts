@@ -15,6 +15,7 @@ import {
   CommandCollection,
   TypoAction,
   TypoOptions,
+  SlashCommandLoadingAction,
 } from "./types";
 import { firstWord, printNested, report as _report } from "./utility";
 
@@ -31,6 +32,7 @@ export class Router {
   readonly errorAction: ActionObject;
   typoAction: TypoAction | undefined = undefined;
   typoOptions: TypoOptions | undefined = undefined;
+  loadingAction: SlashCommandLoadingAction | undefined = undefined;
 
   constructor() {
     this.options = {
@@ -142,6 +144,14 @@ export class Router {
   }
 
   @autobind
+  findLoading(): SlashCommandLoadingAction | undefined {
+    if (!this.loadingAction) {
+      return this.parent?.findLoading();
+    }
+    return this.loadingAction;
+  }
+
+  @autobind
   fullTrigger(): string[] {
     return [...(this.parent?.fullTrigger() ?? []), this.trigger].filter(
       (x): x is string => typeof x === "string"
@@ -248,6 +258,12 @@ export class Router {
     if (options) {
       this.typoOptions = options;
     }
+    return this;
+  }
+
+  @autobind
+  onLoading(action: SlashCommandLoadingAction) {
+    this.loadingAction = action;
     return this;
   }
 

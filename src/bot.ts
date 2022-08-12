@@ -50,6 +50,14 @@ export class Bot extends BotBase {
 
   private Action: ReturnType<typeof ActionFactory>;
 
+  /**
+   * @internal
+   * Stores a dictionary of all the current timeout prevention actions
+   * using the *interaction* id as key
+   * These actions will remove themselves on timeout
+   */
+  interactionTimeouts: Record<string, NodeJS.Timeout> = {};
+
   /**@private */
   router: Router;
 
@@ -77,6 +85,7 @@ export class Bot extends BotBase {
     this.onDefault = this.router.onDefault;
     this.onError = this.router.onError;
     this.onTypo = this.router.onTypo;
+    this.onLoading = this.router.onLoading;
 
     this.componentHandler = new ComponentHandler();
     this.messageHandler = this.messageHandler.bind(this);
@@ -110,6 +119,12 @@ export class Bot extends BotBase {
    * @param action Callback function to be called if similar commands are found
    */
   onTypo: Router["onTypo"];
+
+  /**
+   * @param action What to display if an action is taking longer than 2.5 to be displayed
+   * Make sure to keep the execution time of this callback to a minimum
+   */
+  onLoading: Router["onLoading"];
 
   /**@deprecated */
   setDefaultAction: Router["onDefault"];
@@ -200,7 +215,8 @@ export class Bot extends BotBase {
       });
     };
 
-    const vanillaParams: ActionParameters = {
+    const vanillaParams = <ActionParameters>{
+      type: msg instanceof CommandInteraction ? "command" : "text",
       createEmbed: this.embed.create,
       trigger,
       msg,
@@ -284,7 +300,9 @@ export class Bot extends BotBase {
 
     const action = this.router.findAction(commandName);
 
-    if (!action) return;
+    if (!action) {
+      return;
+    }
 
     const params: ActionParameters["parameters"] = {};
 
@@ -314,7 +332,11 @@ export class Bot extends BotBase {
           }
         }
       } else {
-        params["arguments"] = interaction.options.getString("arguments", true);
+        params["arguments"] =
+          interaction.options.getString(
+            "arguments",
+            false /** not required */
+          ) ?? undefined;
       }
 
       const actionParameters = await this.createParams(
@@ -325,7 +347,9 @@ export class Bot extends BotBase {
       );
 
       return await this.handleAction(actionParameters, action);
-    } catch (e) {}
+    } catch (e) {
+      this.report(`OOPS!!! => ${e}`, e);
+    }
   }
 
   private async messageHandler(msg: Message) {

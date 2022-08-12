@@ -1,30 +1,35 @@
 import {
-  CommandInteraction,
+  DiscordAPIError,
   EmojiResolvable,
   Interaction,
   Message,
 } from "discord.js";
-import { Bot } from "./bot";
+import type { Bot } from "./bot";
 import { ActionError } from "./error";
-import { SendableMessage } from "./types";
-import {
+import type {
   ActionObject,
   ActionParameters,
   ReactionAction,
   ResponseAction,
+  SendableMessage,
+  SlashCommandLoadingAction,
 } from "./types";
 import { handleEmoji, report as _report } from "./utility";
 import { v4 } from "uuid";
 import { errorTrigger, RoutedAction } from "./routedAction";
-import { Router } from "./router";
+import type { Router } from "./router";
+import { INTERACTION_PROCESS_MS } from "./constants";
+import { IAction } from "./IAction";
 
 /**
  * Creates a new class containing the passed `Bot` value inside of it
  * @param bot `Bot` object
  * @returns `Action` class
  */
-export const ActionFactory = (bot: Bot) =>
-  class Action {
+export const ActionFactory = (
+  bot: Bot
+): new (...k: ConstructorParameters<typeof IAction>) => IAction =>
+  class Action implements IAction {
     bot: Bot = bot;
     id: string;
     router: Router;
@@ -67,7 +72,7 @@ export const ActionFactory = (bot: Bot) =>
       if (this.hasError()) {
         const routedError = this.action.routeError();
         yield (prevAction = new Action(
-          { ...this.params, ...newParams },
+          <ActionParameters>{ ...this.params, ...newParams },
           routedError!,
           prevAction.id
         ));
@@ -75,7 +80,7 @@ export const ActionFactory = (bot: Bot) =>
       while (pointer) {
         if (pointer.errorAction) {
           yield (prevAction = new Action(
-            { ...this.params, ...newParams },
+            <ActionParameters>{ ...this.params, ...newParams },
             new RoutedAction(this.router, pointer.errorAction, errorTrigger),
             prevAction.id
           ));
@@ -86,9 +91,48 @@ export const ActionFactory = (bot: Bot) =>
     }
 
     async execResponse(_response?: ResponseAction) {
+      const { msg, type } = this.params;
+
+      if (type === "command") {
+        //initiate timeout prevention
+        bot.interactionTimeouts[msg.id] = setTimeout(async () => {
+          try {
+            if (!msg.deferred) {
+              //inform user
+              await msg.deferReply();
+            }
+            if (!msg.replied) {
+              //if there's a loading action, display it
+              const loadingAction = this.router.findLoading();
+              if (loadingAction) {
+                await this.handleActionReply(loadingAction);
+              }
+            }
+          } catch (e) {
+            if (
+              (e instanceof DiscordAPIError &&
+                !e.message.includes(
+                  "Interaction has already been acknowledged"
+                )) ||
+              !(e instanceof DiscordAPIError)
+            ) {
+              //Race condition between actual message and this
+              //Since we dont want to refetch the interaction/reply as that would be slow,
+              //we always try to defer the reply, and ignore any exceptions if it already has been deferred
+              this.report(
+                `An error ocurred while executing timeout prevention`,
+                e
+              );
+            }
+          }
+
+          //timeout prevented, remove from record
+          this.removeInteractionTimeout();
+        }, INTERACTION_PROCESS_MS);
+      }
+
       const response = _response ?? this.action.response;
       if (!response) return;
-      const { msg } = this.params;
       if (!msg.channel) {
         throw new ActionError(
           "response",
@@ -96,19 +140,41 @@ export const ActionFactory = (bot: Bot) =>
         );
       }
 
+      //handle real action
+      const result = await this.handleActionReply(response);
+      //timeout no longer needed
+      this.removeInteractionTimeout();
+      return result;
+    }
+
+    private removeInteractionTimeout() {
+      const {
+        msg: { id },
+      } = this.params;
+      if (bot.interactionTimeouts[id]) {
+        clearTimeout(bot.interactionTimeouts[id]);
+        delete bot.interactionTimeouts[id];
+      }
+    }
+
+    private async handleActionReply(
+      responseAction: SlashCommandLoadingAction | ResponseAction
+    ) {
+      const { msg, type } = this.params;
       try {
         let reply: SendableMessage | undefined;
-        if (typeof response === "string") reply = response;
-        else if (typeof response === "function")
-          reply = await response(this.params);
-        if (msg instanceof CommandInteraction) {
-          if (msg.replied) {
-            return !!reply && msg.editReply(await reply);
+        if (typeof responseAction === "string") reply = responseAction;
+        else if (typeof responseAction === "function")
+          reply = await responseAction(this.params);
+        if (type === "command") {
+          if (msg.replied || msg.deferred) {
+            //if message has been deferred, just update content
+            return reply ? msg.editReply(await reply) : undefined;
           }
           reply && (await msg.reply(await reply));
           return msg.fetchReply();
         }
-        return !!reply && (await msg.channel.send(await reply));
+        return reply ? await msg.channel.send(await reply) : undefined;
       } catch (e) {
         throw new ActionError("response", e.message, e);
       }
@@ -172,7 +238,14 @@ export const ActionFactory = (bot: Bot) =>
       let responseMessage: Message | undefined = undefined;
       try {
         const output = await Promise.all(promiseArray);
-        responseMessage = output[0] || undefined;
+        const outputMessage: Message | { id: string } | undefined =
+          output[0] || undefined;
+        if (outputMessage && !(outputMessage instanceof Message)) {
+          //if it's not a full message, refetch it
+          responseMessage = await msg.channel?.messages.fetch(outputMessage.id);
+        } else {
+          responseMessage = outputMessage || undefined;
+        }
       } catch (e) {
         this.report("Exception raised =>", e);
         if (e instanceof ActionError) {
