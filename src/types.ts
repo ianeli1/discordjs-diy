@@ -195,6 +195,14 @@ export type TypoAction = (
   similar: string[]
 ) => SendableMessage;
 
+/**
+ * Called when a slash command takes longer than the set timeout to process.
+ * Its result is then edited to the real expected message.
+ */
+export type SlashCommandLoadingAction =
+  | ((params: ActionParameters) => Awaited<SendableMessage>)
+  | Awaited<SendableMessage>;
+
 export interface TypoOptions {
   maxDistance?: number;
   maxSuggestions?: number;
