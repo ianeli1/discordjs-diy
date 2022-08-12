@@ -300,7 +300,9 @@ export class Bot extends BotBase {
 
     const action = this.router.findAction(commandName);
 
-    if (!action) return;
+    if (!action) {
+      return;
+    }
 
     const params: ActionParameters["parameters"] = {};
 
@@ -330,7 +332,11 @@ export class Bot extends BotBase {
           }
         }
       } else {
-        params["arguments"] = interaction.options.getString("arguments", true);
+        params["arguments"] =
+          interaction.options.getString(
+            "arguments",
+            false /** not required */
+          ) ?? undefined;
       }
 
       const actionParameters = await this.createParams(
@@ -341,7 +347,9 @@ export class Bot extends BotBase {
       );
 
       return await this.handleAction(actionParameters, action);
-    } catch (e) {}
+    } catch (e) {
+      this.report(`OOPS!!! => ${e}`, e);
+    }
   }
 
   private async messageHandler(msg: Message) {
