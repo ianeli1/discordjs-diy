@@ -1,4 +1,9 @@
-import { EmojiResolvable, Interaction, Message } from "discord.js";
+import {
+  DiscordAPIError,
+  EmojiResolvable,
+  Interaction,
+  Message,
+} from "discord.js";
 import type { Bot } from "./bot";
 import { ActionError } from "./error";
 import type {
@@ -91,17 +96,36 @@ export const ActionFactory = (
       if (type === "command") {
         //initiate timeout prevention
         bot.interactionTimeouts[msg.id] = setTimeout(async () => {
-          if (!msg.deferred) {
-            //inform user
-            await msg.deferReply();
-          }
-          if (!msg.replied) {
-            //if there's a loading action, display it
-            const loadingAction = this.router.findLoading();
-            if (loadingAction) {
-              await this.handleActionReply(loadingAction);
+          try {
+            if (!msg.deferred) {
+              //inform user
+              await msg.deferReply();
+            }
+            if (!msg.replied) {
+              //if there's a loading action, display it
+              const loadingAction = this.router.findLoading();
+              if (loadingAction) {
+                await this.handleActionReply(loadingAction);
+              }
+            }
+          } catch (e) {
+            if (
+              (e instanceof DiscordAPIError &&
+                !e.message.includes(
+                  "Interaction has already been acknowledged"
+                )) ||
+              !(e instanceof DiscordAPIError)
+            ) {
+              //Race condition between actual message and this
+              //Since we dont want to refetch the interaction/reply as that would be slow,
+              //we always try to defer the reply, and ignore any exceptions if it already has been deferred
+              this.report(
+                `An error ocurred while executing timeout prevention`,
+                e
+              );
             }
           }
+
           //timeout prevented, remove from record
           this.removeInteractionTimeout();
         }, INTERACTION_PROCESS_MS);
