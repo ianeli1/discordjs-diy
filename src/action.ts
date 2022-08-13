@@ -9,6 +9,9 @@ import { ActionError } from "./error";
 import type {
   ActionObject,
   ActionParameters,
+  ContextMenuActionParameters,
+  ContextMenuResponse,
+  ContextMenuType,
   ReactionAction,
   ResponseAction,
   SendableMessage,
@@ -20,6 +23,11 @@ import { errorTrigger, RoutedAction } from "./routedAction";
 import type { Router } from "./router";
 import { INTERACTION_PROCESS_MS } from "./constants";
 import { IAction } from "./IAction";
+import { APIMessage } from "discord-api-types/v10";
+
+type GenericResponse = (
+  params: ActionParameters | ContextMenuActionParameters
+) => ReturnType<ContextMenuResponse<ContextMenuType>>;
 
 /**
  * Creates a new class containing the passed `Bot` value inside of it
@@ -33,30 +41,78 @@ export const ActionFactory = (
     bot: Bot = bot;
     id: string;
     router: Router;
+
+    actionParameters: ActionParameters | ContextMenuActionParameters;
+    action: ContextMenuResponse<ContextMenuType> | RoutedAction;
+
     constructor(
-      public params: ActionParameters,
-      public action: RoutedAction,
-      invokerId: string | undefined = undefined
+      params: ContextMenuActionParameters,
+      action: ContextMenuResponse<ContextMenuType>
+    );
+
+    constructor(
+      params: ActionParameters,
+      action: RoutedAction,
+      invokerId: string | undefined
+    );
+
+    constructor(
+      actionParameters: ActionParameters | ContextMenuActionParameters,
+      action: RoutedAction | ContextMenuResponse<ContextMenuType>,
+      invokerId?: string
     ) {
-      this.router = this.action.router;
+      this.action = action;
+      this.actionParameters = actionParameters;
+      if (
+        actionParameters.type === "user" ||
+        actionParameters.type === "message"
+      ) {
+        /** Context menu interaction */
+        this.router = this.bot.router;
+      } else if (
+        (actionParameters.type === "command" ||
+          actionParameters.type === "text") &&
+        action instanceof RoutedAction
+      ) {
+        /** Regular command */
+        this.router = action.router;
+        this.actionParameters = <ActionParameters>actionParameters;
+        if (action.rawAction === this.bot.router.errorAction) {
+          this.id = `GlobalError<-${invokerId}`;
+        } else if (action.rawAction === this.router.errorAction) {
+          this.id = `@Router(${this.router.trigger}).errorAction<-${invokerId}`;
+        } else if (invokerId) {
+          this.id = `@onError<-${invokerId}`;
+        } else this.id = v4();
+      } else {
+        throw new ActionError(
+          "unknown",
+          `Unsupported action type: ${actionParameters.type}`
+        );
+      }
+
       this.execResponse = this.execResponse.bind(this);
       this.execReaction = this.execReaction.bind(this);
       this.executeAll = this.executeAll.bind(this);
-      if (action.rawAction === this.bot.router.errorAction) {
-        this.id = `GlobalError<-${invokerId}`;
-      } else if (action.rawAction === this.router.errorAction) {
-        this.id = `@Router(${this.router.trigger}).errorAction<-${invokerId}`;
-      } else if (invokerId) {
-        this.id = `@onError<-${invokerId}`;
-      } else this.id = v4();
     }
 
     report(...stuff: string[]) {
-      this.router.report(`[Action(${this.id})] =>`, ...stuff);
+      const hasRouter = !!this.router;
+      (hasRouter ? this.router! : this.bot).report(
+        `[Action(${this.id}${hasRouter ? "" : "@CtxMenu"})] =>`,
+        ...stuff
+      );
     }
 
     hasError() {
-      return !!this.action.onError;
+      return "onError" in this.action && !!this.action.onError;
+    }
+
+    private getInvoker() {
+      const { type } = this.actionParameters;
+      return type === "text" || type === "command"
+        ? this.actionParameters.msg
+        : (<ContextMenuActionParameters>this.actionParameters).interaction;
     }
 
     /**
@@ -69,10 +125,10 @@ export const ActionFactory = (
     *getError(newParams: Partial<ActionParameters>) {
       let pointer: Router | undefined = this.router;
       let prevAction: Action = this;
-      if (this.hasError()) {
+      if (this.action instanceof RoutedAction && this.hasError()) {
         const routedError = this.action.routeError();
         yield (prevAction = new Action(
-          <ActionParameters>{ ...this.params, ...newParams },
+          <ActionParameters>{ ...this.actionParameters, ...newParams },
           routedError!,
           prevAction.id
         ));
@@ -80,7 +136,7 @@ export const ActionFactory = (
       while (pointer) {
         if (pointer.errorAction) {
           yield (prevAction = new Action(
-            <ActionParameters>{ ...this.params, ...newParams },
+            <ActionParameters>{ ...this.actionParameters, ...newParams },
             new RoutedAction(this.router, pointer.errorAction, errorTrigger),
             prevAction.id
           ));
@@ -91,10 +147,11 @@ export const ActionFactory = (
     }
 
     async execResponse(_response?: ResponseAction) {
-      const { msg, type } = this.params;
+      const { type } = this.actionParameters;
 
       if (type === "command") {
         //initiate timeout prevention
+        const { msg } = this.actionParameters;
         bot.interactionTimeouts[msg.id] = setTimeout(async () => {
           try {
             if (!msg.deferred) {
@@ -131,12 +188,16 @@ export const ActionFactory = (
         }, INTERACTION_PROCESS_MS);
       }
 
-      const response = _response ?? this.action.response;
+      const response =
+        _response ??
+        (this.action instanceof RoutedAction
+          ? this.action.response
+          : this.action);
       if (!response) return;
-      if (!msg.channel) {
+      if (!this.getInvoker().channel) {
         throw new ActionError(
           "response",
-          "A channel could not be found for this command execution"
+          "A channel could not be found for this action execution"
         );
       }
 
@@ -148,42 +209,63 @@ export const ActionFactory = (
     }
 
     private removeInteractionTimeout() {
-      const {
-        msg: { id },
-      } = this.params;
-      if (bot.interactionTimeouts[id]) {
-        clearTimeout(bot.interactionTimeouts[id]);
-        delete bot.interactionTimeouts[id];
+      if (this.actionParameters.type === "command") {
+        const {
+          msg: { id },
+        } = this.actionParameters;
+        if (bot.interactionTimeouts[id]) {
+          clearTimeout(bot.interactionTimeouts[id]);
+          delete bot.interactionTimeouts[id];
+        }
       }
     }
 
     private async handleActionReply(
-      responseAction: SlashCommandLoadingAction | ResponseAction
+      responseAction:
+        | SlashCommandLoadingAction
+        | ResponseAction
+        | ContextMenuResponse<ContextMenuType>
     ) {
-      const { msg, type } = this.params;
+      const { type } = this.actionParameters;
       try {
         let reply: SendableMessage | undefined;
         if (typeof responseAction === "string") reply = responseAction;
         else if (typeof responseAction === "function")
-          reply = await responseAction(this.params);
-        if (type === "command") {
-          if (msg.replied || msg.deferred) {
+          reply = await (<GenericResponse>responseAction)(
+            this.actionParameters
+          );
+        if (type === "command" || type === "user" || type === "message") {
+          const invoker = this.getInvoker() as Exclude<
+            ReturnType<Action["getInvoker"]>,
+            Message
+          >;
+          if (invoker.replied || invoker.deferred) {
             //if message has been deferred, just update content
-            return reply ? msg.editReply(await reply) : undefined;
+            return reply ? invoker.editReply(await reply) : undefined;
           }
-          reply && (await msg.reply(await reply));
-          return msg.fetchReply();
+          reply && (await invoker.reply(await reply));
+          return invoker.fetchReply();
         }
-        return reply ? await msg.channel.send(await reply) : undefined;
+
+        return reply
+          ? await this.getInvoker().channel?.send(await reply)
+          : undefined;
       } catch (e) {
         throw new ActionError("response", e.message, e);
       }
     }
 
     async execReaction(_reaction?: ReactionAction) {
+      if (
+        this.actionParameters.type === "message" ||
+        this.actionParameters.type === "user" ||
+        !(this.action instanceof RoutedAction)
+      ) {
+        return this.report("Illegal 'execReaction' execution");
+      }
       const reaction = _reaction ?? this.action.reaction;
       if (!reaction) return;
-      const { msg } = this.params;
+      const { msg } = <ActionParameters>this.actionParameters;
       const { client } = this.bot;
       if (msg instanceof Interaction) {
         throw new ActionError(
@@ -196,7 +278,10 @@ export const ActionFactory = (
         if (typeof reaction === "string") {
           emoji = handleEmoji(client, reaction);
         } else if (typeof reaction === "function") {
-          emoji = handleEmoji(client, await reaction(this.params));
+          emoji = handleEmoji(
+            client,
+            await reaction(<ActionParameters>this.actionParameters)
+          );
         }
         emoji && (await msg.react(emoji));
       } catch (e) {
@@ -205,33 +290,49 @@ export const ActionFactory = (
     }
 
     async executeAll(_action?: ActionObject) {
-      const { reaction, response } = _action ?? this.action;
-      const {
-        msg,
-        args,
-        trigger,
-        author,
-        __asyncJobs: asyncJobs,
-      } = this.params;
+      const { type, author } = this.actionParameters;
 
-      this.report(
-        `Command triggered, user: ${
-          author.tag
-        }, trigger: ${trigger}, args: ${args}, response: ${
-          response ? typeof response : "no"
-        }, reaction: ${reaction ? typeof reaction : "no"}`
-      );
+      if (type === "text" || type === "command") {
+        const { trigger, args } = this.actionParameters;
+        const response =
+          this.action instanceof RoutedAction && this.action.response;
+        const reaction =
+          this.action instanceof RoutedAction && this.action.reaction;
+        this.report(
+          `Command triggered, user: ${
+            author.tag
+          }, trigger: ${trigger}, args: ${args}, response: ${
+            response ? typeof response : "no"
+          }, reaction: ${reaction ? typeof reaction : "no"}`
+        );
+      } else if (type === "message" || type === "user") {
+        const { name, targetUser, targetMessage } = this.actionParameters;
+        this.report(
+          `Context menu triggered, user: ${
+            author.tag
+          }, commandName: ${name}, type: ${type}, target: ${
+            type === "user"
+              ? targetUser?.tag ?? "<NONAME>"
+              : `"${targetMessage?.content ?? "<NOCONTENT>"}" by ${
+                  targetMessage?.author.username
+                }`
+          }`
+        );
+      } else {
+        this.report(`Illegal action type ${type}`);
+        return;
+      }
 
       const promiseArray: [
-        ReturnType<typeof this["execResponse"]> | undefined,
-        ReturnType<typeof this["execReaction"]> | undefined
+        Promise<Message | APIMessage | undefined> | undefined,
+        Promise<void> | undefined
       ] = [undefined, undefined];
 
-      if (response) {
+      if ("response" in this.action || typeof this.action === "function") {
         promiseArray[0] = this.execResponse() as typeof promiseArray[0];
       }
 
-      if (reaction) {
+      if ("reaction" in this.action) {
         promiseArray[1] = this.execReaction() as typeof promiseArray[1];
       }
 
@@ -242,7 +343,9 @@ export const ActionFactory = (
           output[0] || undefined;
         if (outputMessage && !(outputMessage instanceof Message)) {
           //if it's not a full message, refetch it
-          responseMessage = await msg.channel?.messages.fetch(outputMessage.id);
+          responseMessage = await this.getInvoker().channel?.messages.fetch(
+            outputMessage.id
+          );
         } else {
           responseMessage = outputMessage || undefined;
         }
@@ -255,20 +358,25 @@ export const ActionFactory = (
         }
       }
 
-      if (responseMessage && asyncJobs.length) {
-        try {
-          await Promise.all(
-            asyncJobs.map(({ doAfter }) =>
-              doAfter({
-                ...this.params,
-                msg: responseMessage!,
-              })
-            )
-          );
-        } catch (e) {
-          this.report(
-            `An error ocurred trying to execute async job. TriggerMsgId: ${msg.id}, ReplyMsgId: ${responseMessage.id}, e => ${e}`
-          );
+      if (type === "text" || type === "command") {
+        const { __asyncJobs: asyncJobs } = this.actionParameters;
+        if (responseMessage && asyncJobs.length) {
+          try {
+            await Promise.all(
+              asyncJobs.map(({ doAfter }) =>
+                doAfter({
+                  ...(<ActionParameters>this.actionParameters),
+                  msg: responseMessage!,
+                })
+              )
+            );
+          } catch (e) {
+            this.report(
+              `An error ocurred trying to execute async job. TriggerMsgId: ${
+                this.getInvoker().id
+              }, ReplyMsgId: ${responseMessage.id}, e => ${e}`
+            );
+          }
         }
       }
     }

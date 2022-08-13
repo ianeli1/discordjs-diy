@@ -7,7 +7,11 @@ import {
 import { ActionFactory } from "./action";
 import { BotBase } from "./base";
 import { Embed } from "./embed";
-import { ActionParameters, ParametersMiddleWare } from "./types";
+import {
+  ActionParameters,
+  BarebonesActionParameters,
+  ParametersMiddleWare,
+} from "./types";
 import { report as _report } from "./utility";
 // import { REST } from "@discordjs/rest";
 // import { Routes } from "discord-api-types/v9";
@@ -15,6 +19,8 @@ import { ComponentHandler } from "./componentHandler";
 import { Router } from "./router";
 import { errorTrigger, RoutedAction, typoTrigger } from "./routedAction";
 import { SlashCommands } from "./slashCommands";
+import { InteractionHandler } from "./interactionHandler";
+import { IAction } from "./IAction";
 
 interface BotOptions {
   prefix?: string;
@@ -48,7 +54,10 @@ export class Bot extends BotBase {
 
   private componentHandler: ComponentHandler;
 
-  private Action: ReturnType<typeof ActionFactory>;
+  private interactionHandler: InteractionHandler;
+
+  /** @internal */
+  Action: ReturnType<typeof ActionFactory>;
 
   /**
    * @internal
@@ -78,29 +87,43 @@ export class Bot extends BotBase {
         "You need to provide at least one of the following: prefix or suffix"
       );
 
+    /** Component creation */
     this.router = new Router();
     this.router.options.ignoreCaps = this.ignoreCaps;
     this.router._bot = this;
+    this.componentHandler = new ComponentHandler();
+    this.interactionHandler = new InteractionHandler(
+      this,
+      this.componentHandler
+    );
+
+    /** External binds */
     this.on = this.router.on;
     this.onDefault = this.router.onDefault;
     this.onError = this.router.onError;
     this.onTypo = this.router.onTypo;
     this.onLoading = this.router.onLoading;
-
-    this.componentHandler = new ComponentHandler();
-    this.messageHandler = this.messageHandler.bind(this);
-    this.interactionHandler = this.interactionHandler.bind(this);
-    this.handleAction = this.handleAction.bind(this);
-    this.Action = ActionFactory(this);
-    this.client.on("messageCreate", this.messageHandler);
-    this.client.on("interactionCreate", this.interactionHandler);
-
+    this.compileCommands = this.router.compileAll;
+    this.onContextMenu = this.interactionHandler.onContextMenu;
+    this.registerContextMenuActions =
+      this.interactionHandler.registerContextMenuActions;
     /** @deprecated */
     this.registerAction = this.on;
     this.setDefaultAction = this.onDefault;
     this.setErrorAction = this.onError;
+    /** end @deprecated */
 
-    this.compileCommands = this.router.compileAll;
+    /** Local binds */
+    this.messageHandler = this.messageHandler.bind(this);
+    this.handleAction = this.handleAction.bind(this);
+    this.Action = ActionFactory(this);
+
+    /** Event handlers */
+    this.client.on("messageCreate", this.messageHandler);
+    this.client.on(
+      "interactionCreate",
+      this.interactionHandler.handleInteraction
+    );
   }
 
   /**
@@ -114,6 +137,14 @@ export class Bot extends BotBase {
   on: Router["on"];
   onDefault: Router["onDefault"];
   onError: Router["onError"];
+  onContextMenu: InteractionHandler["onContextMenu"];
+
+  /**
+   * Registers all the context menu action with discord
+   * @param guilds [optional] ID or array of IDs of the guilds you wish to register the actions on
+   * Leave blank for global register
+   */
+  registerContextMenuActions: InteractionHandler["registerContextMenuActions"];
 
   /**
    * @param action Callback function to be called if similar commands are found
@@ -139,6 +170,20 @@ export class Bot extends BotBase {
 
   useMiddleware<T>(middleware: ParametersMiddleWare<T>) {
     return !!this.middlewareArray.push(middleware);
+  }
+
+  createBarebonesParams(
+    msgOrInteraction: Message | Interaction
+  ): BarebonesActionParameters {
+    return {
+      author:
+        msgOrInteraction instanceof Interaction
+          ? msgOrInteraction.user
+          : msgOrInteraction.author,
+      createEmbed: this.embed.create,
+      channel: msgOrInteraction.channel ?? undefined,
+      guild: msgOrInteraction.guild ?? undefined,
+    };
   }
 
   async createParams(
@@ -216,15 +261,12 @@ export class Bot extends BotBase {
     };
 
     const vanillaParams = <ActionParameters>{
+      ...this.createBarebonesParams(msg),
       type: msg instanceof CommandInteraction ? "command" : "text",
-      createEmbed: this.embed.create,
       trigger,
       msg,
       args,
       parameters,
-      author,
-      channel: msg.channel ?? undefined,
-      guild: msg.guild ?? undefined,
       expectReply,
       dm,
       subscribe,
@@ -240,116 +282,6 @@ export class Bot extends BotBase {
     }
 
     return moddedParams;
-  }
-
-  private async interactionHandler(interaction: Interaction) {
-    if (interaction.isButton() || interaction.isSelectMenu()) {
-      interaction.deferUpdate();
-      const subscription = this.componentHandler.getSubscription(
-        interaction.customId
-      );
-      if (!subscription) {
-        return;
-      }
-      if (
-        interaction.member &&
-        (subscription.additionalUserIds.length === 0
-          ? subscription.msg.member?.user.id !== interaction.member?.user.id
-          : !subscription.additionalUserIds.includes(
-              interaction.member?.user.id
-            ))
-      ) {
-        return;
-      }
-      const interactionActionParameters = await this.createParams(
-        interaction.message as Message,
-        undefined,
-        {},
-        interaction.customId
-      );
-      let msgReply = await subscription.action(
-        interactionActionParameters,
-        interaction,
-        interaction.isButton()
-          ? +(interaction.customId.split("-").pop() ?? 0)
-          : interaction.values[0]
-      );
-
-      msgReply &&
-        (subscription.msg instanceof Message
-          ? await (interaction.message as Message).edit(msgReply)
-          : await subscription.msg.editReply(msgReply));
-      this.componentHandler.renewSubscription(interaction.customId, undefined);
-    }
-
-    if (!interaction.isCommand()) {
-      return;
-    }
-
-    let commandName = interaction.commandName;
-
-    const group = interaction.options.getSubcommandGroup(false);
-    if (group) {
-      commandName += ` ${group}`;
-    }
-
-    const sub = interaction.options.getSubcommand(false);
-    if (sub) {
-      commandName += ` ${sub}`;
-    }
-
-    const action = this.router.findAction(commandName);
-
-    if (!action) {
-      return;
-    }
-
-    const params: ActionParameters["parameters"] = {};
-
-    try {
-      if (action.parameters) {
-        for (const param of action.parameters) {
-          switch (param.type ?? "STRING") {
-            case "USER":
-              const user = interaction.options.getUser(param.name);
-              user && (params[param.name] = user);
-              break;
-            case "ROLE":
-              const role = interaction.options.getRole(param.name);
-              role && (params[param.name] = role);
-              break;
-            case "MENTIONABLE":
-              const mentionable = interaction.options.getMentionable(
-                param.name
-              );
-              //@ts-ignore todo idk
-              mentionable && (params[param.name] = mentionable);
-              break;
-
-            default:
-              const val = interaction.options.get(param.name)?.value;
-              val && (params[param.name] = val);
-          }
-        }
-      } else {
-        params["arguments"] =
-          interaction.options.getString(
-            "arguments",
-            false /** not required */
-          ) ?? undefined;
-      }
-
-      const actionParameters = await this.createParams(
-        interaction,
-        params.arguments as string | undefined,
-        params,
-        interaction.commandName
-      );
-
-      return await this.handleAction(actionParameters, action);
-    } catch (e) {
-      this.report(`OOPS!!! => ${e}`, e);
-    }
   }
 
   private async messageHandler(msg: Message) {
@@ -419,12 +351,27 @@ export class Bot extends BotBase {
     return await this.handleAction(params, action);
   }
 
-  async handleAction(
+  handleAction(action: IAction): Promise<void>;
+  handleAction(
     params: ActionParameters,
     routedAction: RoutedAction,
-    invokerId: string | undefined = undefined
+    invokerId?: string
+  ): Promise<void>;
+  async handleAction(
+    paramsOrAction: ActionParameters | IAction,
+    routedAction?: RoutedAction,
+    invokerId?: string
   ) {
-    const action = new this.Action(params, routedAction, invokerId);
+    const action =
+      paramsOrAction instanceof this.Action
+        ? paramsOrAction
+        : routedAction instanceof RoutedAction
+        ? new this.Action(paramsOrAction, routedAction, invokerId)
+        : (() => {
+            throw new Error(
+              `Illegal action, routedAction required, received ${routedAction}`
+            );
+          })();
     try {
       await action.executeAll();
     } catch (e) {

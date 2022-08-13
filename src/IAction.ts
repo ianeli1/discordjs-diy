@@ -6,6 +6,9 @@ import { Router } from "./router";
 import {
   ActionObject,
   ActionParameters,
+  ContextMenuActionParameters,
+  ContextMenuResponse,
+  ContextMenuType,
   ReactionAction,
   ResponseAction,
 } from "./types";
@@ -17,10 +20,22 @@ export abstract class IAction {
   bot: Bot;
   id: string;
   router: Router;
+  actionParameters: ActionParameters | ContextMenuActionParameters;
+  action: ContextMenuResponse<ContextMenuType> | RoutedAction;
+
   constructor(
-    public params: ActionParameters,
-    public action: RoutedAction,
-    _invokerId: string | undefined
+    params: ContextMenuActionParameters,
+    action: ContextMenuResponse<ContextMenuType>
+  );
+  constructor(
+    params: ActionParameters,
+    action: RoutedAction,
+    invokerId?: string
+  );
+  constructor(
+    _actionParameters: ActionParameters | ContextMenuActionParameters,
+    _action: RoutedAction | ContextMenuResponse<ContextMenuType>,
+    _invokerId?: string
   ) {}
 
   abstract report(..._stuff: string[]): void;
