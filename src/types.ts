@@ -1,4 +1,5 @@
 import {
+  ContextMenuCommandBuilder,
   SlashCommandBuilder,
   SlashCommandSubcommandBuilder,
   SlashCommandSubcommandGroupBuilder,
@@ -210,6 +211,7 @@ export type CommandCollection = (
   | SlashCommandBuilder
   | SlashCommandSubcommandBuilder
   | SlashCommandSubcommandGroupBuilder
+  | ContextMenuCommandBuilder
 )[];
 
 /**

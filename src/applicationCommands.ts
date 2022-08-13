@@ -157,12 +157,8 @@ export class ApplicationCommands {
     const commands = this.bot.compileCommands();
 
     const body = commands
-      .map((x) => x.toJSON())
-      .concat(
-        this.bot.interactionHandler
-          .compileContextMenuActions()
-          .map((x) => x.toJSON())
-      );
+      .concat(this.bot.interactionHandler.compileContextMenuActions())
+      .map((builder) => builder.toJSON());
 
     try {
       if (_guilds) {
