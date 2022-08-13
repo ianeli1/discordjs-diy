@@ -68,13 +68,11 @@ export class InteractionHandler {
   }
 
   @autobind
-  async registerContextMenuActions(guilds?: string | string[]) {
-    const guildList = typeof guilds === "string" ? [guilds] : guilds;
+  compileContextMenuActions() {
     const isValidType = (x: string): x is ContextMenuType =>
       x === "user" || x === "message";
 
-    const compiledResult: ReturnType<ContextMenuCommandBuilder["toJSON"]>[] =
-      [];
+    const compiledResult: ContextMenuCommandBuilder[] = [];
 
     for (const id of this.contextMenuActions.keys()) {
       const id_split = id.split("_");
@@ -94,19 +92,10 @@ export class InteractionHandler {
             : ApplicationCommandType.Message
         );
 
-      compiledResult.push(ctxCommand.toJSON());
+      compiledResult.push(ctxCommand);
     }
 
-    if (guildList) {
-      await Promise.all(
-        guildList.map(
-          async (guildId) =>
-            await this.bot.commands.overwriteCommands(compiledResult, guildId)
-        )
-      );
-    } else {
-      await this.bot.commands.overwriteCommands(compiledResult);
-    }
+    return compiledResult;
   }
 
   @autobind

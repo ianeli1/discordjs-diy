@@ -8,7 +8,7 @@ import { Routes } from "discord-api-types/v10";
 import { Bot } from "./bot";
 import { ActionObject, CommandCollection } from "./types";
 
-export class SlashCommands {
+export class ApplicationCommands {
   constructor(readonly bot: Bot) {}
 
   readonly rest = new REST({ version: "10" }).setToken(this.bot.token);
@@ -156,7 +156,13 @@ export class SlashCommands {
     const _guilds = typeof guilds === "string" ? [guilds] : guilds;
     const commands = this.bot.compileCommands();
 
-    const body = commands.map((x) => x.toJSON());
+    const body = commands
+      .map((x) => x.toJSON())
+      .concat(
+        this.bot.interactionHandler
+          .compileContextMenuActions()
+          .map((x) => x.toJSON())
+      );
 
     try {
       if (_guilds) {

@@ -18,7 +18,7 @@ import { report as _report } from "./utility";
 import { ComponentHandler } from "./componentHandler";
 import { Router } from "./router";
 import { errorTrigger, RoutedAction, typoTrigger } from "./routedAction";
-import { SlashCommands } from "./slashCommands";
+import { ApplicationCommands } from "./applicationCommands";
 import { InteractionHandler } from "./interactionHandler";
 import { IAction } from "./IAction";
 
@@ -54,7 +54,8 @@ export class Bot extends BotBase {
 
   private componentHandler: ComponentHandler;
 
-  private interactionHandler: InteractionHandler;
+  /** @internal */
+  readonly interactionHandler: InteractionHandler;
 
   /** @internal */
   Action: ReturnType<typeof ActionFactory>;
@@ -70,7 +71,7 @@ export class Bot extends BotBase {
   /**@private */
   router: Router;
 
-  readonly commands = new SlashCommands(this);
+  readonly commands = new ApplicationCommands(this);
 
   constructor(token: string, options: BotOptions) {
     super(token, options.intents);
@@ -105,8 +106,6 @@ export class Bot extends BotBase {
     this.onLoading = this.router.onLoading;
     this.compileCommands = this.router.compileAll;
     this.onContextMenu = this.interactionHandler.onContextMenu;
-    this.registerContextMenuActions =
-      this.interactionHandler.registerContextMenuActions;
     /** @deprecated */
     this.registerAction = this.on;
     this.setDefaultAction = this.onDefault;
@@ -138,13 +137,6 @@ export class Bot extends BotBase {
   onDefault: Router["onDefault"];
   onError: Router["onError"];
   onContextMenu: InteractionHandler["onContextMenu"];
-
-  /**
-   * Registers all the context menu action with discord
-   * @param guilds [optional] ID or array of IDs of the guilds you wish to register the actions on
-   * Leave blank for global register
-   */
-  registerContextMenuActions: InteractionHandler["registerContextMenuActions"];
 
   /**
    * @param action Callback function to be called if similar commands are found
