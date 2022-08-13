@@ -4,7 +4,7 @@ import {
 } from "@discordjs/builders";
 import { REST } from "@discordjs/rest";
 import autobind from "autobind-decorator";
-import { Routes } from "discord.js/node_modules/discord-api-types/v9";
+import { Routes } from "discord-api-types/v10";
 import { Bot } from "./bot";
 import { ActionObject, CommandCollection } from "./types";
 
