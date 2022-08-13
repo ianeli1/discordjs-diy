@@ -149,16 +149,19 @@ export const ActionFactory = (
     async execResponse(_response?: ResponseAction) {
       const { type } = this.actionParameters;
 
-      if (type === "command") {
+      if (type === "command" || type === "user" || type === "message") {
         //initiate timeout prevention
-        const { msg } = this.actionParameters;
-        bot.interactionTimeouts[msg.id] = setTimeout(async () => {
+        const invoker = this.getInvoker() as Exclude<
+          ReturnType<Action["getInvoker"]>,
+          Message
+        >;
+        bot.interactionTimeouts[invoker.id] = setTimeout(async () => {
           try {
-            if (!msg.deferred) {
+            if (!invoker.deferred) {
               //inform user
-              await msg.deferReply();
+              await invoker.deferReply();
             }
-            if (!msg.replied) {
+            if (!invoker.replied) {
               //if there's a loading action, display it
               const loadingAction = this.router.findLoading();
               if (loadingAction) {
@@ -209,10 +212,9 @@ export const ActionFactory = (
     }
 
     private removeInteractionTimeout() {
-      if (this.actionParameters.type === "command") {
-        const {
-          msg: { id },
-        } = this.actionParameters;
+      const { type } = this.actionParameters;
+      if (type === "command" || type === "user" || type === "message") {
+        const id = this.getInvoker().id;
         if (bot.interactionTimeouts[id]) {
           clearTimeout(bot.interactionTimeouts[id]);
           delete bot.interactionTimeouts[id];
