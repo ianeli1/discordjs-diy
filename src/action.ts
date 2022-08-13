@@ -360,25 +360,23 @@ export const ActionFactory = (
         }
       }
 
-      if (type === "text" || type === "command") {
-        const { __asyncJobs: asyncJobs } = this.actionParameters;
-        if (responseMessage && asyncJobs.length) {
-          try {
-            await Promise.all(
-              asyncJobs.map(({ doAfter }) =>
-                doAfter({
-                  ...(<ActionParameters>this.actionParameters),
-                  msg: responseMessage!,
-                })
-              )
-            );
-          } catch (e) {
-            this.report(
-              `An error ocurred trying to execute async job. TriggerMsgId: ${
-                this.getInvoker().id
-              }, ReplyMsgId: ${responseMessage.id}, e => ${e}`
-            );
-          }
+      const { __asyncJobs: asyncJobs } = this.actionParameters;
+      if (responseMessage && asyncJobs.length) {
+        try {
+          await Promise.all(
+            asyncJobs.map(({ doAfter }) =>
+              doAfter({
+                ...(<ActionParameters>this.actionParameters),
+                msg: responseMessage!,
+              })
+            )
+          );
+        } catch (e) {
+          this.report(
+            `An error ocurred trying to execute async job. TriggerMsgId: ${
+              this.getInvoker().id
+            }, ReplyMsgId: ${responseMessage.id}, e => ${e}`
+          );
         }
       }
     }

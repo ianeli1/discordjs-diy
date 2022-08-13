@@ -167,7 +167,7 @@ export class Bot extends BotBase {
   createBarebonesParams(
     msgOrInteraction: Message | Interaction
   ): BarebonesActionParameters {
-    return {
+    const params: Partial<BarebonesActionParameters> = {
       author:
         msgOrInteraction instanceof Interaction
           ? msgOrInteraction.user
@@ -175,7 +175,16 @@ export class Bot extends BotBase {
       createEmbed: this.embed.create,
       channel: msgOrInteraction.channel ?? undefined,
       guild: msgOrInteraction.guild ?? undefined,
+      __asyncJobs: [],
     };
+
+    params.asyncEffect = (<BarebonesActionParameters["asyncEffect"]>(
+      function (this: BarebonesActionParameters, doAfter) {
+        this.__asyncJobs.push({ doAfter });
+      }
+    )).bind(params);
+
+    return <BarebonesActionParameters>params;
   }
 
   async createParams(
@@ -246,12 +255,6 @@ export class Bot extends BotBase {
       return actionRow;
     };
 
-    const asyncEffect: ActionParameters["asyncEffect"] = (doAfter) => {
-      moddedParams.__asyncJobs.push({
-        doAfter,
-      });
-    };
-
     const vanillaParams = <ActionParameters>{
       ...this.createBarebonesParams(msg),
       type: msg instanceof CommandInteraction ? "command" : "text",
@@ -263,8 +266,6 @@ export class Bot extends BotBase {
       dm,
       subscribe,
       middleware: undefined,
-      asyncEffect,
-      __asyncJobs: [],
     };
 
     let moddedParams: ActionParameters = vanillaParams;

@@ -112,6 +112,18 @@ interface BaseActionParameters extends BarebonesActionParameters {
     idle?: number,
     expectFromUserIds?: string[]
   ): MessageActionRow;
+}
+
+export interface BarebonesActionParameters {
+  /**The user who triggered the action */
+  author: User;
+  /**The channel this command will be sent in */
+  channel?: TextBasedChannel;
+  /**The server */
+  guild?: Guild;
+
+  /**Creates an embed object using the embed.create method of the embed object passed into the Bot */
+  createEmbed: Embed["create"];
 
   /**
    * Creates a minijob that will be run once a response is created
@@ -131,18 +143,6 @@ interface BaseActionParameters extends BarebonesActionParameters {
   __asyncJobs: {
     doAfter: Parameters<BaseActionParameters["asyncEffect"]>[0];
   }[];
-}
-
-export interface BarebonesActionParameters {
-  /**The user who triggered the action */
-  author: User;
-  /**The channel this command will be sent in */
-  channel?: TextBasedChannel;
-  /**The server */
-  guild?: Guild;
-
-  /**Creates an embed object using the embed.create method of the embed object passed into the Bot */
-  createEmbed: Embed["create"];
 }
 
 export type ParametersMiddleWare<
