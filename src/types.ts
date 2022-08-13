@@ -11,6 +11,7 @@ import {
   EmojiResolvable,
   Guild,
   GuildMember,
+  Interaction,
   Message,
   MessageActionRow,
   MessageButtonOptions,
@@ -35,17 +36,13 @@ type NonNullableObject<T> = {
   [K in keyof T]: Exclude<T[K], null>;
 };
 
-export type ActionParameters<MW = undefined> = MWActionParameters<MW> &
+export type ActionParameters = StandardActionParameters &
   (TextActionParameters | CommandActionParameters);
 
 type ActionTypes = "text" | "command";
 
-export interface MWActionParameters<
-  MW extends GenericObject | undefined = undefined
-> extends BaseActionParameters {
-  middleware?: MW;
+export interface StandardActionParameters extends BaseActionParameters {
   msg: Message | CommandInteraction;
-  type: ActionTypes;
 }
 
 interface TextActionParameters {
@@ -115,12 +112,15 @@ interface BaseActionParameters extends BarebonesActionParameters {
 }
 
 export interface BarebonesActionParameters {
+  type: ActionTypes | ContextMenuType;
   /**The user who triggered the action */
   author: User;
   /**The channel this command will be sent in */
   channel?: TextBasedChannel;
   /**The server */
   guild?: Guild;
+
+  middleware: GenericObject;
 
   /**Creates an embed object using the embed.create method of the embed object passed into the Bot */
   createEmbed: Embed["create"];
@@ -139,17 +139,16 @@ export interface BarebonesActionParameters {
     ) => Promise<void> | void
   ): void;
 
-  /**Internal, used for `asyncEffect` */
+  /** @internal, used for `asyncEffect` */
   __asyncJobs: {
     doAfter: Parameters<BaseActionParameters["asyncEffect"]>[0];
   }[];
 }
 
-export type ParametersMiddleWare<
-  T extends GenericObject | undefined = undefined
-> = (
-  params: ActionParameters
-) => Promise<ActionParameters<T>> | ActionParameters<T>;
+export type ParametersMiddleWare = (
+  params: BarebonesActionParameters,
+  msgOrInteraction: Message | Interaction
+) => Promise<BarebonesActionParameters> | BarebonesActionParameters;
 
 export type SendableMessage =
   | string

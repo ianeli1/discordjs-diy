@@ -13,8 +13,6 @@ import {
   ParametersMiddleWare,
 } from "./types";
 import { report as _report } from "./utility";
-// import { REST } from "@discordjs/rest";
-// import { Routes } from "discord-api-types/v9";
 import { ComponentHandler } from "./componentHandler";
 import { Router } from "./router";
 import { errorTrigger, RoutedAction, typoTrigger } from "./routedAction";
@@ -50,7 +48,7 @@ export class Bot extends BotBase {
   /**The bot will automatically ignore caps on the trigger keyword if enabled */
   readonly ignoreCaps: boolean;
 
-  private middlewareArray: ParametersMiddleWare<any>[] = [];
+  private middlewareArray: ParametersMiddleWare[] = [];
 
   private componentHandler: ComponentHandler;
 
@@ -160,14 +158,37 @@ export class Bot extends BotBase {
 
   compileCommands: Router["compileAll"];
 
-  useMiddleware<T>(middleware: ParametersMiddleWare<T>) {
+  useMiddleware(middleware: ParametersMiddleWare) {
     return !!this.middlewareArray.push(middleware);
   }
 
-  createBarebonesParams(
+  async createBarebonesParams(
     msgOrInteraction: Message | Interaction
-  ): BarebonesActionParameters {
-    const params: Partial<BarebonesActionParameters> = {
+  ): Promise<BarebonesActionParameters> {
+    const invalidMsg = () =>
+      Error(
+        `Unsupported type of msg/interaction: "${msgOrInteraction["constructor"].name}"`
+      );
+
+    let paramsType: BarebonesActionParameters["type"];
+    if (msgOrInteraction instanceof Message) {
+      paramsType = "text";
+    } else if (msgOrInteraction instanceof Interaction) {
+      if (msgOrInteraction.isUserContextMenu()) {
+        paramsType = "user";
+      } else if (msgOrInteraction.isMessageContextMenu()) {
+        paramsType = "message";
+      } else if (msgOrInteraction.isCommand()) {
+        paramsType = "command";
+      } else {
+        throw invalidMsg();
+      }
+    } else {
+      throw invalidMsg();
+    }
+
+    let params: BarebonesActionParameters = {
+      type: paramsType,
       author:
         msgOrInteraction instanceof Interaction
           ? msgOrInteraction.user
@@ -176,13 +197,17 @@ export class Bot extends BotBase {
       channel: msgOrInteraction.channel ?? undefined,
       guild: msgOrInteraction.guild ?? undefined,
       __asyncJobs: [],
+      asyncEffect(doAfter) {
+        this.__asyncJobs.push({ doAfter });
+      },
+      middleware: {},
     };
 
-    params.asyncEffect = (<BarebonesActionParameters["asyncEffect"]>(
-      function (this: BarebonesActionParameters, doAfter) {
-        this.__asyncJobs.push({ doAfter });
-      }
-    )).bind(params);
+    params.asyncEffect = params.asyncEffect.bind(params);
+
+    for (const middleware of this.middlewareArray) {
+      params = await middleware(params, msgOrInteraction);
+    }
 
     return <BarebonesActionParameters>params;
   }
@@ -255,9 +280,8 @@ export class Bot extends BotBase {
       return actionRow;
     };
 
-    const vanillaParams = <ActionParameters>{
-      ...this.createBarebonesParams(msg),
-      type: msg instanceof CommandInteraction ? "command" : "text",
+    return <ActionParameters>{
+      ...(await this.createBarebonesParams(msg)),
       trigger,
       msg,
       args,
@@ -265,16 +289,7 @@ export class Bot extends BotBase {
       expectReply,
       dm,
       subscribe,
-      middleware: undefined,
     };
-
-    let moddedParams: ActionParameters = vanillaParams;
-
-    for (const middleware of this.middlewareArray) {
-      moddedParams = await middleware(moddedParams);
-    }
-
-    return moddedParams;
   }
 
   private async messageHandler(msg: Message) {

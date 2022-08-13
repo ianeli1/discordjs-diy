@@ -192,7 +192,7 @@ export class InteractionHandler {
     }
 
     const ctxActionParams: ContextMenuActionParameters =
-      this.constructActionParameters(interaction);
+      await this.constructActionParameters(interaction);
 
     return await this.bot.handleAction(
       //@ts-expect-error
@@ -264,14 +264,24 @@ export class InteractionHandler {
     }
   }
 
-  constructActionParameters(
+  async constructActionParameters(
     interaction: ContextMenuInteraction
-  ): ContextMenuActionParameters {
+  ): Promise<ContextMenuActionParameters> {
+    let paramsType: ContextMenuActionParameters["type"];
+    if (interaction.isMessageContextMenu()) {
+      paramsType = "message";
+    } else if (interaction.isUserContextMenu()) {
+      paramsType = "user";
+    } else {
+      throw new Error(
+        `Unsupported type of msg/interaction: "${interaction["constructor"].name}"`
+      );
+    }
     return {
-      ...this.bot.createBarebonesParams(interaction),
+      ...(await this.bot.createBarebonesParams(interaction)),
+      type: paramsType,
       author: interaction.user,
       name: interaction.commandName,
-      type: "message",
       interaction,
       targetUser: interaction.isUserContextMenu()
         ? interaction.targetUser
