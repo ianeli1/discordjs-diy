@@ -76,7 +76,7 @@ export class InteractionHandler {
     const compiledResult: ReturnType<ContextMenuCommandBuilder["toJSON"]>[] =
       [];
 
-    for (const id in this.contextMenuActions) {
+    for (const id of this.contextMenuActions.keys()) {
       const id_split = id.split("_");
       const type = id_split.pop();
       if (!type || !isValidType(type)) {
