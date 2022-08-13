@@ -3,6 +3,7 @@
     "target": "es6",
     "module": "commonjs",
     "lib": ["dom", "es6", "es2018", "esnext.asynciterable"],
+    "stripInternal": true,
     "declaration": true,
     "sourceMap": true,
     "outDir": "./dist",

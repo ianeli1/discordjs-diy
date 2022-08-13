@@ -7,7 +7,7 @@ import autobind from "autobind-decorator";
 import { Bot } from ".";
 import { CommandsHandler } from "./handler";
 import { RoutedAction, typoTrigger } from "./routedAction";
-import { SlashCommands } from "./slashCommands";
+import { ApplicationCommands } from "./applicationCommands";
 import {
   BotAction,
   ActionObject,
@@ -106,7 +106,7 @@ export class Router {
       }
       printNested(nesting, `-> Command: ${trigger}`);
       //if it's a regular command
-      const compiled = SlashCommands.createSlashCommandParams(
+      const compiled = ApplicationCommands.createSlashCommandParams(
         trigger,
         actionObj.description ?? "A command",
         actionObj.parameters,

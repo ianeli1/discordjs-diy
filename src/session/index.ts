@@ -1,4 +1,4 @@
-import type { ActionParameters, ParametersMiddleWare } from "../types";
+import type { BarebonesActionParameters, ParametersMiddleWare } from "../types";
 import { report } from "./error";
 import { SessionModel } from "./models";
 import { MongoClient } from "mongodb";
@@ -13,7 +13,7 @@ export async function Session({
   uri,
   cacheTimeout = 30,
   cacheLength = 50,
-}: SessionConfig): Promise<ParametersMiddleWare<SessionMW>> {
+}: SessionConfig): Promise<ParametersMiddleWare> {
   const client = new MongoClient(uri);
 
   client.on("error", (error) => report("[MongoDB] =>", error));
@@ -50,6 +50,6 @@ export async function Session({
         ...middleware,
         session: sessionObj,
       },
-    } as ActionParameters<SessionMW>;
+    } as BarebonesActionParameters;
   };
 }

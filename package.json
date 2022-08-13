@@ -4,7 +4,7 @@
   "main": "./dist/index.js",
   "license": "MIT",
   "dependencies": {
-    "@discordjs/builders": "^0.6.0",
+    "@discordjs/builders": "^1.1.0",
     "@discordjs/rest": "^0.4.1",
     "autobind-decorator": "^2.4.0",
     "discord-api-types": "^0.33.0",

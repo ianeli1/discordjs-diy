@@ -1,4 +1,5 @@
 import {
+  ContextMenuCommandBuilder,
   SlashCommandBuilder,
   SlashCommandSubcommandBuilder,
   SlashCommandSubcommandGroupBuilder,
@@ -6,21 +7,24 @@ import {
 import { APIRole } from "discord-api-types/v9";
 import {
   ApplicationCommandOptionType,
-  ButtonInteraction,
   CommandInteraction,
+  ContextMenuInteraction,
   EmojiResolvable,
   Guild,
   GuildMember,
+  Interaction,
   Message,
   MessageActionRow,
   MessageButtonOptions,
+  MessageComponentInteraction,
+  MessageContextMenuInteraction,
   MessageOptions,
   MessagePayload,
   MessageSelectMenuOptions,
   Role,
-  SelectMenuInteraction,
   TextBasedChannel,
   User,
+  UserContextMenuInteraction,
 } from "discord.js";
 import { Embed } from "./embed";
 import { Router } from "./router";
@@ -33,17 +37,13 @@ type NonNullableObject<T> = {
   [K in keyof T]: Exclude<T[K], null>;
 };
 
-export type ActionParameters<MW = undefined> = MWActionParameters<MW> &
+export type ActionParameters = StandardActionParameters &
   (TextActionParameters | CommandActionParameters);
 
 type ActionTypes = "text" | "command";
 
-export interface MWActionParameters<
-  MW extends GenericObject | undefined = undefined
-> extends BaseActionParameters {
-  middleware?: MW;
+export interface StandardActionParameters extends BaseActionParameters {
   msg: Message | CommandInteraction;
-  type: ActionTypes;
 }
 
 interface TextActionParameters {
@@ -62,7 +62,7 @@ interface CommandActionParameters {
 }
 
 /**Object passed to the action functions on every trigger */
-interface BaseActionParameters {
+interface BaseActionParameters extends BarebonesActionParameters {
   /**Arguments from the command executed, undefined for slash commands unless no parameter definition was provided */
   args?: string;
 
@@ -81,12 +81,6 @@ interface BaseActionParameters {
    * Contains the full error obtained from the catch
    */
   error?: any;
-  /**The user who triggered the action */
-  author: User;
-  /**The channel this command will be sent in */
-  channel?: TextBasedChannel;
-  /**The server */
-  guild?: Guild;
 
   /**
    * Used for multiple step commands,
@@ -99,9 +93,6 @@ interface BaseActionParameters {
     remove?: boolean
   ) => Promise<Message | undefined>;
 
-  /**Creates an embed object using the embed.create method of the embed object passed into the Bot */
-  createEmbed: Embed["create"];
-
   /**Sends a DM to the author of the message, resolves to undefined if an error occurs */
   dm: (msg: SendableMessage) => Promise<Message | undefined>;
 
@@ -113,12 +104,27 @@ interface BaseActionParameters {
     >,
     action: (
       params: ActionParameters,
-      interaction: ButtonInteraction | SelectMenuInteraction,
+      interaction: MessageComponentInteraction,
       value: number | string
     ) => SendableMessage | undefined,
     idle?: number,
     expectFromUserIds?: string[]
   ): MessageActionRow;
+}
+
+export interface BarebonesActionParameters {
+  type: ActionTypes | ContextMenuType;
+  /**The user who triggered the action */
+  author: User;
+  /**The channel this command will be sent in */
+  channel?: TextBasedChannel;
+  /**The server */
+  guild?: Guild;
+
+  middleware: GenericObject;
+
+  /**Creates an embed object using the embed.create method of the embed object passed into the Bot */
+  createEmbed: Embed["create"];
 
   /**
    * Creates a minijob that will be run once a response is created
@@ -134,17 +140,16 @@ interface BaseActionParameters {
     ) => Promise<void> | void
   ): void;
 
-  /**Internal, used for `asyncEffect` */
+  /** @internal, used for `asyncEffect` */
   __asyncJobs: {
     doAfter: Parameters<BaseActionParameters["asyncEffect"]>[0];
   }[];
 }
 
-export type ParametersMiddleWare<
-  T extends GenericObject | undefined = undefined
-> = (
-  params: ActionParameters
-) => Promise<ActionParameters<T>> | ActionParameters<T>;
+export type ParametersMiddleWare = (
+  params: BarebonesActionParameters,
+  msgOrInteraction: Message | Interaction
+) => Promise<BarebonesActionParameters> | BarebonesActionParameters;
 
 export type SendableMessage =
   | string
@@ -206,6 +211,7 @@ export type CommandCollection = (
   | SlashCommandBuilder
   | SlashCommandSubcommandBuilder
   | SlashCommandSubcommandGroupBuilder
+  | ContextMenuCommandBuilder
 )[];
 
 /**
@@ -227,4 +233,49 @@ export type SlashCommandLoadingAction =
 export interface TypoOptions {
   maxDistance?: number;
   maxSuggestions?: number;
+}
+
+export type ContextMenuType = "message" | "user";
+
+export type ContextMenuResponse<T extends ContextMenuType> = (
+  params: T extends "message"
+    ? MessageContextMenuActionParameters
+    : UserContextMenuActionParameters
+) => SendableMessage;
+
+export type ContextMenuActionParameters =
+  | UserContextMenuActionParameters
+  | MessageContextMenuActionParameters
+  | BaseContextMenuActionParameters;
+
+type MessageContextMenuActionParameters = Omit<
+  BaseContextMenuActionParameters,
+  "type" | "interaction" | "targetUser" | "targetMember" | "targetMessage"
+> & {
+  type: "message";
+  interaction: MessageContextMenuInteraction;
+  targetMessage: MessageContextMenuInteraction["targetMessage"];
+  targetUser: never;
+  targetMember: never;
+};
+
+type UserContextMenuActionParameters = Omit<
+  BaseContextMenuActionParameters,
+  "type" | "interaction" | "targetUser" | "targetMember" | "targetMessage"
+> & {
+  type: "user";
+  interaction: UserContextMenuInteraction;
+  targetUser: User;
+  targetMember: UserContextMenuInteraction["targetMember"];
+  targetMessage: never;
+};
+
+export interface BaseContextMenuActionParameters
+  extends BarebonesActionParameters {
+  name: string;
+  type: ContextMenuType;
+  interaction: ContextMenuInteraction;
+  targetUser?: User;
+  targetMember?: UserContextMenuInteraction["targetMember"];
+  targetMessage?: MessageContextMenuInteraction["targetMessage"];
 }
