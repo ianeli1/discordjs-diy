@@ -243,10 +243,10 @@ export const ActionFactory = (
           >;
           if (invoker.replied || invoker.deferred) {
             //if message has been deferred, just update content
-            return reply ? invoker.editReply(await reply) : undefined;
+            return reply ? await invoker.editReply(await reply) : undefined;
           }
           reply && (await invoker.reply(await reply));
-          return invoker.fetchReply();
+          return await invoker.fetchReply();
         }
 
         return reply
