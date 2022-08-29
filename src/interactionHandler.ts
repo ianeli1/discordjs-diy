@@ -100,6 +100,13 @@ export class InteractionHandler {
 
   @autobind
   private async handleSlashCommandInteraction(interaction: CommandInteraction) {
+    interaction
+      .deferReply()
+      .catch((e) =>
+        this.report(
+          `An error ocurred while deferring interaction ${interaction.id}: ${e?.message}`
+        )
+      );
     const action = this.bot.router.findAction(
       this.constructFullTrigger(interaction)
     );
