@@ -203,6 +203,7 @@ export class Bot extends BotBase {
         this.__asyncJobs.push({ doAfter });
       },
       middleware: {},
+      bot: this,
     };
 
     params.asyncEffect = params.asyncEffect.bind(params);

@@ -26,6 +26,7 @@ import {
   User,
   UserContextMenuInteraction,
 } from "discord.js";
+import { Bot } from ".";
 import { Embed } from "./embed";
 import { Router } from "./router";
 
@@ -121,10 +122,20 @@ interface BaseActionParameters extends BarebonesActionParameters {
     expectFromUserIds?: string[]
   ): MessageActionRow;
 
+  /**Run an action through the pipeline with the previous ActionParameters
+   * Optionally add a second parameter to override the parameters
+   *
+   * eg.
+   * ```ts
+   * runAction(coolAction, {args: newId})
+   * ```
+   */
   runAction(action: ResponseAction, params: ActionParameters): void;
 }
 
 export interface BarebonesActionParameters {
+  bot: Bot;
+
   type: ActionTypes | ContextMenuType;
   /**The user who triggered the action */
   author: User;
