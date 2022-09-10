@@ -19,6 +19,7 @@ import { errorTrigger, RoutedAction, typoTrigger } from "./routedAction";
 import { ApplicationCommands } from "./applicationCommands";
 import { InteractionHandler } from "./interactionHandler";
 import { IAction } from "./IAction";
+import { ActionError } from "./error";
 
 interface BotOptions {
   prefix?: string;
@@ -383,7 +384,10 @@ export class Bot extends BotBase {
     try {
       await action.executeAll();
     } catch (e) {
-      for (const errorAction of action.getError({ args: e.message })) {
+      for (const errorAction of action.getError({
+        args: e.message,
+        error: e instanceof ActionError ? e.e : e,
+      })) {
         if (!errorAction) break;
         try {
           await errorAction.executeAll();
