@@ -125,7 +125,8 @@ export class InteractionHandler {
         interaction,
         params.arguments as string | undefined,
         params,
-        interaction.commandName
+        interaction.commandName,
+        action.router
       );
 
       return await this.bot.handleAction(actionParameters, action);
@@ -164,7 +165,8 @@ export class InteractionHandler {
       interaction.message as Message,
       undefined,
       {},
-      interaction.customId
+      interaction.customId,
+      this.bot.router
     );
     let msgReply = await subscription.action(
       interactionActionParameters,

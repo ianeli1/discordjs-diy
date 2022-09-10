@@ -120,6 +120,8 @@ interface BaseActionParameters extends BarebonesActionParameters {
     idle?: number,
     expectFromUserIds?: string[]
   ): MessageActionRow;
+
+  runAction(action: ResponseAction, params: ActionParameters): void;
 }
 
 export interface BarebonesActionParameters {

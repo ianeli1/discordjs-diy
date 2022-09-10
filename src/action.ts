@@ -19,9 +19,13 @@ import type {
 } from "./types";
 import { handleEmoji, report as _report } from "./utility";
 import { v4 } from "uuid";
-import { errorTrigger, RoutedAction } from "./routedAction";
+import { RoutedAction } from "./routedAction";
 import type { Router } from "./router";
-import { INTERACTION_PROCESS_MS } from "./constants";
+import {
+  ERROR_TRIGGER,
+  INTERACTION_PROCESS_MS,
+  RUN_ACTION_TRIGGER,
+} from "./constants";
 import { IAction } from "./IAction";
 import { APIMessage } from "discord-api-types/v10";
 
@@ -53,13 +57,13 @@ export const ActionFactory = (
     constructor(
       params: ActionParameters,
       action: RoutedAction,
-      invokerId: string | undefined
+      invokerId: string | Symbol | undefined
     );
 
     constructor(
       actionParameters: ActionParameters | ContextMenuActionParameters,
       action: RoutedAction | ContextMenuResponse<ContextMenuType>,
-      invokerId?: string
+      invokerId?: string | Symbol
     ) {
       this.action = action;
       this.actionParameters = actionParameters;
@@ -81,6 +85,14 @@ export const ActionFactory = (
           this.id = `GlobalError<-${invokerId}`;
         } else if (action.rawAction === this.router.errorAction) {
           this.id = `@Router(${this.router.trigger}).errorAction<-${invokerId}`;
+        } else if (typeof invokerId === "symbol") {
+          switch (invokerId) {
+            case RUN_ACTION_TRIGGER:
+              this.id = `@runAction(${this.actionParameters.trigger})`;
+              break;
+            default:
+              this.id = "@unknownSymbol";
+          }
         } else if (invokerId) {
           this.id = `@onError<-${invokerId}`;
         } else this.id = v4();
@@ -137,7 +149,7 @@ export const ActionFactory = (
         if (pointer.errorAction) {
           yield (prevAction = new Action(
             <ActionParameters>{ ...this.actionParameters, ...newParams },
-            new RoutedAction(this.router, pointer.errorAction, errorTrigger),
+            new RoutedAction(this.router, pointer.errorAction, ERROR_TRIGGER),
             prevAction.id
           ));
         }

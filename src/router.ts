@@ -6,7 +6,7 @@ import {
 import autobind from "autobind-decorator";
 import { Bot } from ".";
 import { CommandsHandler } from "./handler";
-import { RoutedAction, typoTrigger } from "./routedAction";
+import { RoutedAction } from "./routedAction";
 import { ApplicationCommands } from "./applicationCommands";
 import {
   BotAction,
@@ -18,6 +18,7 @@ import {
   SlashCommandLoadingAction,
 } from "./types";
 import { firstWord, printNested, report as _report } from "./utility";
+import { TYPO_TRIGGER } from "./constants";
 
 interface RouterOptions {
   ignoreCaps: boolean;
@@ -185,7 +186,7 @@ export class Router {
             {
               response: (params) => typoAction(params, matches),
             },
-            typoTrigger
+            TYPO_TRIGGER
           );
         }
       }
@@ -222,7 +223,9 @@ export class Router {
         ? trigger.toLowerCase()
         : trigger;
 
-    const paddedAction = isRouter ? action : this.padAction(action, parameters);
+    const paddedAction = isRouter
+      ? action
+      : Router.padAction(action, parameters);
     this.report(
       `[Trigger: "${trigger}"] =>`,
       isRouter
@@ -242,13 +245,13 @@ export class Router {
 
   @autobind
   onDefault(action: Exclude<BotAction, Router>) {
-    this.handler.setDefaultAction(this.padAction(action));
+    this.handler.setDefaultAction(Router.padAction(action));
     return this;
   }
 
   @autobind
   onError(action: Exclude<BotAction, Router>) {
-    (this.errorAction as ActionObject) = this.padAction(action);
+    (this.errorAction as ActionObject) = Router.padAction(action);
     return this;
   }
 
@@ -292,12 +295,12 @@ export class Router {
     return this === this._bot?.router;
   }
 
-  private padAction(action: Router): Router;
-  private padAction(
+  static padAction(action: Router): Router;
+  static padAction(
     action: Exclude<BotAction, Router>,
     parameters?: ActionObject["parameters"]
   ): ActionObject;
-  private padAction(
+  static padAction(
     action: BotAction,
     parameters?: ActionObject["parameters"]
   ): ActionObject | Router {

@@ -15,11 +15,12 @@ import {
 import { report as _report } from "./utility";
 import { ComponentHandler } from "./componentHandler";
 import { Router } from "./router";
-import { errorTrigger, RoutedAction, typoTrigger } from "./routedAction";
+import { RoutedAction } from "./routedAction";
 import { ApplicationCommands } from "./applicationCommands";
 import { InteractionHandler } from "./interactionHandler";
 import { IAction } from "./IAction";
 import { ActionError } from "./error";
+import { ERROR_TRIGGER, RUN_ACTION_TRIGGER, TYPO_TRIGGER } from "./constants";
 
 interface BotOptions {
   prefix?: string;
@@ -217,7 +218,8 @@ export class Bot extends BotBase {
     msg: Message | CommandInteraction,
     args: string | undefined,
     parameters: ActionParameters["parameters"],
-    trigger: string
+    trigger: string,
+    router: Router
   ): Promise<ActionParameters> {
     const author = "user" in msg ? msg.user : msg.author;
     const expectReply: ActionParameters["expectReply"] = async (
@@ -267,6 +269,7 @@ export class Bot extends BotBase {
       idle,
       expectAdditionalIds
     ) => {
+      console.log("subbed");
       const [customIds, actionRow] = ComponentHandler.getActionRow(
         componentOptions,
         author
@@ -281,6 +284,15 @@ export class Bot extends BotBase {
       return actionRow;
     };
 
+    const runAction: ActionParameters["runAction"] = (action, params) => {
+      console.log("hello, running action");
+      this.handleAction(
+        params,
+        new RoutedAction(router, Router.padAction(action), RUN_ACTION_TRIGGER),
+        RUN_ACTION_TRIGGER
+      );
+    };
+
     return <ActionParameters>{
       ...(await this.createBarebonesParams(msg)),
       trigger,
@@ -290,6 +302,7 @@ export class Bot extends BotBase {
       expectReply,
       dm,
       subscribe,
+      runAction,
     };
   }
 
@@ -331,10 +344,10 @@ export class Bot extends BotBase {
         break;
       case "symbol":
         switch (action.trigger) {
-          case errorTrigger:
+          case ERROR_TRIGGER:
             routedTriggerArray.push("<!onError>");
             break;
-          case typoTrigger:
+          case TYPO_TRIGGER:
             routedTriggerArray.push("<!onTypo>");
             break;
         }
@@ -354,7 +367,8 @@ export class Bot extends BotBase {
       msg,
       args,
       { arguments: args },
-      routedTrigger
+      routedTrigger,
+      action.router
     );
 
     return await this.handleAction(params, action);
@@ -364,23 +378,23 @@ export class Bot extends BotBase {
   handleAction(
     params: ActionParameters,
     routedAction: RoutedAction,
-    invokerId?: string
+    invokerId?: string | Symbol
   ): Promise<void>;
   async handleAction(
     paramsOrAction: ActionParameters | IAction,
     routedAction?: RoutedAction,
     invokerId?: string
   ) {
-    const action =
-      paramsOrAction instanceof this.Action
-        ? paramsOrAction
-        : routedAction instanceof RoutedAction
-        ? new this.Action(paramsOrAction, routedAction, invokerId)
-        : (() => {
-            throw new Error(
-              `Illegal action, routedAction required, received ${routedAction}`
-            );
-          })();
+    let action: IAction;
+    if (paramsOrAction instanceof this.Action) {
+      action = paramsOrAction;
+    } else if (routedAction instanceof RoutedAction) {
+      action = new this.Action(paramsOrAction, routedAction, invokerId);
+    } else {
+      throw new Error(
+        `Illegal action, routedAction required, received ${routedAction}`
+      );
+    }
     try {
       await action.executeAll();
     } catch (e) {

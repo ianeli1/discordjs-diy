@@ -1,9 +1,6 @@
+import { ERROR_TRIGGER } from "./constants";
 import { Router } from "./router";
 import { ActionObject } from "./types";
-
-export const errorTrigger = Symbol("error symbol");
-
-export const typoTrigger = Symbol("typo symbol");
 
 type TriggerType = string | Symbol;
 
@@ -28,7 +25,7 @@ export class RoutedAction implements ActionObject {
 
   routeError() {
     return (
-      this.onError && new RoutedAction(this.router, this.onError, errorTrigger)
+      this.onError && new RoutedAction(this.router, this.onError, ERROR_TRIGGER)
     );
   }
 }
