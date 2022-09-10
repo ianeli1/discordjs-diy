@@ -286,7 +286,6 @@ export class Bot extends BotBase {
     };
 
     const runAction: ActionParameters["runAction"] = (action, params) => {
-      console.log("hello, running action");
       this.handleAction(
         params,
         new RoutedAction(router, Router.padAction(action), RUN_ACTION_TRIGGER),
