@@ -96,17 +96,27 @@ interface BaseActionParameters extends BarebonesActionParameters {
   /**Sends a DM to the author of the message, resolves to undefined if an error occurs */
   dm: (msg: SendableMessage) => Promise<Message | undefined>;
 
+  /**Creates a new message component which can then be attached to a response (eg. via `createEmbed({components: []})`)
+   * Any content returned will be used to edit the newly created message via msg.edit or msg.editReply
+   * It supports both buttons and select menus
+   * Note that these subscriptions get reset when the bot resets, and have a default timeout of 60 seconds
+   * You can also limit who has access to the component, by default only the command invoker can trigger.
+   * Pass an array of user IDs to the last parameter to change this
+   */
   subscribe(
     componentOptions: NonNullable<
       | NonNullableObject<NonNullable<Omit<MessageButtonOptions, "customId">>>[]
       | Partial<MessageButtonOptions>
       | Partial<MessageSelectMenuOptions>
     >,
+    /**
+     * `params.msg` contains the newly created message this component will be attached to
+     */
     action: (
       params: ActionParameters,
       interaction: MessageComponentInteraction,
       value: number | string
-    ) => SendableMessage | undefined,
+    ) => SendableMessage | Promise<void> | void,
     idle?: number,
     expectFromUserIds?: string[]
   ): MessageActionRow;

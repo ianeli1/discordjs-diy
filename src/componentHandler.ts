@@ -122,7 +122,6 @@ export class ComponentHandler {
             options: componentOptions.options?.map((x) => ({
               ...(x ?? undefined),
               description: x.description ?? undefined,
-              emoji: undefined,
             })),
             placeholder: componentOptions.placeholder ?? undefined,
             customId: customIdBase,
