@@ -286,6 +286,35 @@ bot.registerAction("image", async ({ createEmbed, asyncEffect }) => {
 });
 ```
 
+### Triggering actions inside actions
+
+ActionParameters include a `runAction` callback which can be used to manually invoke an action through the DJS pipeline, thus fully supporting `asyncEffect` and message component subscriptions.
+
+You need a `ResponseAction` and `ActionParameters` to call this. You may reuse the action's `ActionParameters`, be aware that reusing `asyncEffect` or `subscribe`'s `ActionParameters` will have the side-effect of making it seem like the Bot is the one calling the action (ergo, making components unclickable to users)
+
+```ts
+//test action can include asyncEffect calls and components!
+const testAction = () => "hello!";
+bot.on("coolAction", (params) => {
+  const { subscribe, createEmbed } = params;
+  /* `runAction` is also available here! ^*/
+
+  const buttonRow = subscribe(
+    {
+      label: "Press me",
+      style: "PRIMARY",
+    },
+    ({ runAction }) => {
+      runAction(testAction, params);
+    }
+  );
+  return createEmbed({
+    desc: "Press the button to be greeted",
+    components: [buttonRow],
+  });
+});
+```
+
 ### Error handling
 
 DJS-diy offers per-action and global approaches to error handling.
