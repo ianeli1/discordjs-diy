@@ -390,6 +390,7 @@ export const ActionFactory = (
             }, ReplyMsgId: ${responseMessage.id}, e => ${e}`
           );
         }
+        asyncJobs.splice(0, asyncJobs.length);
       }
     }
   };
