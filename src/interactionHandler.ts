@@ -146,7 +146,7 @@ export class InteractionHandler {
   private async handleMessageComponentInteraction(
     interaction: MessageComponentInteraction
   ) {
-    interaction.deferUpdate();
+    interaction.deferUpdate().catch(() => {});
     const subscription = this.componentHandler.getSubscription(
       interaction.customId
     );
