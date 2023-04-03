@@ -1,12 +1,11 @@
 import {
   CommandInteraction,
   Message,
-  MessageActionRow,
-  MessageButton,
-  MessageButtonOptions,
-  MessageSelectMenu,
-  MessageSelectMenuOptions,
+  ActionRowBuilder,
+  ButtonBuilder,
+  StringSelectMenuBuilder,
   User,
+  ButtonComponentData,
 } from "discord.js";
 import { ActionParameters } from ".";
 
@@ -93,19 +92,19 @@ export class ComponentHandler {
   static getActionRow(
     componentOptions: Parameters<ActionParameters["subscribe"]>[0],
     user: User
-  ): [string[], MessageActionRow] {
+  ): [string[], ActionRowBuilder] {
     const customIdBase = `${user.id}-${Date.now()}`;
-    const actionRow = new MessageActionRow();
+    const actionRow = new ActionRowBuilder(); //new MessageActionRow();
     if (componentOptions instanceof Array) {
       const customIdArray: string[] = [];
       actionRow.addComponents(
         componentOptions.map((x, i) => {
           const customId = `${customIdBase}-${i}`;
           customIdArray.push(customId);
-          return new MessageButton({
+          return new ButtonBuilder({
             ...x,
             customId,
-          } as MessageButtonOptions);
+          } as ButtonComponentData);
         })
       );
       return [customIdArray, actionRow];
@@ -114,7 +113,7 @@ export class ComponentHandler {
       return [
         [customIdBase],
         actionRow.addComponents(
-          new MessageSelectMenu({
+          new StringSelectMenuBuilder({
             disabled: false,
             ...componentOptions,
             maxValues: componentOptions.maxValues ?? undefined,
@@ -125,16 +124,14 @@ export class ComponentHandler {
             })),
             placeholder: componentOptions.placeholder ?? undefined,
             customId: customIdBase,
-          } as MessageSelectMenuOptions).setCustomId(customIdBase)
+          }).setCustomId(customIdBase)
         ),
       ];
     }
     return [
       [customIdBase],
       actionRow.addComponents(
-        new MessageButton(componentOptions as MessageButton).setCustomId(
-          `${customIdBase}-0`
-        )
+        new ButtonBuilder(componentOptions).setCustomId(`${customIdBase}-0`)
       ),
     ];
   }

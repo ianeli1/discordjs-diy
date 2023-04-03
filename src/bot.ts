@@ -1,9 +1,4 @@
-import {
-  ClientOptions,
-  CommandInteraction,
-  Interaction,
-  Message,
-} from "discord.js";
+import { ClientOptions, CommandInteraction, Message } from "discord.js";
 import { ActionFactory } from "./action";
 import { BotBase } from "./base";
 import { Embed } from "./embed";
@@ -165,7 +160,7 @@ export class Bot extends BotBase {
   }
 
   async createBarebonesParams(
-    msgOrInteraction: Message | Interaction
+    msgOrInteraction: Message | CommandInteraction
   ): Promise<BarebonesActionParameters> {
     const invalidMsg = () =>
       Error(
@@ -175,16 +170,12 @@ export class Bot extends BotBase {
     let paramsType: BarebonesActionParameters["type"];
     if (msgOrInteraction instanceof Message) {
       paramsType = "text";
-    } else if (msgOrInteraction instanceof Interaction) {
-      if (msgOrInteraction.isUserContextMenu()) {
-        paramsType = "user";
-      } else if (msgOrInteraction.isMessageContextMenu()) {
-        paramsType = "message";
-      } else if (msgOrInteraction.isCommand()) {
-        paramsType = "command";
-      } else {
-        throw invalidMsg();
-      }
+    } else if (msgOrInteraction.isUserContextMenuCommand()) {
+      paramsType = "user";
+    } else if (msgOrInteraction.isMessageContextMenuCommand()) {
+      paramsType = "message";
+    } else if (msgOrInteraction.isChatInputCommand()) {
+      paramsType = "command";
     } else {
       throw invalidMsg();
     }
@@ -192,9 +183,9 @@ export class Bot extends BotBase {
     let params: BarebonesActionParameters = {
       type: paramsType,
       author:
-        msgOrInteraction instanceof Interaction
-          ? msgOrInteraction.user
-          : msgOrInteraction.author,
+        msgOrInteraction instanceof Message
+          ? msgOrInteraction.author
+          : msgOrInteraction.user,
       createEmbed: this.embed.create,
       channel: msgOrInteraction.channel ?? undefined,
       guild: msgOrInteraction.guild ?? undefined,
@@ -235,7 +226,7 @@ export class Bot extends BotBase {
         return;
       }
       try {
-        const reply = await msg.reply(await response);
+        const reply = "reply" in msg && (await msg.reply(await response));
         return (
           await msg.channel
             .awaitMessages({

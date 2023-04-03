@@ -1,7 +1,8 @@
 import {
+  AttachmentPayload,
+  CommandInteraction,
   DiscordAPIError,
   EmojiResolvable,
-  Interaction,
   Message,
 } from "discord.js";
 import type { Bot } from "./bot";
@@ -257,7 +258,28 @@ export const ActionFactory = (
             //if message has been deferred, just update content
             return reply ? await invoker.editReply(await reply) : undefined;
           }
-          reply && (await invoker.reply(await reply));
+          if (reply) {
+            if (typeof reply === "string") {
+              await invoker.reply(reply);
+            } else {
+              await invoker.reply({
+                ...reply,
+                files:
+                  "files" in reply
+                    ? reply.files?.map((file) => {
+                        if (typeof file === "string" || !("data" in file)) {
+                          return file;
+                        } else {
+                          return <AttachmentPayload>{
+                            attachment: file.data,
+                            name: file.name,
+                          };
+                        }
+                      })
+                    : undefined,
+              });
+            }
+          }
           return await invoker.fetchReply();
         }
 
@@ -281,7 +303,7 @@ export const ActionFactory = (
       if (!reaction) return;
       const { msg } = <ActionParameters>this.actionParameters;
       const { client } = this.bot;
-      if (msg instanceof Interaction) {
+      if (msg instanceof CommandInteraction) {
         throw new ActionError(
           "reaction",
           "React action as reactions are not supported for slash commands"

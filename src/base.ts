@@ -1,5 +1,10 @@
 import autobind from "autobind-decorator";
-import { ActivityOptions, Client, ClientOptions, Intents } from "discord.js";
+import {
+  ActivityOptions,
+  Client,
+  ClientOptions,
+  GatewayIntentBits,
+} from "discord.js";
 import { report as _report, pick } from "./utility";
 
 let botCount = 0;
@@ -20,9 +25,9 @@ export class BotBase {
     this.token = token;
     this.client = new Client({
       intents: intents ?? [
-        Intents.FLAGS.GUILDS,
-        Intents.FLAGS.DIRECT_MESSAGES,
-        Intents.FLAGS.GUILD_MESSAGES,
+        GatewayIntentBits.Guilds,
+        GatewayIntentBits.DirectMessages,
+        GatewayIntentBits.GuildMessages,
       ],
     });
     this.client.login(this.token);

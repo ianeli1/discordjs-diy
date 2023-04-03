@@ -6,25 +6,25 @@ import {
 } from "@discordjs/builders";
 import { APIRole } from "discord-api-types/v9";
 import {
+  ActionRowBuilder,
   ApplicationCommandOptionType,
+  BaseMessageOptions,
+  ButtonComponentData,
   CommandInteraction,
-  ContextMenuInteraction,
+  ContextMenuCommandInteraction,
   EmojiResolvable,
   Guild,
   GuildMember,
   Interaction,
   Message,
-  MessageActionRow,
-  MessageButtonOptions,
   MessageComponentInteraction,
-  MessageContextMenuInteraction,
-  MessageOptions,
+  MessageContextMenuCommandInteraction,
   MessagePayload,
-  MessageSelectMenuOptions,
   Role,
+  StringSelectMenuComponentData,
   TextBasedChannel,
   User,
-  UserContextMenuInteraction,
+  UserContextMenuCommandInteraction,
 } from "discord.js";
 import { Bot } from ".";
 import { Embed } from "./embed";
@@ -106,9 +106,9 @@ interface BaseActionParameters extends BarebonesActionParameters {
    */
   subscribe(
     componentOptions: NonNullable<
-      | NonNullableObject<NonNullable<Omit<MessageButtonOptions, "customId">>>[]
-      | Partial<MessageButtonOptions>
-      | Partial<MessageSelectMenuOptions>
+      | NonNullableObject<NonNullable<Omit<ButtonComponentData, "customId">>>[]
+      | Partial<ButtonComponentData>
+      | Partial<StringSelectMenuComponentData>
     >,
     /**
      * `params.msg` contains the newly created message this component will be attached to
@@ -120,7 +120,7 @@ interface BaseActionParameters extends BarebonesActionParameters {
     ) => SendableMessage | Promise<void> | void,
     idle?: number,
     expectFromUserIds?: string[]
-  ): MessageActionRow;
+  ): ActionRowBuilder;
 
   /**Run an action through the pipeline with the previous ActionParameters
    * Optionally add a second parameter to override the parameters
@@ -177,8 +177,8 @@ export type ParametersMiddleWare = (
 export type SendableMessage =
   | string
   | MessagePayload
-  | MessageOptions
-  | Promise<string | MessagePayload | MessageOptions>;
+  | BaseMessageOptions
+  | Promise<string | MessagePayload | BaseMessageOptions>;
 
 export type SendableEmoji =
   | EmojiResolvable
@@ -276,8 +276,8 @@ type MessageContextMenuActionParameters = Omit<
   "type" | "interaction" | "targetUser" | "targetMember" | "targetMessage"
 > & {
   type: "message";
-  interaction: MessageContextMenuInteraction;
-  targetMessage: MessageContextMenuInteraction["targetMessage"];
+  interaction: MessageContextMenuCommandInteraction;
+  targetMessage: MessageContextMenuCommandInteraction["targetMessage"];
   targetUser: never;
   targetMember: never;
 };
@@ -287,9 +287,9 @@ type UserContextMenuActionParameters = Omit<
   "type" | "interaction" | "targetUser" | "targetMember" | "targetMessage"
 > & {
   type: "user";
-  interaction: UserContextMenuInteraction;
+  interaction: UserContextMenuCommandInteraction;
   targetUser: User;
-  targetMember: UserContextMenuInteraction["targetMember"];
+  targetMember: UserContextMenuCommandInteraction["targetMember"];
   targetMessage: never;
 };
 
@@ -297,8 +297,8 @@ export interface BaseContextMenuActionParameters
   extends BarebonesActionParameters {
   name: string;
   type: ContextMenuType;
-  interaction: ContextMenuInteraction;
+  interaction: ContextMenuCommandInteraction;
   targetUser?: User;
-  targetMember?: UserContextMenuInteraction["targetMember"];
-  targetMessage?: MessageContextMenuInteraction["targetMessage"];
+  targetMember?: UserContextMenuCommandInteraction["targetMember"];
+  targetMessage?: MessageContextMenuCommandInteraction["targetMessage"];
 }

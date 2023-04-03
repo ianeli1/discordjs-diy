@@ -1,7 +1,9 @@
 import autobind from "autobind-decorator";
 import {
-  CommandInteraction,
-  ContextMenuInteraction,
+  ApplicationCommandOptionType,
+  ApplicationCommandType,
+  ChatInputCommandInteraction,
+  ContextMenuCommandInteraction,
   Interaction,
   Message,
   MessageComponentInteraction,
@@ -16,7 +18,6 @@ import {
   ContextMenuActionParameters,
 } from "./types";
 import { ContextMenuCommandBuilder } from "@discordjs/builders";
-import { ApplicationCommandType } from "discord-api-types/v10";
 
 interface ContextMenuActionObject {
   name: string;
@@ -39,11 +40,11 @@ export class InteractionHandler {
       return await this.handleMessageComponentInteraction(interaction);
     }
 
-    if (interaction.isCommand()) {
+    if (interaction instanceof ChatInputCommandInteraction) {
       return await this.handleSlashCommandInteraction(interaction);
     }
 
-    if (interaction.isContextMenu()) {
+    if (interaction instanceof ContextMenuCommandInteraction) {
       return await this.handleContextMenuInteraction(interaction);
     }
   }
@@ -99,7 +100,9 @@ export class InteractionHandler {
   }
 
   @autobind
-  private async handleSlashCommandInteraction(interaction: CommandInteraction) {
+  private async handleSlashCommandInteraction(
+    interaction: ChatInputCommandInteraction
+  ) {
     interaction
       .deferReply()
       .catch((e) =>
@@ -186,12 +189,12 @@ export class InteractionHandler {
   }
 
   private async handleContextMenuInteraction(
-    interaction: ContextMenuInteraction
+    interaction: ContextMenuCommandInteraction
   ) {
     await interaction.deferReply();
 
     const id = `${interaction.commandName}_${
-      interaction.isUserContextMenu() ? "user" : "message"
+      interaction.isUserContextMenuCommand() ? "user" : "message"
     }`;
     const action = this.contextMenuActions.get(id);
 
@@ -209,7 +212,7 @@ export class InteractionHandler {
     );
   }
 
-  constructFullTrigger(interaction: CommandInteraction) {
+  constructFullTrigger(interaction: ChatInputCommandInteraction) {
     let commandName = interaction.commandName;
 
     const group = interaction.options.getSubcommandGroup(false);
@@ -226,7 +229,7 @@ export class InteractionHandler {
   }
 
   constructParameters(
-    interaction: Interaction,
+    interaction: ChatInputCommandInteraction,
     parameters?: ActionObject["parameters"]
   ) {
     try {
@@ -243,16 +246,16 @@ export class InteractionHandler {
         return params;
       }
       for (const param of parameters) {
-        switch (param.type ?? "STRING") {
-          case "USER":
+        switch (param.type ?? 69) {
+          case ApplicationCommandOptionType.User:
             const user = interaction.options.getUser(param.name);
             user && (params[param.name] = user);
             break;
-          case "ROLE":
+          case ApplicationCommandOptionType.Role:
             const role = interaction.options.getRole(param.name);
             role && (params[param.name] = role);
             break;
-          case "MENTIONABLE":
+          case ApplicationCommandOptionType.Mentionable:
             const mentionable = interaction.options.getMentionable(param.name);
             //@ts-ignore todo idk
             mentionable && (params[param.name] = mentionable);
@@ -274,12 +277,12 @@ export class InteractionHandler {
   }
 
   async constructActionParameters(
-    interaction: ContextMenuInteraction
+    interaction: ContextMenuCommandInteraction
   ): Promise<ContextMenuActionParameters> {
     let paramsType: ContextMenuActionParameters["type"];
-    if (interaction.isMessageContextMenu()) {
+    if (interaction.isMessageContextMenuCommand()) {
       paramsType = "message";
-    } else if (interaction.isUserContextMenu()) {
+    } else if (interaction.isUserContextMenuCommand()) {
       paramsType = "user";
     } else {
       throw new Error(
@@ -292,13 +295,13 @@ export class InteractionHandler {
       author: interaction.user,
       name: interaction.commandName,
       interaction,
-      targetUser: interaction.isUserContextMenu()
+      targetUser: interaction.isUserContextMenuCommand()
         ? interaction.targetUser
         : undefined,
-      targetMember: interaction.isUserContextMenu()
+      targetMember: interaction.isUserContextMenuCommand()
         ? interaction.targetMember
         : undefined,
-      targetMessage: interaction.isMessageContextMenu()
+      targetMessage: interaction.isMessageContextMenuCommand()
         ? interaction.targetMessage
         : undefined,
     };
