@@ -6,25 +6,28 @@ import {
 } from "@discordjs/builders";
 import { APIRole } from "discord-api-types/v9";
 import {
+  ActionRowBuilder,
   ApplicationCommandOptionType,
+  BaseMessageOptions,
+  ButtonBuilder,
+  ButtonComponentData,
   CommandInteraction,
-  ContextMenuInteraction,
+  ContextMenuCommandInteraction,
   EmojiResolvable,
   Guild,
   GuildMember,
   Interaction,
+  LinkButtonComponentData,
   Message,
-  MessageActionRow,
-  MessageButtonOptions,
   MessageComponentInteraction,
-  MessageContextMenuInteraction,
-  MessageOptions,
+  MessageContextMenuCommandInteraction,
   MessagePayload,
-  MessageSelectMenuOptions,
   Role,
+  StringSelectMenuBuilder,
+  StringSelectMenuComponentData,
   TextBasedChannel,
   User,
-  UserContextMenuInteraction,
+  UserContextMenuCommandInteraction,
 } from "discord.js";
 import { Bot } from ".";
 import { Embed } from "./embed";
@@ -104,23 +107,10 @@ interface BaseActionParameters extends BarebonesActionParameters {
    * You can also limit who has access to the component, by default only the command invoker can trigger.
    * Pass an array of user IDs to the last parameter to change this
    */
-  subscribe(
-    componentOptions: NonNullable<
-      | NonNullableObject<NonNullable<Omit<MessageButtonOptions, "customId">>>[]
-      | Partial<MessageButtonOptions>
-      | Partial<MessageSelectMenuOptions>
-    >,
-    /**
-     * `params.msg` contains the newly created message this component will be attached to
-     */
-    action: (
-      params: ActionParameters,
-      interaction: MessageComponentInteraction,
-      value: number | string
-    ) => SendableMessage | Promise<void> | void,
-    idle?: number,
-    expectFromUserIds?: string[]
-  ): MessageActionRow;
+  subscribe: SubscribeFn<
+    MyButtonComponentData | StringSelectMenuComponentData,
+    ButtonBuilder | StringSelectMenuBuilder
+  >;
 
   /**Run an action through the pipeline with the previous ActionParameters
    * Optionally add a second parameter to override the parameters
@@ -132,6 +122,32 @@ interface BaseActionParameters extends BarebonesActionParameters {
    */
   runAction(action: ResponseAction, params: ActionParameters): void;
 }
+
+export type MyButtonComponentData = Omit<
+  Exclude<ButtonComponentData, LinkButtonComponentData>,
+  "customId"
+>;
+
+export type SubscribeFn<
+  T extends MyButtonComponentData | StringSelectMenuComponentData,
+  C extends T extends MyButtonComponentData
+    ? ButtonBuilder
+    : StringSelectMenuBuilder
+> = (
+  componentOptions: NonNullable<
+    NonNullableObject<Extract<T, MyButtonComponentData>>[] | T
+  >,
+  /**
+   * `params.msg` contains the newly created message this component will be attached to
+   */
+  action: (
+    params: ActionParameters,
+    interaction: MessageComponentInteraction,
+    value: T extends MyButtonComponentData ? number : string
+  ) => SendableMessage | Promise<void> | void,
+  idle?: number,
+  expectFromUserIds?: string[]
+) => ActionRowBuilder<C>;
 
 export interface BarebonesActionParameters {
   bot: Bot;
@@ -177,8 +193,8 @@ export type ParametersMiddleWare = (
 export type SendableMessage =
   | string
   | MessagePayload
-  | MessageOptions
-  | Promise<string | MessagePayload | MessageOptions>;
+  | BaseMessageOptions
+  | Promise<string | MessagePayload | BaseMessageOptions>;
 
 export type SendableEmoji =
   | EmojiResolvable
@@ -276,8 +292,8 @@ type MessageContextMenuActionParameters = Omit<
   "type" | "interaction" | "targetUser" | "targetMember" | "targetMessage"
 > & {
   type: "message";
-  interaction: MessageContextMenuInteraction;
-  targetMessage: MessageContextMenuInteraction["targetMessage"];
+  interaction: MessageContextMenuCommandInteraction;
+  targetMessage: MessageContextMenuCommandInteraction["targetMessage"];
   targetUser: never;
   targetMember: never;
 };
@@ -287,9 +303,9 @@ type UserContextMenuActionParameters = Omit<
   "type" | "interaction" | "targetUser" | "targetMember" | "targetMessage"
 > & {
   type: "user";
-  interaction: UserContextMenuInteraction;
+  interaction: UserContextMenuCommandInteraction;
   targetUser: User;
-  targetMember: UserContextMenuInteraction["targetMember"];
+  targetMember: UserContextMenuCommandInteraction["targetMember"];
   targetMessage: never;
 };
 
@@ -297,8 +313,8 @@ export interface BaseContextMenuActionParameters
   extends BarebonesActionParameters {
   name: string;
   type: ContextMenuType;
-  interaction: ContextMenuInteraction;
+  interaction: ContextMenuCommandInteraction;
   targetUser?: User;
-  targetMember?: UserContextMenuInteraction["targetMember"];
-  targetMessage?: MessageContextMenuInteraction["targetMessage"];
+  targetMember?: UserContextMenuCommandInteraction["targetMember"];
+  targetMessage?: MessageContextMenuCommandInteraction["targetMessage"];
 }

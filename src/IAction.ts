@@ -1,5 +1,5 @@
 import { Message } from "discord.js";
-import { APIMessage } from "discord.js/node_modules/discord-api-types";
+import { APIMessage } from "discord-api-types/v10";
 import { Bot } from "./bot";
 import { RoutedAction } from "./routedAction";
 import { Router } from "./router";

@@ -1,14 +1,15 @@
 import {
   CommandInteraction,
   Message,
-  MessageActionRow,
-  MessageButton,
-  MessageButtonOptions,
-  MessageSelectMenu,
-  MessageSelectMenuOptions,
+  ActionRowBuilder,
+  ButtonBuilder,
+  StringSelectMenuBuilder,
   User,
+  ButtonComponentData,
+  StringSelectMenuComponentData,
 } from "discord.js";
 import { ActionParameters } from ".";
+import { MyButtonComponentData } from "./types";
 
 type ComponentAction = Parameters<ActionParameters["subscribe"]>[1];
 
@@ -77,7 +78,7 @@ export class ComponentHandler {
   }
 
   clearExpired() {
-    type element = typeof this.pendingSubscriptions[0];
+    type element = (typeof this.pendingSubscriptions)[0];
     const newPendingSubs: (element | undefined)[] = [
       ...this.pendingSubscriptions,
     ];
@@ -90,52 +91,62 @@ export class ComponentHandler {
     this.pendingSubscriptions = newPendingSubs.filter(Boolean) as element[];
   }
 
-  static getActionRow(
-    componentOptions: Parameters<ActionParameters["subscribe"]>[0],
+  static getActionRow<
+    ComponentType extends Parameters<ActionParameters["subscribe"]>[0],
+    BuilderType extends ComponentType extends any[]
+      ? ButtonBuilder
+      : ComponentType extends MyButtonComponentData
+      ? ButtonBuilder
+      : StringSelectMenuBuilder
+  >(
+    componentOptions: ComponentType,
     user: User
-  ): [string[], MessageActionRow] {
+  ): [string[], ActionRowBuilder<BuilderType>] {
     const customIdBase = `${user.id}-${Date.now()}`;
-    const actionRow = new MessageActionRow();
+    const actionRow = new ActionRowBuilder<BuilderType>(); //new MessageActionRow();
+    const buttonActionRow = actionRow as ActionRowBuilder<ButtonBuilder>;
     if (componentOptions instanceof Array) {
       const customIdArray: string[] = [];
-      actionRow.addComponents(
+      buttonActionRow.addComponents(
         componentOptions.map((x, i) => {
           const customId = `${customIdBase}-${i}`;
           customIdArray.push(customId);
-          return new MessageButton({
+          return new ButtonBuilder({
             ...x,
             customId,
-          } as MessageButtonOptions);
+          } as ButtonComponentData);
         })
       );
       return [customIdArray, actionRow];
     }
-    if ("options" in componentOptions) {
-      return [
-        [customIdBase],
-        actionRow.addComponents(
-          new MessageSelectMenu({
-            disabled: false,
-            ...componentOptions,
-            maxValues: componentOptions.maxValues ?? undefined,
-            minValues: componentOptions.minValues ?? undefined,
-            options: componentOptions.options?.map((x) => ({
-              ...(x ?? undefined),
-              description: x.description ?? undefined,
-            })),
-            placeholder: componentOptions.placeholder ?? undefined,
-            customId: customIdBase,
-          } as MessageSelectMenuOptions).setCustomId(customIdBase)
-        ),
-      ];
+    if (isStringSelectMenuComponentData(componentOptions)) {
+      const stringActionRow =
+        actionRow as ActionRowBuilder<StringSelectMenuBuilder>;
+      stringActionRow.addComponents(
+        new StringSelectMenuBuilder({
+          disabled: false,
+          ...componentOptions,
+          maxValues: componentOptions.maxValues ?? undefined,
+          minValues: componentOptions.minValues ?? undefined,
+          options: componentOptions.options?.map((x) => ({
+            ...(x ?? undefined),
+            description: x.description ?? undefined,
+          })),
+          placeholder: componentOptions.placeholder ?? undefined,
+          customId: customIdBase,
+        }).setCustomId(customIdBase)
+      );
+      return [[customIdBase], actionRow];
     }
-    return [
-      [customIdBase],
-      actionRow.addComponents(
-        new MessageButton(componentOptions as MessageButton).setCustomId(
-          `${customIdBase}-0`
-        )
-      ),
-    ];
+    buttonActionRow.addComponents(
+      new ButtonBuilder(componentOptions).setCustomId(`${customIdBase}-0`)
+    );
+    return [[customIdBase], actionRow];
   }
+}
+
+function isStringSelectMenuComponentData(
+  x: Parameters<ActionParameters["subscribe"]>[0]
+): x is StringSelectMenuComponentData {
+  return "options" in x;
 }

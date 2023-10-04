@@ -7,6 +7,7 @@ import autobind from "autobind-decorator";
 import { Routes } from "discord-api-types/v10";
 import { Bot } from "./bot";
 import { ActionObject, CommandCollection } from "./types";
+import { ApplicationCommandOptionType } from "discord.js";
 
 export class ApplicationCommands {
   constructor(readonly bot: Bot) {}
@@ -47,7 +48,7 @@ export class ApplicationCommands {
               );
             }
             break;
-          case "BOOLEAN":
+          case ApplicationCommandOptionType.Boolean:
             {
               command.addBooleanOption((option) =>
                 option
@@ -57,7 +58,7 @@ export class ApplicationCommands {
               );
             }
             break;
-          case "INTEGER":
+          case ApplicationCommandOptionType.Integer:
             {
               command.addIntegerOption((option) =>
                 option
@@ -67,7 +68,7 @@ export class ApplicationCommands {
               );
             }
             break;
-          case "MENTIONABLE":
+          case ApplicationCommandOptionType.Mentionable:
             {
               command.addMentionableOption((option) =>
                 option
@@ -78,7 +79,7 @@ export class ApplicationCommands {
             }
             break;
 
-          case "NUMBER":
+          case ApplicationCommandOptionType.Number:
             {
               command.addNumberOption((option) =>
                 option
@@ -89,7 +90,7 @@ export class ApplicationCommands {
             }
             break;
 
-          case "ROLE":
+          case ApplicationCommandOptionType.Role:
             {
               command.addRoleOption((option) =>
                 option
@@ -100,7 +101,7 @@ export class ApplicationCommands {
             }
             break;
 
-          case "USER":
+          case ApplicationCommandOptionType.User:
             {
               command.addUserOption((option) =>
                 option

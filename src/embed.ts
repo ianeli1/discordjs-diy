@@ -1,8 +1,8 @@
 import {
   ColorResolvable,
-  MessageAttachment,
-  MessageEmbed,
-  MessageOptions,
+  AttachmentBuilder,
+  EmbedBuilder,
+  BaseMessageOptions,
   User,
 } from "discord.js";
 
@@ -24,12 +24,12 @@ interface EmbedOptions {
   image?: string;
   sideImage?: string;
   localImage?: string;
-  author?: Parameters<MessageEmbed["setAuthor"]>;
+  author?: Parameters<EmbedBuilder["setAuthor"]>;
   url?: string;
-  footer?: Parameters<MessageEmbed["setFooter"]>;
+  footer?: Parameters<EmbedBuilder["setFooter"]>;
   reference?: User;
-  components?: MessageOptions["components"];
-  files?: MessageOptions["files"];
+  components?: BaseMessageOptions["components"];
+  files?: BaseMessageOptions["files"];
 }
 
 interface EmbedSettings {
@@ -63,8 +63,8 @@ export class Embed {
     this.createSingularEmbed = this.createSingularEmbed.bind(this);
   }
 
-  private createSingularEmbed(options: EmbedOptions): MessageOptions {
-    let embed = new MessageEmbed()
+  private createSingularEmbed(options: EmbedOptions): BaseMessageOptions {
+    let embed = new EmbedBuilder()
       .setDescription(this.descTransform(options.desc ?? ""))
       .setColor(options.color ?? this.color);
 
@@ -79,11 +79,13 @@ export class Embed {
         }))
       );
     } else if (options.fields instanceof Object) {
-      embed = embed.addField(
-        options.fields.title,
-        options.fields.desc,
-        options.fields.inline
-      );
+      embed = embed.addFields([
+        {
+          name: options.fields.title,
+          value: options.fields.desc,
+          inline: options.fields.inline,
+        },
+      ]);
     }
 
     if (options.image) {
@@ -99,10 +101,10 @@ export class Embed {
     if (options.author) {
       embed = embed.setAuthor(...options.author);
     } else if (this.author) {
-      embed = embed.setAuthor(
-        this.author.username,
-        this.author.avatarURL() ?? undefined
-      );
+      embed = embed.setAuthor({
+        name: this.author.username,
+        iconURL: this.author.avatarURL() ?? undefined,
+      });
     }
 
     if (options.url) {
@@ -112,7 +114,11 @@ export class Embed {
     if (options.footer) {
       embed = embed.setFooter(...options.footer);
     } else if (options.reference) {
-      embed = embed.setFooter(...this.refTransform(options.reference));
+      const [name, avatarUrl] = this.refTransform(options.reference);
+      embed = embed.setFooter({
+        text: name,
+        iconURL: avatarUrl,
+      });
     }
 
     if (options.title) {
@@ -120,7 +126,7 @@ export class Embed {
     }
 
     if (options.localImage) {
-      attachments.push(new MessageAttachment(options.localImage));
+      attachments.push(new AttachmentBuilder(options.localImage));
       embed = embed.setImage(`attachment://${options.localImage}`);
     }
     return {
@@ -130,7 +136,7 @@ export class Embed {
     };
   }
 
-  create(options: EmbedOptions | EmbedOptions[]): MessageOptions {
+  create(options: EmbedOptions | EmbedOptions[]): BaseMessageOptions {
     if (options instanceof Array) {
       const sendables = options
         .map((x) => this.createSingularEmbed(x))
