@@ -9,6 +9,7 @@ import {
   ActionRowBuilder,
   ApplicationCommandOptionType,
   BaseMessageOptions,
+  ButtonBuilder,
   ButtonComponentData,
   CommandInteraction,
   ContextMenuCommandInteraction,
@@ -16,11 +17,13 @@ import {
   Guild,
   GuildMember,
   Interaction,
+  LinkButtonComponentData,
   Message,
   MessageComponentInteraction,
   MessageContextMenuCommandInteraction,
   MessagePayload,
   Role,
+  StringSelectMenuBuilder,
   StringSelectMenuComponentData,
   TextBasedChannel,
   User,
@@ -104,23 +107,10 @@ interface BaseActionParameters extends BarebonesActionParameters {
    * You can also limit who has access to the component, by default only the command invoker can trigger.
    * Pass an array of user IDs to the last parameter to change this
    */
-  subscribe(
-    componentOptions: NonNullable<
-      | NonNullableObject<NonNullable<Omit<ButtonComponentData, "customId">>>[]
-      | Partial<ButtonComponentData>
-      | Partial<StringSelectMenuComponentData>
-    >,
-    /**
-     * `params.msg` contains the newly created message this component will be attached to
-     */
-    action: (
-      params: ActionParameters,
-      interaction: MessageComponentInteraction,
-      value: number | string
-    ) => SendableMessage | Promise<void> | void,
-    idle?: number,
-    expectFromUserIds?: string[]
-  ): ActionRowBuilder;
+  subscribe: SubscribeFn<
+    MyButtonComponentData | StringSelectMenuComponentData,
+    ButtonBuilder | StringSelectMenuBuilder
+  >;
 
   /**Run an action through the pipeline with the previous ActionParameters
    * Optionally add a second parameter to override the parameters
@@ -132,6 +122,32 @@ interface BaseActionParameters extends BarebonesActionParameters {
    */
   runAction(action: ResponseAction, params: ActionParameters): void;
 }
+
+export type MyButtonComponentData = Omit<
+  Exclude<ButtonComponentData, LinkButtonComponentData>,
+  "customId"
+>;
+
+export type SubscribeFn<
+  T extends MyButtonComponentData | StringSelectMenuComponentData,
+  C extends T extends MyButtonComponentData
+    ? ButtonBuilder
+    : StringSelectMenuBuilder
+> = (
+  componentOptions: NonNullable<
+    NonNullableObject<Extract<T, MyButtonComponentData>>[] | T
+  >,
+  /**
+   * `params.msg` contains the newly created message this component will be attached to
+   */
+  action: (
+    params: ActionParameters,
+    interaction: MessageComponentInteraction,
+    value: T extends MyButtonComponentData ? number : string
+  ) => SendableMessage | Promise<void> | void,
+  idle?: number,
+  expectFromUserIds?: string[]
+) => ActionRowBuilder<C>;
 
 export interface BarebonesActionParameters {
   bot: Bot;
